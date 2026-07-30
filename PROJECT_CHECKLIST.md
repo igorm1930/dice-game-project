@@ -19,29 +19,29 @@
 
 ## Phase 1 — Project foundation
 
-Status: Not started.
+Status: Completed.
 
 ### Roadmap checklist
 
-- [ ] Create NestJS backend in `api/`
-- [ ] Create React, TypeScript, and Vite frontend in `web/`
-- [ ] Run both applications independently
-- [ ] Understand important generated files
-- [ ] Run generated tests and builds
+- [x] Create NestJS backend in `api/`
+- [x] Create React, TypeScript, and Vite frontend in `web/`
+- [x] Run both applications independently
+- [x] Understand important generated files
+- [x] Run generated tests and builds
 
 ### Completion criteria
 
-- [ ] `api/` exists
-- [ ] `web/` exists
-- [ ] NestJS starts successfully
-- [ ] React starts successfully
-- [ ] Generated backend tests pass
-- [ ] Backend build passes
-- [ ] Frontend build passes
-- [ ] No Phase 2 or later functionality is added
-- [ ] Changed files are explained
-- [ ] Git status is shown
-- [ ] No commit is created automatically
+- [x] `api/` exists
+- [x] `web/` exists
+- [x] NestJS starts successfully
+- [x] React starts successfully
+- [x] Generated backend tests pass
+- [x] Backend build passes
+- [x] Frontend build passes
+- [x] No Phase 2 or later functionality is added
+- [x] Changed files are explained
+- [x] Git status is shown
+- [x] No commit is created automatically
 
 ## Phase 2 — API connection
 

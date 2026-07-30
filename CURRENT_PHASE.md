@@ -6,7 +6,7 @@ Phase 1 — Project foundation
 
 ## Status
 
-Not started
+Completed
 
 ## Goal
 
@@ -83,4 +83,28 @@ Wait for explicit approval.
 
 ## Completion record
 
-Not completed yet.
+Phase 1 was completed and reviewed on 2026-07-30.
+
+Implementation commit:
+
+```text
+11e93ec chore: initialize NestJS API and React application
+```
+
+Verified:
+
+- `api/` and `web/` exist.
+- NestJS started locally and `GET /` returned HTTP 200 with `Hello World!`.
+- React started locally and its generated page returned HTTP 200.
+- Backend generated unit test passed: 1 suite and 1 test.
+- Backend generated end-to-end test passed: 1 suite and 1 test.
+- Backend build passed.
+- Frontend lint passed.
+- Frontend build passed.
+- Backend lint completed with no errors and one warning in generated
+  `src/main.ts` for an unhandled `bootstrap()` promise.
+- No Phase 2 endpoint, frontend API connection, database, authentication, or
+  game logic was added.
+- The implementation commit was pushed to `origin/phase-1-foundation`.
+
+Phase 2 has not started.
