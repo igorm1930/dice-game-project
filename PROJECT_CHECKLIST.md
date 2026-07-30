@@ -32,12 +32,12 @@
 
 Status: Completed.
 
-Security follow-up: Implemented and verified locally; awaiting commit and push.
+Security follow-up: Completed and pushed in commit `7f699a1`.
 
 ### Roadmap checklist
 
-- [ ] Create a root `.gitignore`
-- [ ] Create the project security policy
+- [x] Create a root `.gitignore`
+- [x] Create the project security policy
 - [x] Create NestJS backend in `api/`
 - [x] Create React, TypeScript, and Vite frontend in `web/`
 - [x] Run both applications independently
