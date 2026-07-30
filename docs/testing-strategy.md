@@ -88,3 +88,38 @@ For:
 
 Both development servers were stopped after verification. Browser rendering
 was not tested through an automated browser in Phase 1.
+
+### Dependency and security checks
+
+The Phase 1 review ran:
+
+```powershell
+# From api/
+npm.cmd audit --audit-level=high
+npm.cmd audit --omit=dev --audit-level=high
+
+# From web/
+npm.cmd audit --audit-level=high
+```
+
+Results:
+
+- Frontend audit: 0 vulnerabilities.
+- Backend production-dependency audit: 0 vulnerabilities.
+- Backend full audit: 25 high-severity findings in transitive development
+  tooling through `brace-expansion` and `minimatch`.
+- `npm outdated` confirmed that the current direct dependencies already match
+  their compatible wanted versions.
+- `npm audit fix --dry-run` found no compatible non-breaking remediation.
+  npm's proposed complete fixes require breaking major changes or problematic
+  downgrades.
+- `npm audit fix` and `npm audit fix --force` were not run.
+- No tracked secret-like values were found.
+- No private-configuration patterns were found in the built frontend.
+- Root, backend, and frontend `.env` paths are ignored, while
+  `.env.example` remains allowed.
+
+The reported development-tooling issue is documented in
+[GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg).
+It does not affect the current backend production dependency set, but it
+remains a known development-tooling risk pending a compatible upstream update.

@@ -75,6 +75,36 @@ Results:
 
 Both development servers were stopped after the smoke checks.
 
+## Dependency and security review
+
+The final Phase 1 review repeated lint, tests, and builds and ran dependency
+and secret checks.
+
+Results:
+
+- Backend lint passed with the existing generated `bootstrap()` promise
+  warning.
+- Backend unit tests passed: 1 suite and 1 test.
+- Backend end-to-end tests passed: 1 suite and 1 test.
+- Backend build passed.
+- Frontend lint and build passed.
+- Frontend `npm audit --audit-level=high` reported 0 vulnerabilities.
+- Backend `npm audit --omit=dev --audit-level=high` reported 0 production
+  vulnerabilities.
+- Backend `npm audit --audit-level=high` reported 25 high-severity findings in
+  transitive development tooling through `brace-expansion` and `minimatch`.
+- Current direct dependencies already match their compatible wanted versions.
+- npm's calculated complete fixes require breaking major changes or
+  problematic downgrades, so no automatic or forced fix was applied.
+- Secret-like content and built-frontend private-configuration scans found no
+  matches.
+- Environment-file ignore behavior was verified.
+
+The development-tooling findings are associated with
+[GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg).
+They are documented as a known risk pending compatible upstream dependency
+updates.
+
 ## Important implementation notes
 
 - Backend flow: `main.ts` bootstraps `AppModule`; the module wires
@@ -102,6 +132,9 @@ The commit was pushed to `origin/phase-1-foundation`.
 - No frontend automated tests exist yet because the selected Vite template did
   not generate them.
 - The generated backend lint warning remains documented and unchanged.
+- The backend production dependency audit is clean, but 25 high-severity
+  findings remain in transitive development tooling with no compatible
+  non-breaking npm remediation currently available.
 - Browser rendering was verified by HTTP response content, not by an automated
   browser.
 - Phase 2 has not started. There is no health endpoint, API client, proxy, or
