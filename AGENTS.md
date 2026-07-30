@@ -14,9 +14,10 @@ Before doing any work:
 2. Read `PROJECT_ROADMAP.md`.
 3. Read `CURRENT_PHASE.md`.
 4. Read `docs/assignment-requirements.md`.
-5. Inspect the existing repository.
-6. Inspect `git status`.
-7. Do not assume that a planned feature already exists.
+5. Read `docs/skill-routing.md`.
+6. Inspect the existing repository.
+7. Inspect `git status`.
+8. Do not assume that a planned feature already exists.
 
 ## Source-of-truth priority
 
@@ -31,6 +32,68 @@ Use this priority when instructions appear to conflict:
 7. AI suggestions
 
 Do not override an approved decision without explicit user approval.
+
+## Skill discovery and routing
+
+Before each task:
+
+1. Inspect the skills and plugins available in the current session.
+2. Select only skills whose documented trigger conditions match the current task.
+3. Follow `docs/skill-routing.md`.
+4. State which skills will be used and why.
+5. If no suitable skill is available, say so and continue using the normal workflow.
+
+Never claim that an unavailable or uninvoked skill was used.
+
+## MCP routing
+
+Before using an MCP server, read `docs/mcp-routing.md`.
+
+Use MCP only for tasks requiring access to external systems or specialized
+tools.
+
+Prefer local tools for local files, builds, tests, and Git inspection.
+
+Before MCP use, report:
+
+- server
+- tools
+- purpose
+- read or write capability
+- approval requirement
+
+All external write operations require explicit approval.
+
+Skills define the workflow; MCP provides external access. When both apply,
+select the skill first and then use the smallest MCP toolset required by that
+skill.
+
+This is the rule we should remember:
+
+Task trigger
+→ choose skill
+→ skill defines procedure
+→ choose MCP server if external access is required
+→ use minimum permissions
+→ report evidence
+→ request approval for writes
+
+Examples:
+
+GitHub Actions failed
+→ CI Debug skill
+→ GitHub MCP Actions
+→ read logs
+→ propose fix
+Reviewer requested changes
+→ Review Follow-up skill
+→ GitHub MCP Pull Requests
+→ retrieve comments
+→ map and address feedback
+Need to implement Hold rule
+→ game-engine workflow
+→ no MCP required
+→ local code and tests
 
 ## Work process
 

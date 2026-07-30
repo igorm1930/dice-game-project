@@ -46,6 +46,14 @@ Create the NestJS backend and React frontend and confirm that both run independe
 - Shared package
 - Optional game features
 
+## Skill routing
+
+Before any Phase 1 task, inspect available skills and follow `docs/skill-routing.md`.
+
+Select only skills whose trigger conditions match the task. State which skills will be used and why. If no suitable skill is available, say so and continue using the normal workflow.
+
+This requirement does not start Phase 1 or expand its scope.
+
 ## Required approval checkpoint
 
 Before making changes, show:
