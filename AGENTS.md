@@ -190,6 +190,46 @@ Before declaring a phase complete:
 - Do not commit automatically.
 - Before proposing a commit, show `git status` and summarize the diff.
 
+## Branch policy
+
+- Never implement project phases directly on `main`.
+- Create one short-lived branch for each roadmap phase.
+- Branch naming format: `phase/NN-short-description`.
+- Start each phase branch from the latest `main`.
+- Do not mix multiple phases in one branch.
+- Push the phase branch only after local verification.
+- Open a pull request into `main`.
+- Merge only after review and successful required checks.
+- Delete the phase branch after merge.
+- Direct commits to `main` are allowed only for trivial documentation corrections explicitly approved by the user.
+
+## Security policy
+
+Before every task, read `docs/security-policy.md`.
+
+For each proposed change, report:
+
+- configuration values introduced
+- whether each value is public or secret
+- where each value will be stored
+- whether `.gitignore` needs updating
+- new user-controlled input
+- authentication or authorization impact
+- required security checks
+
+Never:
+
+- hardcode credentials
+- place secrets in frontend code
+- place secrets in `VITE_*` variables
+- commit real `.env` files
+- print secrets in logs
+- weaken CORS, authentication, authorization, or CI permissions without
+  explicit approval
+
+Security-sensitive phases require an explicit security review before
+completion.
+
 ## Documentation policy
 
 After a phase is completed and approved:

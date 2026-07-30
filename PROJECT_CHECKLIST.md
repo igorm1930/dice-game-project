@@ -17,12 +17,27 @@
 - [x] Documentation committed
 - [x] Documentation pushed successfully
 
+## Security checklist for every phase
+
+- [ ] Security impact reviewed
+- [ ] No secrets or credentials added to source
+- [ ] Environment-variable changes documented
+- [ ] `.env.example` updated where applicable
+- [ ] `.gitignore` verified
+- [ ] Client bundle contains no private configuration
+- [ ] Logs checked for sensitive data
+- [ ] Dependency/security checks run where applicable
+
 ## Phase 1 — Project foundation
 
 Status: Completed.
 
+Security follow-up: Implemented and verified locally; awaiting commit and push.
+
 ### Roadmap checklist
 
+- [ ] Create a root `.gitignore`
+- [ ] Create the project security policy
 - [x] Create NestJS backend in `api/`
 - [x] Create React, TypeScript, and Vite frontend in `web/`
 - [x] Run both applications independently
@@ -46,6 +61,9 @@ Status: Completed.
 ## Phase 2 — API connection
 
 - [ ] Add `GET /api/health`
+- [ ] Add public frontend API URL configuration with `VITE_API_URL`
+- [ ] Add backend frontend-origin configuration
+- [ ] Document the public configuration values
 - [ ] Connect React to the backend
 - [ ] Display loading, success, and error states
 - [ ] Test the endpoint directly
@@ -55,7 +73,8 @@ Status: Completed.
 ## Phase 3 — MongoDB connection
 
 - [ ] Add Mongoose
-- [ ] Add environment configuration
+- [ ] Add private MongoDB environment configuration
+- [ ] Add typed NestJS configuration validation
 - [ ] Add `.env.example`
 - [ ] Connect NestJS to MongoDB
 - [ ] Verify successful database connection
@@ -81,6 +100,8 @@ Status: Completed.
 ## Phase 6 — Continuous integration
 
 - [ ] Add GitHub Actions
+- [ ] Configure CI secrets and least-privilege workflow permissions
+- [ ] Add dependency and secret scans
 - [ ] Install dependencies
 - [ ] Run lint
 - [ ] Run tests
@@ -100,6 +121,8 @@ Status: Completed.
 
 ## Phase 8 — Authentication
 
+- [ ] Add and validate authentication secrets
+- [ ] Run a security review of authentication and authorization controls
 - [ ] Add password hashing
 - [ ] Add registration
 - [ ] Add login

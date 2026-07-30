@@ -8,6 +8,8 @@ Do not skip phases without documenting the reason.
 
 ## Phase 1 — Project foundation
 
+- Create a root `.gitignore`
+- Create the project security policy
 - Create NestJS backend in `api/`
 - Create React, TypeScript, and Vite frontend in `web/`
 - Run both applications independently
@@ -17,6 +19,9 @@ Do not skip phases without documenting the reason.
 ## Phase 2 — API connection
 
 - Add `GET /api/health`
+- Add public frontend API URL configuration with `VITE_API_URL`
+- Add backend frontend-origin configuration
+- Document the public configuration values
 - Connect React to the backend
 - Display loading, success, and error states
 - Test the endpoint directly
@@ -26,7 +31,8 @@ Do not skip phases without documenting the reason.
 ## Phase 3 — MongoDB connection
 
 - Add Mongoose
-- Add environment configuration
+- Add private MongoDB environment configuration
+- Add typed NestJS configuration validation
 - Add `.env.example`
 - Connect NestJS to MongoDB
 - Verify successful database connection
@@ -52,6 +58,8 @@ Do not skip phases without documenting the reason.
 ## Phase 6 — Continuous integration
 
 - Add GitHub Actions
+- Configure CI secrets and least-privilege workflow permissions
+- Add dependency and secret scans
 - Install dependencies
 - Run lint
 - Run tests
@@ -71,6 +79,8 @@ Do not skip phases without documenting the reason.
 
 ## Phase 8 — Authentication
 
+- Add and validate authentication secrets
+- Run a security review of authentication and authorization controls
 - Add password hashing
 - Add registration
 - Add login
