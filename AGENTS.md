@@ -207,6 +207,9 @@ Before declaring a phase complete:
 
 Before every task, read `docs/security-policy.md`.
 
+Before authentication or JWT work, also read
+`docs/authentication-jwt-policy.md`.
+
 For each proposed change, report:
 
 - configuration values introduced
