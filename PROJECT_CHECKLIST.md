@@ -17,35 +17,53 @@
 - [x] Documentation committed
 - [x] Documentation pushed successfully
 
+## Security checklist for every phase
+
+- [ ] Security impact reviewed
+- [ ] No secrets or credentials added to source
+- [ ] Environment-variable changes documented
+- [ ] `.env.example` updated where applicable
+- [ ] `.gitignore` verified
+- [ ] Client bundle contains no private configuration
+- [ ] Logs checked for sensitive data
+- [ ] Dependency/security checks run where applicable
+
 ## Phase 1 — Project foundation
 
-Status: Not started.
+Status: Completed.
+
+Security follow-up: Completed and pushed in commit `7f699a1`.
 
 ### Roadmap checklist
 
-- [ ] Create NestJS backend in `api/`
-- [ ] Create React, TypeScript, and Vite frontend in `web/`
-- [ ] Run both applications independently
-- [ ] Understand important generated files
-- [ ] Run generated tests and builds
+- [x] Create a root `.gitignore`
+- [x] Create the project security policy
+- [x] Create NestJS backend in `api/`
+- [x] Create React, TypeScript, and Vite frontend in `web/`
+- [x] Run both applications independently
+- [x] Understand important generated files
+- [x] Run generated tests and builds
 
 ### Completion criteria
 
-- [ ] `api/` exists
-- [ ] `web/` exists
-- [ ] NestJS starts successfully
-- [ ] React starts successfully
-- [ ] Generated backend tests pass
-- [ ] Backend build passes
-- [ ] Frontend build passes
-- [ ] No Phase 2 or later functionality is added
-- [ ] Changed files are explained
-- [ ] Git status is shown
-- [ ] No commit is created automatically
+- [x] `api/` exists
+- [x] `web/` exists
+- [x] NestJS starts successfully
+- [x] React starts successfully
+- [x] Generated backend tests pass
+- [x] Backend build passes
+- [x] Frontend build passes
+- [x] No Phase 2 or later functionality is added
+- [x] Changed files are explained
+- [x] Git status is shown
+- [x] No commit is created automatically
 
 ## Phase 2 — API connection
 
 - [ ] Add `GET /api/health`
+- [ ] Add public frontend API URL configuration with `VITE_API_URL`
+- [ ] Add backend frontend-origin configuration
+- [ ] Document the public configuration values
 - [ ] Connect React to the backend
 - [ ] Display loading, success, and error states
 - [ ] Test the endpoint directly
@@ -55,7 +73,8 @@ Status: Not started.
 ## Phase 3 — MongoDB connection
 
 - [ ] Add Mongoose
-- [ ] Add environment configuration
+- [ ] Add private MongoDB environment configuration
+- [ ] Add typed NestJS configuration validation
 - [ ] Add `.env.example`
 - [ ] Connect NestJS to MongoDB
 - [ ] Verify successful database connection
@@ -81,6 +100,8 @@ Status: Not started.
 ## Phase 6 — Continuous integration
 
 - [ ] Add GitHub Actions
+- [ ] Configure CI secrets and least-privilege workflow permissions
+- [ ] Add dependency and secret scans
 - [ ] Install dependencies
 - [ ] Run lint
 - [ ] Run tests
@@ -100,6 +121,8 @@ Status: Not started.
 
 ## Phase 8 — Authentication
 
+- [ ] Add and validate authentication secrets
+- [ ] Run a security review of authentication and authorization controls
 - [ ] Add password hashing
 - [ ] Add registration
 - [ ] Add login

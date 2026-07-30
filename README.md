@@ -48,13 +48,50 @@ The application is not built in one large AI-generated step.
 
 ## Applications
 
-The planned application folders are:
+Phase 1 created two independent applications:
 
-- `api/` — NestJS backend
-- `web/` — React frontend
+- `api/` — NestJS and TypeScript backend
+- `web/` — React, TypeScript, and Vite frontend
 
-These folders should be created only during the appropriate approved phase.
+They are intentionally not connected yet. The backend currently exposes only
+the generated `GET /` route, and the frontend displays only the generated Vite
+starter page.
+
+### Run the backend
+
+```powershell
+Set-Location api
+npm install
+npm run start:dev
+```
+
+The generated backend is available at `http://localhost:3000`.
+
+### Run the frontend
+
+```powershell
+Set-Location web
+npm install
+npm run dev
+```
+
+Vite prints the local development URL when it starts.
+
+### Verify Phase 1
+
+```powershell
+Set-Location api
+npm run lint
+npm test -- --runInBand
+npm run test:e2e -- --runInBand
+npm run build
+
+Set-Location ../web
+npm run lint
+npm run build
+```
 
 ## Current status
 
-See `CURRENT_PHASE.md`.
+Phase 1 is complete on the `phase-1-foundation` branch. Phase 2 has not
+started. See `CURRENT_PHASE.md` for the verification record.
