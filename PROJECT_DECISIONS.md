@@ -545,7 +545,9 @@ The following decisions are intentionally postponed until the relevant phase:
 - Exact production hosting providers.
 - Whether to introduce npm workspaces.
 - Whether to use TanStack Query immediately or after the first simple API calls.
-- Exact JWT storage approach for the final demo.
+- Authentication and JWT policy is approved in
+  `docs/authentication-jwt-policy.md`; implementation remains scheduled for
+  Phases 8 and 9.
 - Detailed game API response shape.
 - Optimistic concurrency implementation details.
 - Final visual design.
