@@ -220,6 +220,38 @@ Use when:
 
 Documentation must describe verified reality, not planned or assumed behavior.
 
+## Multi-agent routing
+
+Use a single implementation agent by default.
+
+Parallel agents are appropriate when:
+
+- work is independent
+- file ownership does not overlap
+- interfaces are already agreed
+- each result can be tested separately
+- integration order is known
+
+Prefer parallel review agents over parallel coding agents.
+
+Good specialist roles:
+
+- requirements reviewer
+- test-case designer
+- security reviewer
+- CI reviewer
+- accessibility reviewer
+- documentation reviewer
+
+Do not use multi-agent implementation when:
+
+- scaffolding the project
+- choosing shared architecture
+- editing root configuration
+- changing shared contracts
+- implementing tightly coupled frontend and backend behavior
+- the developer is still learning the generated structure
+
 ## Multiple-skill tasks
 
 More than one skill may be useful.

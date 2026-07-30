@@ -95,6 +95,39 @@ Need to implement Hold rule
 → no MCP required
 → local code and tests
 
+## Multi-agent workflow
+
+Default to one active implementation agent.
+
+Use multiple agents only when tasks are independent and have clearly separated
+outputs or file ownership.
+
+Before starting multi-agent work, define for each agent:
+
+- role
+- exact task
+- files it may modify
+- files it must not modify
+- expected output
+- dependency on other agents
+- merge order
+
+Only one agent may modify a given file or shared configuration area at a time.
+
+Review, testing, security, and documentation agents should default to
+read-only analysis and findings.
+
+Do not run parallel implementation agents during early sequential phases.
+
+Before merging agent work:
+
+1. Review each diff independently.
+2. Confirm no overlapping changes.
+3. Run the full relevant test suite.
+4. Resolve conflicts manually.
+5. Update documentation and checklist.
+6. Commit only verified integrated work.
+
 ## Work process
 
 For every task:
