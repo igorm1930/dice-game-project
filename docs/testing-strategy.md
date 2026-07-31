@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 1, Phase 2, and Phase 3 checks have been run.
+Phase 1 through Phase 5 checks have been run.
 
 The full testing strategy will grow incrementally.
 
@@ -60,6 +60,47 @@ For:
 - authentication
 - two-user simulation
 - complete game flow
+
+## Phase 5 verification
+
+### Backend unit and integration structure
+
+- Shared Nest application setup is used by production bootstrap and E2E tests.
+- `UsersService` unit coverage passed: create, duplicate conflict, ordered
+  listing, lookup, and not-found behavior.
+- Backend unit tests passed: 5 suites and 16 tests.
+- Real-MongoDB E2E tests passed: 2 suites and 11 tests.
+- E2E tests run serially against `dice_game_e2e` by default.
+- An unsafe `dice_game` URI failed before application startup with the intended
+  dedicated-database error.
+- Development database user count remained unchanged and the E2E user
+  collection was empty after cleanup.
+
+### Frontend component structure
+
+- Vitest 4.1.10 runs with jsdom and React Testing Library.
+- Component coverage verifies loading, connected/empty success, saved-user
+  rendering, form progress/success, and API/form errors.
+- Frontend component tests passed: 1 file and 5 tests.
+- The first restricted-sandbox Vitest launch failed with `spawn EPERM`; the
+  identical command passed with normal process-spawn access.
+
+### Complete verification and security
+
+- Root `npm.cmd run verify` passed lint, all tests, E2E tests, and both builds.
+- Frontend Vite 8.1.5 build passed with 20 transformed modules.
+- Backend production audit: 0 vulnerabilities.
+- Frontend full audit: 0 vulnerabilities.
+- Backend full audit reported the previously documented 25 high-severity
+  findings in development tooling through `brace-expansion` and `minimatch`.
+  No breaking forced fix was run.
+- Only `.env.example` files are tracked; no real environment file, private
+  frontend configuration, credential-bearing MongoDB URI, or key material was
+  found.
+- Browser smoke testing confirmed API connection, empty state, creation,
+  rendering, and reload persistence with no application errors. Warnings came
+  from an unrelated installed Chrome extension.
+- The isolated manual user was deleted and temporary servers were stopped.
 
 ## Phase 4 verification
 

@@ -56,7 +56,9 @@ The repository contains two applications:
 Phase 2 connects React to the backend through `GET /api/health`. Phase 3 adds
 validated MongoDB configuration and requires a live database connection before
 the health endpoint reports success. Phase 4 adds validated persistent users,
-user API endpoints, and the React creation/list flow.
+user API endpoints, and the React creation/list flow. Phase 5 adds backend test
+structure, database safety, frontend component tests, and root verification
+commands.
 
 Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
@@ -97,28 +99,22 @@ prefix. Real `.env` files must not be committed.
 The project MongoDB service is bound only to `127.0.0.1:27018`. It intentionally
 does not use the already-occupied port 27017.
 
-### Verify Phase 4
+### Verify Phase 5
 
 ```powershell
-Set-Location api
-$env:NODE_ENV='test'
-$env:PORT='3001'
-$env:FRONTEND_ORIGIN='http://localhost:5173'
-$env:MONGODB_URI='mongodb://127.0.0.1:27018/dice_game_phase4_test'
-npm.cmd run lint
-npm.cmd test -- --runInBand
-npm.cmd run test:e2e -- --runInBand
-npm.cmd run build
-
-Set-Location ../web
+docker compose up -d mongodb
 $env:VITE_API_URL='http://localhost:3000'
-npm.cmd run lint
-npm.cmd run build
+npm.cmd run verify
+Remove-Item Env:VITE_API_URL
 ```
+
+The E2E suite defaults to `dice_game_e2e`, runs serially, cleans the user
+collection, and rejects database names that do not end in `_test` or `_e2e`.
 
 ## Current status
 
-Phases 1 through 3 are merged into `main`. Phase 4 is implemented on
-`phase/04-persistent-user-flow`, verified, reviewed, committed, and pushed.
-Phase 4 is awaiting merge; Phase 5 has not started. See `CURRENT_PHASE.md` and
-the session logs for verification evidence.
+Phases 1 through 4 are merged into `main`. Phase 5 is implemented, verified,
+reviewed, committed, and pushed on
+`phase/05-automated-testing-foundation`. Phase 5 is awaiting merge; Phase 6 has
+not started. See `CURRENT_PHASE.md` and the session logs for verification
+evidence.

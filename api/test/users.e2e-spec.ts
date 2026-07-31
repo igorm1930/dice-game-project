@@ -1,11 +1,10 @@
-import { ValidationPipe, type INestApplication } from '@nestjs/common';
-import { Test, type TestingModule } from '@nestjs/testing';
+import { type INestApplication } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
 import { User, type UserDocument } from '../src/users/schemas/user.schema';
+import { createTestApplication } from './test-application';
 
 interface UserResponseBody {
   id: string;
@@ -19,27 +18,8 @@ describe('Users API (e2e)', () => {
   let userModel: Model<UserDocument>;
   let createdUser: UserResponseBody;
 
-  async function createApplication(): Promise<INestApplication<App>> {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    const application = moduleFixture.createNestApplication();
-
-    application.setGlobalPrefix('api');
-    application.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-    await application.init();
-
-    return application;
-  }
-
   beforeAll(async () => {
-    app = await createApplication();
+    app = await createTestApplication();
     userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
     await userModel.init();
     await userModel.deleteMany({}).exec();
@@ -115,7 +95,7 @@ describe('Users API (e2e)', () => {
 
   it('keeps users after the Nest application restarts', async () => {
     await app.close();
-    app = await createApplication();
+    app = await createTestApplication();
     userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
 
     await request(app.getHttpServer())
