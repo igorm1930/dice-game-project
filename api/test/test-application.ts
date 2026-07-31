@@ -5,11 +5,25 @@ import type { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { configureApplication } from '../src/app.setup';
 import type { EnvironmentVariables } from '../src/config/environment';
+import type { DiceRoller } from '../src/game/domain/dice-roller';
+import { DICE_ROLLER } from '../src/game/game.constants';
 
-export async function createTestApplication(): Promise<INestApplication<App>> {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
+interface TestApplicationOptions {
+  readonly diceRoller?: DiceRoller;
+}
+
+export async function createTestApplication(
+  options: TestApplicationOptions = {},
+): Promise<INestApplication<App>> {
+  const moduleBuilder = Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  });
+
+  if (options.diceRoller) {
+    moduleBuilder.overrideProvider(DICE_ROLLER).useValue(options.diceRoller);
+  }
+
+  const moduleFixture: TestingModule = await moduleBuilder.compile();
   const application =
     moduleFixture.createNestApplication<INestApplication<App>>();
   const configService = application.get(

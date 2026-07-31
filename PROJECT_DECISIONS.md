@@ -139,6 +139,28 @@ These decisions will be implemented when we reach the game-engine phase:
 
 ## 6. Backend authority decisions
 
+### Phase 11 game API decisions
+
+- The verified JWT `sub` claim is the only source of acting-player identity.
+- Game creation accepts only `opponentId` and an optional `winningScore`.
+- The opponent must be a distinct credentialed user; legacy passwordless users
+  cannot participate.
+- Game IDs are UUIDs and records are held in a process-local `Map` behind a
+  repository interface.
+- Only participants may retrieve or act on a game. Missing and hidden games
+  share the same `GAME_NOT_FOUND` response.
+- Only the active player may roll or hold. Either participant may restart.
+- Responses expose caller-specific `allowedActions`; the client does not infer
+  authoritative permissions.
+- Production dice use backend `crypto.randomInt(1, 7)` through the existing
+  injectable dice interface.
+- Roll, hold, and restart bodies must be empty. Client-supplied player IDs,
+  dice, scores, turns, winners, and permissions are rejected.
+- Creating a game does not abandon unrelated games. Restart is the Phase 11
+  new-game operation for an existing record.
+- Persistence, cross-process consistency, optimistic concurrency, and
+  duplicate-action protection remain deferred.
+
 The backend will be the only authoritative source for:
 
 - Dice values
@@ -609,7 +631,7 @@ The following decisions are intentionally postponed until the relevant phase:
 - Authentication and JWT policy is approved in
   `docs/authentication-jwt-policy.md`; implementation remains scheduled for
   Phases 8 and 9.
-- Detailed game API response shape.
+- MongoDB game-repository schema and migration details.
 - Optimistic concurrency implementation details.
 - Final visual design.
 - AI opponent.
@@ -665,8 +687,7 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phase 9 is completed and merged into `main` as `8b26fce`. Phase 10 is
-implemented, locally verified, developer-approved, committed as `bd01e44`, and
-pushed on `phase/10-pure-game-engine`. Pull request #11 is ready for review and
-its required checks pass. Wait for explicit approval before merging, and do
-not begin Phase 11 first.
+Phase 10 is completed and merged into `main` as `0c68d23`. Phase 11 is
+implemented, locally verified, and developer-approved on
+`phase/11-in-memory-game-api`. Commit and push are authorized. After
+publication, wait; do not merge, deploy, or begin Phase 12.

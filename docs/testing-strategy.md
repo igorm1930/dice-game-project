@@ -2,11 +2,41 @@
 
 ## Status
 
-Phase 1 through Phase 10 checks have been run locally. Phase 6 through Phase 9
+Phase 1 through Phase 11 checks have been run locally. Phase 6 through Phase 10
 have also passed GitHub-hosted verification. Phase 7 production health, CORS,
 frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
+
+## Phase 11 verification
+
+### Authenticated game API
+
+- Focused game-service, user-service, and engine tests passed: 3 suites and 46
+  tests.
+- New game HTTP coverage passed: 1 suite and 12 tests against real MongoDB with
+  deterministic injected dice.
+- Coverage verifies JWT protection, create validation, credentialed opponents,
+  caller-specific permissions, hidden-record 404 behavior, authoritative-field
+  rejection, turn conflicts, Roll, Hold, double six, victory, finished-game
+  conflicts, Restart, and UUID validation.
+- A direct built-API flow registered and logged in two isolated users, created
+  and retrieved a game, rejected the wrong turn, produced valid backend dice,
+  held, and restarted successfully.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 70 backend unit tests, 42
+  backend E2E tests, 14 frontend tests, and both builds.
+- Vite transformed 22 modules.
+- Backend production, backend full, and frontend dependency audits reported
+  zero vulnerabilities.
+- Full-history Gitleaks scanned 31 commits with no leaks.
+- The working-tree scan found exactly the verified public NestJS badge URL in
+  `api/README.md` and no other finding; the exact historical ignore entry was
+  not broadened.
+- No dependency, environment variable, secret, frontend game rule, or MongoDB
+  game schema was added.
 
 ## Phase 10 verification
 

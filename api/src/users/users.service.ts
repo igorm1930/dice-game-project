@@ -59,7 +59,9 @@ export class UsersService {
   }
 
   async findAuthenticatedById(id: string): Promise<UserResponseDto | null> {
-    const user = await this.userModel.findById(id).exec();
+    const user = await this.userModel
+      .findOne({ _id: id, passwordHash: { $exists: true } })
+      .exec();
 
     return user ? new UserResponseDto(user) : null;
   }

@@ -2,7 +2,7 @@
 
 ## Status
 
-The health, read-only user, and Phase 8 authentication endpoints are
+The health, read-only user, authentication, and Phase 11 game endpoints are
 implemented and tested.
 
 Only document endpoints after they exist and have been tested.
@@ -160,6 +160,86 @@ tokens return:
   "message": "Authentication required."
 }
 ```
+
+## Game endpoints
+
+All game endpoints require `Authorization: Bearer <access-token>`. The acting
+player is always the verified JWT subject; request bodies never select the
+actor. An invalid or missing token returns `401 UNAUTHORIZED`.
+
+### Game response
+
+Every successful game operation returns the caller-specific state:
+
+```json
+{
+  id: d43acc2f-a715-49a1-bf4f-74b16592e553,
+  players: [
+    { id: 66c10cb50d521a70d4d8d111, globalScore: 0 },
+    { id: 66c10cb50d521a70d4d8d222, globalScore: 0 }
+  ],
+  activePlayerId: 66c10cb50d521a70d4d8d111,
+  roundScore: 0,
+  winningScore: 100,
+  lastRoll: null,
+  status: active,
+  winnerId: null,
+  allowedActions: [roll, hold, restart]
+}
+```
+
+`status` is `active` or `won`; `lastRoll` is `null` or two integers from 1
+through 6. The active caller receives all three actions while another
+participant or either participant after victory receives only `restart`.
+
+### Create game
+
+`POST /api/games`
+
+Body:
+
+```json
+{ opponentId: 66c10cb50d521a70d4d8d222, winningScore: 100 }
+```
+
+`opponentId` must be a MongoDB object ID for a distinct credentialed user.
+`winningScore` is optional, defaults to 100, and must be an integer from 1
+through `Number.MAX_SAFE_INTEGER`. Unknown fields are rejected. Success is
+`201 Created` with the game response and the caller as Player 1.
+
+Errors include `400 INVALID_PLAYERS`, `404 OPPONENT_NOT_FOUND`, and standard
+validation errors. The not-found response does not distinguish an absent user
+from a legacy passwordless user.
+
+### Get game
+
+GET /api/games/:id requires a UUID v4. Success is 200 with the game response.
+An absent game and a game hidden from a nonparticipant both return the same
+404 GAME_NOT_FOUND response.
+
+### Roll
+
+POST /api/games/:id/roll requires an empty body. Success is 200 with the
+updated game response. Dice come from backend cryptographic randomness.
+Wrong-turn callers receive 409 NOT_YOUR_TURN; Roll after a win returns 409
+GAME_FINISHED.
+
+### Hold
+
+POST /api/games/:id/hold requires an empty body. Success is 200 with the
+updated game response. Only the active participant may Hold. The same
+NOT_YOUR_TURN and GAME_FINISHED conflicts apply as for Roll.
+
+### Restart
+
+POST /api/games/:id/restart requires an empty body. Either participant may
+restart an active or won game. Success is 200; scores, round score, last roll,
+status, winner, and active turn reset while players and winning score remain
+unchanged.
+
+For all action routes, authoritative client fields such as actor/player IDs,
+dice, scores, turns, winner state, or allowed actions are unknown fields and
+produce 400 Bad Request.
 
 ## Documentation rule
 

@@ -12,7 +12,7 @@ describe('UsersService', () => {
   const findById = jest.fn(() => ({ exec: findByIdExec }));
   const findOneExec = jest.fn();
   const select = jest.fn(() => ({ exec: findOneExec }));
-  const findOne = jest.fn(() => ({ select }));
+  const findOne = jest.fn(() => ({ exec: findOneExec, select }));
   const userModel = {
     create,
     find,
@@ -97,7 +97,7 @@ describe('UsersService', () => {
   });
 
   it('returns a safe authenticated-user lookup response', async () => {
-    findByIdExec.mockResolvedValue(firstUser);
+    findOneExec.mockResolvedValue(firstUser);
 
     await expect(
       service.findAuthenticatedById(firstUser._id.toString()),
@@ -108,6 +108,18 @@ describe('UsersService', () => {
       createdAt: firstUser.createdAt,
       updatedAt: firstUser.updatedAt,
     });
+    expect(findOne).toHaveBeenCalledWith({
+      _id: firstUser._id.toString(),
+      passwordHash: { $exists: true },
+    });
+  });
+
+  it('rejects passwordless legacy users for authenticated lookup', async () => {
+    findOneExec.mockResolvedValue(null);
+
+    await expect(
+      service.findAuthenticatedById(firstUser._id.toString()),
+    ).resolves.toBeNull();
   });
 
   it('lists users in stable creation order', async () => {
