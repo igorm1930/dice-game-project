@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
-import type { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { User, type UserDocument } from './schemas/user.schema';
 
@@ -25,20 +24,44 @@ export class UsersService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async createAuthenticatedUser(input: {
+    username: string;
+    normalizedUsername: string;
+    passwordHash: string;
+  }): Promise<UserResponseDto> {
     try {
       const user = await this.userModel.create({
-        username: createUserDto.username,
+        ...input,
+        wins: 0,
       });
 
       return new UserResponseDto(user);
     } catch (error: unknown) {
       if (isDuplicateKeyError(error)) {
-        throw new ConflictException('Username is already in use');
+        throw new ConflictException({
+          statusCode: 409,
+          code: 'USERNAME_UNAVAILABLE',
+          message: 'Username is unavailable.',
+        });
       }
 
       throw error;
     }
+  }
+
+  findForAuthentication(
+    normalizedUsername: string,
+  ): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({ normalizedUsername })
+      .select('+passwordHash')
+      .exec();
+  }
+
+  async findAuthenticatedById(id: string): Promise<UserResponseDto | null> {
+    const user = await this.userModel.findById(id).exec();
+
+    return user ? new UserResponseDto(user) : null;
   }
 
   async findAll(): Promise<UserResponseDto[]> {

@@ -1,9 +1,15 @@
+import { randomBytes } from 'node:crypto';
+
 const defaultTestMongoUri = 'mongodb://127.0.0.1:27018/dice_game_e2e';
 
 process.env.NODE_ENV = 'test';
 process.env.PORT ??= '3001';
 process.env.FRONTEND_ORIGIN ??= 'http://localhost:5173';
 process.env.MONGODB_URI ??= defaultTestMongoUri;
+process.env.JWT_SECRET ??= randomBytes(32).toString('base64');
+process.env.JWT_EXPIRES_IN ??= '30m';
+process.env.JWT_ISSUER ??= 'dice-game-api';
+process.env.JWT_AUDIENCE ??= 'dice-game-web';
 
 const databaseName = process.env.MONGODB_URI.split('?')[0]
   .split('/')

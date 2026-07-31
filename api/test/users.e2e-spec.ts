@@ -9,6 +9,7 @@ import { createTestApplication } from './test-application';
 interface UserResponseBody {
   id: string;
   username: string;
+  wins: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,6 +18,7 @@ describe('Users API (e2e)', () => {
   let app: INestApplication<App>;
   let userModel: Model<UserDocument>;
   let createdUser: UserResponseBody;
+  let legacyUser: UserResponseBody;
 
   beforeAll(async () => {
     app = await createTestApplication();
@@ -25,29 +27,50 @@ describe('Users API (e2e)', () => {
     await userModel.deleteMany({}).exec();
   });
 
-  it('creates a trimmed user and returns only public fields', async () => {
+  it('lists an authenticated user with only public fields', async () => {
     const response = await request(app.getHttpServer())
-      .post('/api/users')
-      .send({ username: '  PhaseFourUser  ' })
+      .post('/api/auth/register')
+      .set('X-Forwarded-For', '198.51.100.10')
+      .send({
+        username: '  PhaseEightUser  ',
+        password: 'phase eight password',
+      })
       .expect(201);
 
     createdUser = response.body as UserResponseBody;
 
     expect(createdUser).toEqual({
       id: expect.any(String) as string,
-      username: 'PhaseFourUser',
+      username: 'PhaseEightUser',
+      wins: 0,
       createdAt: expect.any(String) as string,
       updatedAt: expect.any(String) as string,
     });
     expect(response.body).not.toHaveProperty('_id');
     expect(response.body).not.toHaveProperty('__v');
+    expect(response.body).not.toHaveProperty('normalizedUsername');
+    expect(response.body).not.toHaveProperty('passwordHash');
   });
 
   it('lists users and retrieves one by id', async () => {
+    const legacyTimestamp = new Date('2099-01-01T00:00:00.000Z');
+    const legacyResult = await userModel.collection.insertOne({
+      username: 'LegacyPlayer',
+      createdAt: legacyTimestamp,
+      updatedAt: legacyTimestamp,
+    });
+    legacyUser = {
+      id: legacyResult.insertedId.toString(),
+      username: 'LegacyPlayer',
+      wins: 0,
+      createdAt: legacyTimestamp.toISOString(),
+      updatedAt: legacyTimestamp.toISOString(),
+    };
+
     await request(app.getHttpServer())
       .get('/api/users')
       .expect(200)
-      .expect([createdUser]);
+      .expect([createdUser, legacyUser]);
 
     await request(app.getHttpServer())
       .get(`/api/users/${createdUser.id}`)
@@ -55,29 +78,11 @@ describe('Users API (e2e)', () => {
       .expect(createdUser);
   });
 
-  it.each([
-    [{ username: '' }],
-    [{ username: 'ab' }],
-    [{ username: 'invalid name' }],
-    [{ username: 'ValidUser', role: 'admin' }],
-  ])('rejects invalid user input %#', async (body) => {
+  it('does not expose the legacy unauthenticated creation endpoint', async () => {
     await request(app.getHttpServer())
       .post('/api/users')
-      .send(body)
-      .expect(400);
-  });
-
-  it('rejects a case-insensitive duplicate username', async () => {
-    await request(app.getHttpServer())
-      .post('/api/users')
-      .send({ username: 'phasefouruser' })
-      .expect(409)
-      .expect((response) => {
-        expect(response.body).toMatchObject({
-          message: 'Username is already in use',
-          statusCode: 409,
-        });
-      });
+      .send({ username: 'UnprotectedUser' })
+      .expect(404);
   });
 
   it('returns clear errors for malformed and unknown user ids', async () => {
@@ -101,7 +106,7 @@ describe('Users API (e2e)', () => {
     await request(app.getHttpServer())
       .get('/api/users')
       .expect(200)
-      .expect([createdUser]);
+      .expect([createdUser, legacyUser]);
   });
 
   afterAll(async () => {

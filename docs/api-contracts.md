@@ -2,7 +2,8 @@
 
 ## Status
 
-The Phase 3 database-aware health endpoint is implemented and tested.
+The health, read-only user, and Phase 8 authentication endpoints are
+implemented and tested.
 
 Only document endpoints after they exist and have been tested.
 
@@ -52,36 +53,17 @@ available at `GET /api`, not `GET /`.
 
 ## User endpoints
 
-Authentication: not required in Phase 4.
-
-### Create user
-
-`POST /api/users`
-
-Request body: one `username` field. The backend trims the value and requires
-3-30 letters, numbers, dots, underscores, or hyphens. Unknown fields are
-rejected.
-
-Success: `201 Created` with `id`, `username`, `createdAt`, and `updatedAt`.
-
-Errors:
-
-- `400 Bad Request` for missing, invalid, or extra input
-- `409 Conflict` with `Username is already in use` for a case-insensitive
-  duplicate
-
-```powershell
-$body = @{ username = 'Player.One' } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri 'http://localhost:3000/api/users' `
-  -ContentType 'application/json' -Body $body
-```
+Authentication: not required. These routes expose only public account data.
+`POST /api/users` was removed in Phase 8 so account creation cannot bypass
+password hashing.
 
 ### List users
 
 `GET /api/users`
 
 Success: `200 OK` with an array of public user responses ordered by creation
-time and ID. An empty collection returns an empty array.
+time and ID. Public responses contain `id`, `username`, `wins`, `createdAt`,
+and `updatedAt`. An empty collection returns an empty array.
 
 ```powershell
 Invoke-RestMethod -Uri 'http://localhost:3000/api/users'
@@ -99,6 +81,85 @@ Errors:
 - `404 Not Found` with `User not found` when a valid ID has no user
 
 MongoDB `_id`, version fields, and internal documents are never returned.
+
+## Authentication endpoints
+
+### Register
+
+`POST /api/auth/register`
+
+Authentication: not required. Rate limit: 3 requests per minute per client IP.
+
+Request body:
+
+```json
+{
+  "username": "Player.One",
+  "password": "a private password"
+}
+```
+
+The username is trimmed and must match `^[a-zA-Z0-9._-]{3,30}$`. The password
+must be a string containing 10-128 characters and is not trimmed or normalized.
+Unknown fields are rejected.
+
+Success: `201 Created` with the public user response. Registration does not
+return a token.
+
+Errors:
+
+- `400 Bad Request` for invalid or extra input
+- `409 Conflict` with code `USERNAME_UNAVAILABLE` for a normalized duplicate
+- `429 Too Many Requests` after the per-IP limit
+
+### Login
+
+`POST /api/auth/login`
+
+Authentication: not required. Rate limit: 5 requests per minute per client IP.
+
+The request accepts the same `username` and `password` fields. A valid login
+returns `200 OK`:
+
+```json
+{
+  "accessToken": "<JWT access token>",
+  "tokenType": "Bearer",
+  "expiresIn": 1800
+}
+```
+
+An unknown username and incorrect password both return:
+
+```json
+{
+  "statusCode": 401,
+  "code": "INVALID_CREDENTIALS",
+  "message": "Invalid username or password."
+}
+```
+
+The token is an HS256 bearer access token with a 30-minute lifetime.
+
+### Current user
+
+`GET /api/auth/me`
+
+Authentication: required through `Authorization: Bearer <access-token>`.
+The backend uses only the verified JWT `sub` claim for identity.
+
+Success: `200 OK` with the public user response.
+
+Missing, malformed, expired, incorrectly signed, or incorrectly constrained
+tokens return:
+
+```json
+{
+  "statusCode": 401,
+  "code": "UNAUTHORIZED",
+  "message": "Authentication required."
+}
+```
 
 ## Documentation rule
 

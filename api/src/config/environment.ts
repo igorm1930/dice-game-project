@@ -5,6 +5,10 @@ export interface EnvironmentVariables {
   PORT: number;
   FRONTEND_ORIGIN: string;
   MONGODB_URI: string;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: '30m';
+  JWT_ISSUER: 'dice-game-api';
+  JWT_AUDIENCE: 'dice-game-web';
 }
 
 const nodeEnvironments: NodeEnvironment[] = [
@@ -24,6 +28,19 @@ function requiredString(
   }
 
   return value.trim();
+}
+
+function requiredSecret(
+  config: Record<string, unknown>,
+  key: 'JWT_SECRET',
+): string {
+  const value = config[key];
+
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`${key} environment variable is required`);
+  }
+
+  return value;
 }
 
 function validateFrontendOrigin(
@@ -105,6 +122,26 @@ export function validateEnvironment(
     requiredString(config, 'MONGODB_URI'),
     typedNodeEnvironment,
   );
+  const jwtSecret = requiredSecret(config, 'JWT_SECRET');
+
+  if (Buffer.byteLength(jwtSecret, 'utf8') < 32) {
+    throw new Error('JWT_SECRET must contain at least 32 bytes');
+  }
+
+  const jwtExpiresIn = requiredString(config, 'JWT_EXPIRES_IN');
+  if (jwtExpiresIn !== '30m') {
+    throw new Error('JWT_EXPIRES_IN must be 30m');
+  }
+
+  const jwtIssuer = requiredString(config, 'JWT_ISSUER');
+  if (jwtIssuer !== 'dice-game-api') {
+    throw new Error('JWT_ISSUER must be dice-game-api');
+  }
+
+  const jwtAudience = requiredString(config, 'JWT_AUDIENCE');
+  if (jwtAudience !== 'dice-game-web') {
+    throw new Error('JWT_AUDIENCE must be dice-game-web');
+  }
 
   return {
     ...config,
@@ -112,5 +149,9 @@ export function validateEnvironment(
     PORT: port,
     FRONTEND_ORIGIN: frontendOrigin,
     MONGODB_URI: mongodbUri,
+    JWT_SECRET: jwtSecret,
+    JWT_EXPIRES_IN: jwtExpiresIn,
+    JWT_ISSUER: jwtIssuer,
+    JWT_AUDIENCE: jwtAudience,
   };
 }

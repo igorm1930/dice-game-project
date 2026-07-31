@@ -2,104 +2,70 @@
 
 ## Phase
 
-Phase 7 - Initial deployment flow
+Phase 8 - Authentication
 
 ## Status
 
-Phase 7 is completed, verified, and merged into `main` through merge commit
-`dd3e1bc`. The production health, CORS, frontend, Atlas persistence, hosted
-CI, and real free-tier cold-start flow all passed.
+Phase 8 backend authentication is implemented, locally verified, and approved
+by the developer on `phase/08-authentication`. It has not been committed,
+pushed, deployed, or merged.
 
-## Goal
+## Implemented scope
 
-Prepare a secure, reproducible Render and MongoDB Atlas deployment for the
-existing health and persistent-user flow, then verify that flow in production
-after separate approval to create external resources.
+- Added Argon2id password hashing with the approved parameters.
+- Added rate-limited registration and login endpoints.
+- Added 30-minute HS256 JWT access tokens and strict claim verification.
+- Added protected current-user lookup derived only from JWT `sub`.
+- Added validated backend-only JWT configuration.
+- Added normalized username persistence and the required unique index.
+- Excluded password hashes from normal queries and explicit responses.
+- Removed unauthenticated `POST /api/users`.
+- Preserved legacy passwordless records as read-only public users.
+- Changed the frontend to a read-only player list until Phase 9.
+- Added unit, MongoDB E2E, configuration, security, and regression coverage.
 
-## Implemented local scope
+## Local verification
 
-- Added a Render Blueprint for one free Node web service and one free static
-  site in Frankfurt.
-- Fixed the planned public service names and URLs so frontend and CORS
-  configuration agree before provisioning.
-- Pinned the Render Node runtime to 22.22.0 and gated automatic deployment on
-  passing GitHub checks.
-- Added API health-check configuration and single-page application rewrites.
-- Added baseline static-site response headers.
-- Marked the MongoDB connection string as a dashboard-supplied secret.
-- Made the NestJS server listen on all container interfaces.
-- Required HTTPS frontend origins and MongoDB SRV connections in production.
-- Required every MongoDB URI to contain an explicit database name.
-- Added focused tests for the new production validation.
-- Documented the planned deployment, least-privilege database access,
-  verification, rollback, free-tier limitations, and security boundaries.
-
-## Local verification record
-
-- Backend production configuration tests passed: 1 suite and 10 tests.
-- Root verification passed.
 - Backend lint passed.
-- Backend unit tests passed: 5 suites and 20 tests.
-- Backend E2E tests passed against MongoDB: 2 suites and 11 tests.
-- Frontend lint and component tests passed: 1 file and 5 tests.
-- Backend and frontend builds passed; Vite 8.1.5 transformed 20 modules.
-- Backend production and frontend dependency audits reported zero
-  vulnerabilities.
-- Docker Compose configuration passed and MongoDB was healthy.
-- Render Blueprint formatting passed.
-- The built frontend contained the planned public API URL and no private
-  backend configuration patterns.
+- Backend unit tests passed: 6 suites and 31 tests.
+- MongoDB E2E tests passed: 3 suites and 30 tests.
+- Frontend lint and component tests passed: 1 file and 4 tests.
+- Backend and frontend builds passed; Vite transformed 20 modules.
+- Root verification passed.
+- Backend production and frontend dependency audits found zero vulnerabilities.
+- The known backend development-tool audit remains at 25 high findings.
+- Gitleaks found no leaks in 25 commits or the Phase 8 diff.
+- Manual registration, login, current-user, identity-spoof resistance, hash-only
+  storage, required indexes, configuration failures, and browser rendering
+  passed.
 
-## Production verification record
+## Security boundary
 
-- Render created the free API and static-site services with the planned names.
-- Atlas created the free `dice-game-production` M0 cluster in Frankfurt.
-- `dice_game_app` has only the custom `readWrite` role for `dice_game` and
-  access to only the production cluster.
-- Atlas has exactly Render's two Frankfurt outbound ranges,
-  `74.220.51.0/24` and `74.220.59.0/24`; both are active.
-- The API build initially failed because production npm settings omitted the
-  Nest CLI. Using `npm ci --include=dev` fixed the API and static builds.
-- The API health endpoint returned HTTP 200 with the expected JSON.
-- The configured frontend origin received CORS permission; an unapproved origin
-  did not.
-- The hosted frontend connected, created demonstration user
-  `phase7-check-20260731-1507`, and retained it after reload.
-- Atlas Data Explorer confirmed that document in `dice_game.users`.
-- Static-site security headers and SPA fallback returned HTTP 200.
-- Provider logs contained no database URI, database username, password, or
-  unhandled/error marker.
-- Full local verification passed: 20 backend unit tests, 11 backend E2E tests,
-  5 frontend tests, lint, and both builds.
-- Gitleaks found no leaks in all 22 commits or the uncommitted diff.
-- Draft pull request #8 passed Verify in 1 minute 10 seconds and Secret scan in
-  6 seconds.
-- After merge, the required `main` Verify job passed in 1 minute 2 seconds and
-  Secret scan passed in 8 seconds.
-- After more than 15 minutes of inactivity, the free API cold-started and
-  returned the expected HTTP 200 health response in 32.4 seconds.
-- The hosted frontend then reconnected and still displayed the persisted
-  demonstration user.
+- `JWT_SECRET` is a backend-only runtime secret containing at least 32 bytes.
+- No production or reusable test secret exists in source.
+- Passwords, password hashes, JWTs, and authorization headers are not logged.
+- CORS remains exact-origin with credentials disabled.
+- Rate limits use per-process memory and Render's forwarded client IP.
+- Authentication does not authorize future game actions.
 
-## Completion
+## Known compatibility state
 
-- Pull request #8 was marked ready and merged into `main` as `dd3e1bc`.
-- Required post-merge `main` checks passed.
-- No Phase 8 work has begun.
+The existing Phase 7 demonstration user has no password hash and cannot log in.
+It remains visible through the public read-only user endpoints, reports zero
+wins, and keeps its case-insensitive username reserved. No production data has
+been migrated or deleted.
 
 ## Out of scope
 
-- Authentication, authorization, passwords, JWTs, and Phase 8 work
-- Game rules, game endpoints, and game UI
-- Paid Render or Atlas resources
-- Preview environments or automatic database provisioning
-- Custom domains
-- Wildcard Atlas network access
-- Production secrets in source, chat, logs, screenshots, or frontend variables
+- Phase 9 Seat A and Seat B frontend sessions
+- Frontend token storage or login forms
+- Refresh tokens, cookies, OAuth, or password recovery
+- Game authorization, rules, endpoints, or persistence
+- Production `JWT_SECRET` entry or Phase 8 deployment verification
+- Commit, push, pull request, merge, or Phase 9 work
 
-## Approval
+## Next action
 
-The developer approved the Phase 7 implementation, external Render and Atlas
-actions, all Phase 7 commits, pull request #8, its merge, and this trivial
-post-merge documentation correction on `main`. Phase 8 and branch deletion are
-not authorized by this status update.
+Wait for explicit commit/push instructions and separate approval for production
+provider changes. Do not deploy, merge, or start Phase 9 without explicit
+approval.

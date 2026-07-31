@@ -5,6 +5,10 @@ const validEnvironment = {
   PORT: '3001',
   FRONTEND_ORIGIN: 'http://localhost:5173',
   MONGODB_URI: 'mongodb://127.0.0.1:27018/dice_game_test',
+  JWT_SECRET: 'x'.repeat(32),
+  JWT_EXPIRES_IN: '30m',
+  JWT_ISSUER: 'dice-game-api',
+  JWT_AUDIENCE: 'dice-game-web',
 };
 
 describe('validateEnvironment', () => {
@@ -14,6 +18,10 @@ describe('validateEnvironment', () => {
       PORT: 3001,
       FRONTEND_ORIGIN: 'http://localhost:5173',
       MONGODB_URI: 'mongodb://127.0.0.1:27018/dice_game_test',
+      JWT_SECRET: 'x'.repeat(32),
+      JWT_EXPIRES_IN: '30m',
+      JWT_ISSUER: 'dice-game-api',
+      JWT_AUDIENCE: 'dice-game-web',
     });
   });
 
@@ -33,6 +41,25 @@ describe('validateEnvironment', () => {
     expect(() =>
       validateEnvironment({ ...validEnvironment, PORT: '70000' }),
     ).toThrow('PORT must be an integer between 1 and 65535');
+  });
+
+  it('rejects missing and short JWT secrets', () => {
+    expect(() =>
+      validateEnvironment({ ...validEnvironment, JWT_SECRET: '' }),
+    ).toThrow('JWT_SECRET environment variable is required');
+    expect(() =>
+      validateEnvironment({ ...validEnvironment, JWT_SECRET: 'x'.repeat(31) }),
+    ).toThrow('JWT_SECRET must contain at least 32 bytes');
+  });
+
+  it.each([
+    ['JWT_EXPIRES_IN', '1h', 'JWT_EXPIRES_IN must be 30m'],
+    ['JWT_ISSUER', 'another-api', 'JWT_ISSUER must be dice-game-api'],
+    ['JWT_AUDIENCE', 'another-client', 'JWT_AUDIENCE must be dice-game-web'],
+  ])('rejects invalid %s configuration', (key, value, message) => {
+    expect(() =>
+      validateEnvironment({ ...validEnvironment, [key]: value }),
+    ).toThrow(message);
   });
 
   it('rejects a frontend URL that is not an exact origin', () => {

@@ -200,15 +200,15 @@ Local verification summary:
 
 ## Phase 8 — Authentication
 
-- [ ] Add and validate authentication secrets
-- [ ] Run a security review of authentication and authorization controls
-- [ ] Add password hashing
-- [ ] Add registration
-- [ ] Add login
-- [ ] Add JWT generation and validation
-- [ ] Add protected routes
-- [ ] Add current-user endpoint
-- [ ] Test invalid, missing, and valid credentials
+- [x] Add and validate authentication secrets
+- [x] Run a security review of authentication and authorization controls
+- [x] Add password hashing
+- [x] Add registration
+- [x] Add login
+- [x] Add JWT generation and validation
+- [x] Add protected routes
+- [x] Add current-user endpoint
+- [x] Test invalid, missing, and valid credentials
 
 ## Phase 9 — Two authenticated users on one page
 

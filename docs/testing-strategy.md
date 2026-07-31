@@ -8,6 +8,29 @@ frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
 
+## Phase 8 verification
+
+### Authentication and identity
+
+- Backend unit tests passed: 6 suites and 31 tests.
+- MongoDB E2E tests passed: 3 suites and 30 tests.
+- Coverage includes Argon2id hashing, validation, normalized duplicates,
+  generic login failures, valid login, strict JWT failures, rate limits,
+  response protection, legacy users, and token-derived identity.
+- Missing and short JWT secrets failed startup with clear validation errors.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 31 backend unit tests, 30
+  backend E2E tests, 4 frontend tests, and both builds.
+- Backend production and frontend audits reported zero vulnerabilities.
+- The known 25 high backend development-tool findings remain unchanged.
+- Gitleaks scanned 25 commits and the Phase 8 diff with no findings.
+- Direct MongoDB inspection confirmed Argon2id-only password storage, no
+  plaintext password field, normalized usernames, and both required indexes.
+- Browser verification showed the connected read-only player list and no
+  application warning or error; observed warnings came from an extension.
+
 ## Testing principles
 
 - Test every phase before continuing.
