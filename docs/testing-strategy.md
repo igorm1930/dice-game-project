@@ -2,11 +2,43 @@
 
 ## Status
 
-Phase 1 through Phase 7 checks have been run locally. Phase 6 and Phase 7 have
-also passed GitHub-hosted verification. Phase 7 production health, CORS,
+Phase 1 through Phase 9 checks have been run locally. Phase 6 through Phase 8
+have also passed GitHub-hosted verification. Phase 7 production health, CORS,
 frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
+
+## Phase 9 verification
+
+### Two-seat frontend behavior
+
+- Frontend tests passed: 2 files and 14 tests.
+- API-client coverage verifies request bodies, response validation, safe error
+  mapping, and exact bearer-token selection.
+- Component coverage verifies registration without login, two independent
+  sessions, acting-seat selection, isolated logout, 401 session removal, and
+  no browser-storage writes.
+- Browser verification registered and logged in two isolated temporary users.
+- Protected identity checks returned Seat A and Seat B independently from
+  their selected tokens.
+- Logging out Seat B preserved Seat A; refreshing cleared both sessions.
+- The 390px browser layout had no horizontal overflow, and signed-out seat
+  regions exposed distinct accessible names.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 31 backend unit tests, 30
+  backend E2E tests, 14 frontend tests, and both builds.
+- Vite transformed 22 modules.
+- Backend production and frontend audits reported zero vulnerabilities.
+- The known 25 high backend development-tool findings remain unchanged.
+- Full-history Gitleaks scanned 26 commits, and the uncommitted Phase 9 diff
+  scan found no leaks.
+- Static scanning found no browser-storage, cookie, raw-HTML, or private
+  frontend-configuration usage in production frontend source.
+- Browser logs contained no application errors; warnings came from an
+  unrelated extension.
+- The temporary two-user manual database was deleted after verification.
 
 ## Phase 8 verification
 
