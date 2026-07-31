@@ -2,17 +2,46 @@
 
 ## Status
 
-No application endpoints have been implemented yet.
+The Phase 2 health endpoint is implemented and tested.
 
 Only document endpoints after they exist and have been tested.
 
-## Planned first endpoint
+## Health endpoint
 
-The first planned API endpoint is:
+### Request
 
 `GET /api/health`
 
-This endpoint belongs to Phase 2 and must not be implemented during Phase 1.
+Authentication: not required.
+
+Request body: none.
+
+### Success response
+
+Status: `200 OK`
+
+```json
+{
+  "status": "ok",
+  "service": "dice-game-api"
+}
+```
+
+Both response fields are fixed strings. The endpoint accepts no user input.
+
+### Errors
+
+The endpoint has no application-specific error response. Network, startup, or
+unexpected server failures prevent a successful response.
+
+### Example
+
+```powershell
+Invoke-RestMethod -Uri 'http://localhost:3000/api/health'
+```
+
+The backend uses a global `/api` prefix, so the generated root greeting is
+available at `GET /api`, not `GET /`.
 
 ## Documentation rule
 

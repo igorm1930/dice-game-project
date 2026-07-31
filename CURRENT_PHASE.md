@@ -6,7 +6,7 @@ Phase 2 — API connection
 
 ## Status
 
-In progress
+Approved — awaiting Git completion
 
 ## Goal
 
@@ -100,5 +100,28 @@ Wait for explicit approval.
 
 ## Completion record
 
-Phase 2 is in progress. Completion evidence will be recorded only after the
-implementation has been verified and reviewed.
+Phase 2 implementation and verification were approved by the developer. The
+phase awaits an explicitly authorized commit and push before the repository
+checklist can mark it complete.
+
+Verified implementation:
+
+- `GET /api/health` returns the approved payload.
+- React uses `VITE_API_URL` and renders loading, success, and error states.
+- NestJS uses `FRONTEND_ORIGIN` for exact-origin CORS with credentials disabled.
+- Missing `FRONTEND_ORIGIN` fails backend startup with a clear error.
+- Missing `VITE_API_URL` fails Vite startup and production build with a clear
+  error.
+- Backend unit and end-to-end tests pass.
+- Backend and frontend lint and builds pass.
+- Direct health and CORS checks pass.
+- Dependency audits report zero current vulnerabilities.
+- Environment-file ignore rules and the frontend bundle security scan pass.
+
+Browser behavior was verified during the original Phase 2 checkpoint and is
+recorded in `docs/session-log/002-api-connection.md`. On the fresh-clone
+computer, the frontend development server returned HTTP 200, but the connected
+Codex browser surface was unavailable, so visual browser verification was not
+repeated there.
+
+Phase 3 has not started.

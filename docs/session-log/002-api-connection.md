@@ -1,12 +1,13 @@
-# Session 002 — Phase 2 API connection checkpoint
+# Session 002 — Phase 2 API connection
 
 ## Status
 
-Phase 2 is in progress on `phase/02-api-connection`.
+Phase 2 implementation and verification were approved by the developer on
+`phase/02-api-connection`.
 
-This checkpoint preserves verified implementation work so development can
-continue on another computer. Phase 2 has not been marked complete, and no
-pull request has been created.
+The phase awaits an explicitly authorized commit and push before its checklist
+items can be marked complete. No completion commit, push, or pull request has
+been created.
 
 ## Implemented
 
@@ -15,6 +16,7 @@ pull request has been created.
 - Added explicit CORS approval for the configured frontend origin.
 - Added required backend runtime configuration through `FRONTEND_ORIGIN`.
 - Added public frontend configuration through `VITE_API_URL`.
+- Added Vite startup and build validation for missing `VITE_API_URL`.
 - Added placeholder-only `api/.env.example` and `web/.env.example` files.
 - Added a typed frontend health client with response validation.
 - Replaced the generated React starter screen with loading, success, and error
@@ -40,6 +42,8 @@ npm.cmd run build
 
 cd ../web
 npm.cmd run lint
+Remove-Item Env:VITE_API_URL -ErrorAction SilentlyContinue
+npm.cmd run build # expected to fail clearly
 $env:VITE_API_URL='http://localhost:3000'
 npm.cmd run build
 ```
@@ -52,6 +56,8 @@ Exact automated results:
 - Backend build: passed.
 - Frontend lint: passed.
 - Frontend build: passed.
+- The frontend build without `VITE_API_URL` failed with the required clear
+  configuration error.
 
 Runtime verification completed:
 
@@ -70,6 +76,29 @@ Runtime verification completed:
 - Missing `VITE_API_URL` produced the understandable browser runtime error
   `VITE_API_URL environment variable is required`.
 
+Fresh-clone verification also confirmed:
+
+- Node 24.18.1 and npm 11.16.0 satisfy the locked tool requirements.
+- Lockfile installs completed without changing either lockfile.
+- Backend lint, 2 unit suites/tests, 1 end-to-end suite with 2 tests, and the
+  backend build passed.
+- Frontend lint and configured build passed; Vite transformed 19 modules.
+- Missing `VITE_API_URL` now fails the production build before creating a
+  broken bundle.
+- Missing `FRONTEND_ORIGIN` still fails backend startup clearly.
+- Direct health and CORS checks passed on temporary API port 3001 because a
+  pre-existing process owned port 3000.
+- The frontend development server started on strict port 5173 and returned
+  HTTP 200.
+- Backend production, backend full, and frontend audits reported zero current
+  vulnerabilities.
+- Environment ignore checks and private-configuration scans passed.
+
+The connected Codex browser surface was unavailable on the fresh-clone
+computer, so the original checkpoint remains the browser-rendering evidence.
+The React behavior files were unchanged between that browser verification and
+the fresh-clone verification.
+
 ## Important local detail
 
 Port 5173 was already owned by a pre-existing Node process. It was not stopped
@@ -77,16 +106,14 @@ or modified. The verified success flow therefore used a temporary frontend on
 `http://127.0.0.1:5174` and a matching temporary `FRONTEND_ORIGIN`. The
 temporary API and port-5174 frontend processes were stopped after verification.
 
-## Remaining Phase 2 work
+## Review and Git status
 
-- Decide whether missing `VITE_API_URL` must fail the production build itself.
-  The current implementation fails clearly when the application runs, while
-  Vite still completes its build without that variable.
-- Review the implementation and interview explanation.
-- Update the approved Phase 2 documentation and checklist only after review.
-- Run final status and security checks.
-- Mark Phase 2 complete only after approval.
-- Open a pull request only when explicitly requested.
+- Developer review is approved.
+- Checklist boxes remain unchecked until the checklist's review and Git rules
+  are satisfied.
+- No completion commit or push has been made.
+- No pull request has been opened.
+- Phase 3 has not started.
 
 ## Resume commands
 

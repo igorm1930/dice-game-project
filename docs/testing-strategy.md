@@ -2,8 +2,7 @@
 
 ## Status
 
-Phase 1 generated tests, lint checks, builds, and local startup smoke checks
-have been run.
+Phase 1 foundation checks and Phase 2 API-connection checks have been run.
 
 The full testing strategy will grow incrementally.
 
@@ -62,7 +61,49 @@ For:
 - two-user simulation
 - complete game flow
 
-## Current tests
+## Phase 2 verification
+
+### Backend
+
+- `npm.cmd run lint`: passed without changing tracked backend files.
+- `npm.cmd test -- --runInBand`: 2 suites and 2 tests passed.
+- `npm.cmd run test:e2e -- --runInBand`: 1 suite and 2 tests passed.
+- `npm.cmd run build`: passed.
+- Missing `FRONTEND_ORIGIN` caused `npm.cmd run start:prod` to exit with
+  `FRONTEND_ORIGIN environment variable is required`.
+- A direct `GET /api/health` request returned HTTP 200 and the approved JSON.
+- The configured origin received its CORS header; another origin did not.
+
+Port 3000 was already occupied on the fresh-clone computer, so runtime checks
+used temporary API port 3001 without changing the documented default.
+
+### Frontend
+
+- `npm.cmd run lint`: passed.
+- A build without `VITE_API_URL` failed with
+  `VITE_API_URL environment variable is required`.
+- A configured `npm.cmd run build` passed with Vite 8.1.5 and transformed 19
+  modules.
+- The development server started on strict port 5173 and returned HTTP 200.
+- The original Phase 2 checkpoint verified loading, success, unavailable, and
+  recovery behavior in a browser.
+- The connected Codex browser surface was unavailable on the fresh-clone
+  computer, so that visual verification was not repeated there.
+
+### Dependency and security checks
+
+- Backend production audit: 0 vulnerabilities.
+- Backend full audit: 0 vulnerabilities in normal and JSON audit output.
+- Frontend audit: 0 vulnerabilities.
+- Backend `npm ci` initially printed the previously recorded 25-high summary,
+  but all subsequent audit commands reported zero. No automatic audit fix was
+  run.
+- Only placeholder `.env.example` files are tracked.
+- Real `.env` files are ignored and none were found.
+- No private configuration names were found in application source or the
+  built frontend.
+
+## Phase 1 foundation evidence
 
 ### Backend
 

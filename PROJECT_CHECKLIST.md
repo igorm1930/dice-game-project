@@ -60,6 +60,20 @@ Security follow-up: Completed and pushed in commit `7f699a1`.
 
 ## Phase 2 — API connection
 
+Status: Implemented, verified, and approved; awaiting an explicitly authorized
+commit and push. Items remain unchecked until the checklist rule at the top of
+this file is satisfied.
+
+Verification summary:
+
+- Backend lint, unit tests, end-to-end tests, and build passed.
+- Frontend lint and configured build passed.
+- Missing backend and frontend configuration failed clearly.
+- Direct health and exact-origin CORS checks passed.
+- Dependency audits and configuration scans passed.
+- Original checkpoint browser verification covered loading, success, and error
+  states; the fresh-clone browser surface was unavailable for a repeat check.
+
 - [ ] Add `GET /api/health`
 - [ ] Add public frontend API URL configuration with `VITE_API_URL`
 - [ ] Add backend frontend-origin configuration

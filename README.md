@@ -48,50 +48,61 @@ The application is not built in one large AI-generated step.
 
 ## Applications
 
-Phase 1 created two independent applications:
+The repository contains two applications:
 
 - `api/` — NestJS and TypeScript backend
 - `web/` — React, TypeScript, and Vite frontend
 
-They are intentionally not connected yet. The backend currently exposes only
-the generated `GET /` route, and the frontend displays only the generated Vite
-starter page.
+Phase 2 connects React to the backend through `GET /api/health`. The frontend
+shows loading, connected, and unavailable states based on the server response.
+
+Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
 ### Run the backend
 
 ```powershell
 Set-Location api
-npm install
-npm run start:dev
+npm.cmd ci
+$env:FRONTEND_ORIGIN='http://localhost:5173'
+npm.cmd run start:dev
 ```
 
-The generated backend is available at `http://localhost:3000`.
+The backend is available at `http://localhost:3000`. Its health endpoint is
+`http://localhost:3000/api/health`.
 
 ### Run the frontend
 
 ```powershell
 Set-Location web
-npm install
-npm run dev
+npm.cmd ci
+$env:VITE_API_URL='http://localhost:3000'
+npm.cmd run dev -- --host localhost --port 5173 --strictPort
 ```
 
-Vite prints the local development URL when it starts.
+The frontend is available at `http://localhost:5173`.
 
-### Verify Phase 1
+`VITE_API_URL` is public frontend configuration. `FRONTEND_ORIGIN` is backend
+operational configuration used for exact-origin CORS. Neither value is a
+secret. Real `.env` files must not be committed.
+
+### Verify Phase 2
 
 ```powershell
 Set-Location api
-npm run lint
-npm test -- --runInBand
-npm run test:e2e -- --runInBand
-npm run build
+npm.cmd run lint
+npm.cmd test -- --runInBand
+npm.cmd run test:e2e -- --runInBand
+npm.cmd run build
 
 Set-Location ../web
-npm run lint
-npm run build
+$env:VITE_API_URL='http://localhost:3000'
+npm.cmd run lint
+npm.cmd run build
 ```
 
 ## Current status
 
-Phase 1 is complete on the `phase-1-foundation` branch. Phase 2 has not
-started. See `CURRENT_PHASE.md` for the verification record.
+Phase 2 is implemented, verified, and approved on `phase/02-api-connection`.
+Its completion changes have not been committed, pushed, or merged. Phase 3 has
+not started. See `CURRENT_PHASE.md` and
+`docs/session-log/002-api-connection.md` for the evidence and limitations.
