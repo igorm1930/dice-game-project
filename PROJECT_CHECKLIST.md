@@ -214,9 +214,9 @@ Status: Completed and merged to `main` in `ee1bae5`.
 
 ## Phase 9 — Two authenticated users on one page
 
-Status: Implemented, locally verified, and developer-approved on
-`phase/09-two-authenticated-users`. Awaiting explicit commit and push
-instructions.
+Status: Implemented, locally verified, developer-approved, committed, and
+pushed on `phase/09-two-authenticated-users`. Awaiting pull-request review and
+required checks.
 
 - [x] Add Seat A session
 - [x] Add Seat B session

@@ -7,8 +7,8 @@ Phase 9 - Two authenticated users on one page
 ## Status
 
 Phase 9 is implemented, locally verified, and approved by the developer on
-`phase/09-two-authenticated-users`. It has not been committed, pushed,
-deployed, or merged.
+`phase/09-two-authenticated-users`. The implementation commit `7645b7a` and
+approval-record commit `12a7e8a` are pushed. Phase 9 is not deployed or merged.
 
 ## Implemented scope
 
@@ -73,9 +73,9 @@ deployed, or merged.
 - Persistent frontend authentication
 - Backend or database-schema changes
 - Production deployment or provider configuration
-- Commit, push, pull request, or merge
+- Merge
 
 ## Next action
 
-Wait for explicit commit and push instructions. Do not deploy, merge, or begin
-Phase 10 without explicit approval.
+Proceed through Phase 9 pull-request review and required checks. Do not deploy,
+merge, or begin Phase 10 without explicit approval.

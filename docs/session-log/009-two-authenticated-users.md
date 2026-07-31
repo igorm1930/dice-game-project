@@ -74,6 +74,7 @@ API to unused port 3011 and used an explicit IPv4 API URL.
 
 ## Remaining
 
-The developer approved the verified Phase 9 implementation after review.
-Phase 9 has not been committed, pushed, deployed, or merged. Phase 10 has not
-started.
+The developer approved the verified Phase 9 implementation after review. The
+implementation commit `7645b7a` and approval-record commit `12a7e8a` are
+pushed. Pull-request review and required checks remain; Phase 9 is not deployed
+or merged, and Phase 10 has not started.
