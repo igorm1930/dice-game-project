@@ -127,8 +127,8 @@ Verification summary:
 
 ## Phase 5 — Automated testing foundation
 
-Status: Implemented and verified; developer review and Git completion are
-pending. Items remain unchecked under the checklist completion rule.
+Status: Completed, reviewed, committed in `08bca78`, and pushed. Awaiting merge
+to `main`.
 
 Verification summary:
 
@@ -140,11 +140,11 @@ Verification summary:
   unchanged backend development-tool audit finding remains documented.
 - Browser smoke testing passed with isolated data and no application errors.
 
-- [ ] Add backend unit-test structure
-- [ ] Add backend integration-test structure
-- [ ] Add frontend component tests
-- [ ] Use a separate test database
-- [ ] Add root-level test and build commands when appropriate
+- [x] Add backend unit-test structure
+- [x] Add backend integration-test structure
+- [x] Add frontend component tests
+- [x] Use a separate test database
+- [x] Add root-level test and build commands when appropriate
 
 ## Phase 6 — Continuous integration
 

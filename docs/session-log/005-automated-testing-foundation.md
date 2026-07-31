@@ -3,8 +3,10 @@
 ## Status
 
 Phase 5 is implemented and verified on
-`phase/05-automated-testing-foundation`. Developer review, commit, and push are
-pending.
+`phase/05-automated-testing-foundation`. The developer reviewed the completed
+work and approved publication. The implementation is committed as `08bca78`
+and pushed to `origin/phase/05-automated-testing-foundation`; Phase 5 is
+awaiting merge.
 
 ## Implemented scope
 
@@ -56,4 +58,4 @@ healthy for local development.
 ## Out of scope
 
 No CI, coverage thresholds, automated browser E2E framework, authentication,
-game logic, deployment, Phase 6 work, commit, or push was added.
+game logic, deployment, or Phase 6 work was added.

@@ -113,7 +113,8 @@ collection, and rejects database names that do not end in `_test` or `_e2e`.
 
 ## Current status
 
-Phases 1 through 4 are merged into `main`. Phase 5 is implemented and verified
-on `phase/05-automated-testing-foundation`, awaiting developer review. Phase 6
-has not started. See `CURRENT_PHASE.md` and the session logs for verification
+Phases 1 through 4 are merged into `main`. Phase 5 is implemented, verified,
+reviewed, committed, and pushed on
+`phase/05-automated-testing-foundation`. Phase 5 is awaiting merge; Phase 6 has
+not started. See `CURRENT_PHASE.md` and the session logs for verification
 evidence.
