@@ -61,7 +61,8 @@ structure, database safety, frontend component tests, and root verification
 commands. Phase 6 adds read-only, SHA-pinned GitHub Actions verification and
 full-history secret scanning. Phase 7 deploys the basic flow. Phase 8 adds
 Argon2id password hashing, rate-limited registration and login, HS256 bearer
-tokens, and a protected current-user endpoint.
+tokens, and a protected current-user endpoint. Phase 9 adds two independent
+memory-only frontend sessions and an explicit acting-seat selector.
 
 Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
@@ -144,7 +145,7 @@ Atlas must allow only Render's current Frankfurt outbound IP ranges. See
 
 ## Current status
 
-Phases 1 through 7 are merged into `main`. Phase 8 backend authentication is
-implemented, locally verified, and developer-approved on
-`phase/08-authentication`. No Phase 8 provider change, commit, or push has been
-performed.
+Phases 1 through 8 are merged into `main`. Phase 9 is implemented and locally
+verified on `phase/09-two-authenticated-users`; it has not been committed,
+pushed, deployed, reviewed, or merged. The deployed frontend remains on the
+previous phase until a separately approved deployment.

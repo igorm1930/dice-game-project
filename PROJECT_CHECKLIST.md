@@ -200,6 +200,8 @@ Local verification summary:
 
 ## Phase 8 — Authentication
 
+Status: Completed and merged to `main` in `ee1bae5`.
+
 - [x] Add and validate authentication secrets
 - [x] Run a security review of authentication and authorization controls
 - [x] Add password hashing
@@ -212,12 +214,15 @@ Local verification summary:
 
 ## Phase 9 — Two authenticated users on one page
 
-- [ ] Add Seat A session
-- [ ] Add Seat B session
-- [ ] Add active acting-user selector
-- [ ] Select JWT per request
-- [ ] Verify both identities remain independent
-- [ ] Verify backend identity comes from the token
+Status: Implemented and locally verified on
+`phase/09-two-authenticated-users`. Awaiting developer review.
+
+- [x] Add Seat A session
+- [x] Add Seat B session
+- [x] Add active acting-user selector
+- [x] Select JWT per request
+- [x] Verify both identities remain independent
+- [x] Verify backend identity comes from the token
 
 ## Phase 10 — Pure backend game engine
 

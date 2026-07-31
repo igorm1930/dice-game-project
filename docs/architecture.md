@@ -2,22 +2,22 @@
 
 ## Status
 
-Phase 8 backend authentication is implemented and locally verified on its
-phase branch. Phase 7 remains deployed on Render and MongoDB Atlas.
+Phase 8 backend authentication is merged into `main`. Phase 9 two-seat
+frontend authentication is implemented and locally verified on its phase
+branch. The deployed application remains on the previous frontend version.
 
 ## Current implemented architecture
 
 ```text
 dice-game-project/
 |-- api/          NestJS, authentication, validation, Mongoose, health, users
-|-- web/          React health status and read-only public user list
+|-- web/          React two-seat authentication, health, and public user list
 |-- .github/      Read-only CI verification and secret scanning
 |-- render.yaml   Planned Render API and static-site services
 `-- compose.yaml  Local MongoDB development service
 ```
 
-Game authorization and game-domain implementation have not started. The
-two-seat frontend authentication model remains Phase 9.
+Game authorization and game-domain implementation have not started.
 
 ### Backend request path
 
@@ -63,10 +63,16 @@ users because MongoDB owns the data.
 1. The existing health request renders API connection state.
 2. `web/src/api/users.ts` performs the public list call, checks HTTP failures,
    and validates response shapes.
-3. `App` loads stored users on mount and renders loading, error, empty, or list
-   state.
-4. React renders usernames as text, so stored values are escaped.
-5. Phase 9 will add memory-only Seat A and Seat B authentication sessions.
+3. `web/src/api/auth.ts` validates registration, login, token, error, and
+   current-user response shapes.
+4. Seat A and Seat B own separate form and session state.
+5. A login token is stored only after `GET /api/auth/me` returns its
+   backend-derived public user.
+6. The acting-seat selector passes the selected in-memory token to protected
+   requests; it sends no trusted actor identifier.
+7. A 401 removes only the rejected seat, logout removes only its selected
+   session, and page refresh clears both sessions.
+8. React renders usernames as text, so stored values are escaped.
 
 ### Security boundary
 
@@ -74,6 +80,9 @@ Registration accepts an untrusted username and password through validated DTOs.
 Passwords are never trimmed, stored, returned, or logged. Password hashes are
 excluded from normal Mongoose queries. JWT secrets exist only in backend
 runtime configuration, while tokens contain only account identity claims.
+The browser keeps access tokens only in React memory and clears passwords after
+submission. It does not use cookies, browser storage, URLs, or request-body
+identity fields for authentication.
 
 `POST /api/users` is removed so callers cannot create passwordless accounts.
 The public list and ID routes remain read-only. Existing Phase 4-7 records can
@@ -128,5 +137,5 @@ the external resources and production flow are separately verified.
 
 ## Future sections
 
-When implemented, document the two-seat identity model, game engine boundaries,
-repository interfaces, and game error flow.
+When implemented, document the game engine boundaries, repository interfaces,
+and game error flow.

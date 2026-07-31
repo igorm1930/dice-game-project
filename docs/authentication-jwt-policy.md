@@ -3,11 +3,13 @@
 ## Status and implementation phases
 
 This document records approved authentication, JWT, and authorization-boundary
-decisions. The Phase 8 backend portion is implemented and locally verified;
-the Phase 9 frontend session portion remains planned.
+decisions. The Phase 8 backend portion is merged into `main`; the Phase 9
+frontend session portion is implemented and locally verified on its phase
+branch.
 
 - Phase 8 implements backend authentication.
-- Phase 9 implements two independent frontend seat sessions.
+- Phase 9 implements two independent memory-only frontend seat sessions and an
+  explicit acting-seat selector.
 
 ## Authentication model
 
