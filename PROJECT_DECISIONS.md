@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-30 09:39 (Israel time)_
+_Last updated: 2026-07-31 13:35 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -332,6 +332,22 @@ GitHub Actions should:
 - Run frontend lint, tests, and build.
 - Start MongoDB as a service when integration tests require it.
 
+Approved implementation decisions:
+
+- Run CI for pull requests and pushes to `main`.
+- Use Node.js 22 and locked npm installs.
+- Use a digest-pinned MongoDB 7.0.39 service for E2E tests.
+- Keep the workflow token read-only and disable persisted checkout credentials.
+- Pin actions to full commit SHAs.
+- Block on backend production and frontend dependency audit findings at high
+  severity, while retaining the documented backend development-tool findings.
+- Run a separate full-history Gitleaks scan without comments or artifact
+  uploads.
+- Require no custom GitHub secrets for this phase.
+- Ignore only the exact fingerprint of the verified public NestJS starter badge
+  false positive.
+- Keep normal lint read-only and expose auto-fixing only through `lint:fix`.
+
 Suggested commit:
 
 ```text
@@ -604,12 +620,5 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Start with Phase 1 and Phase 2 only:
-
-1. Create the NestJS backend.
-2. Create the React/Vite frontend.
-3. Add `GET /api/health`.
-4. Call it from React.
-5. Test the API directly and through the browser.
-6. Review the code.
-7. Commit only after everything works.
+Review the locally verified Phase 6 changes. Commit and push only after
+developer approval, then confirm both GitHub-hosted CI jobs pass before merge.

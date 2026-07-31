@@ -127,8 +127,7 @@ Verification summary:
 
 ## Phase 5 — Automated testing foundation
 
-Status: Completed, reviewed, committed in `08bca78`, and pushed. Awaiting merge
-to `main`.
+Status: Completed and merged to `main` in `4729338`.
 
 Verification summary:
 
@@ -147,6 +146,18 @@ Verification summary:
 - [x] Add root-level test and build commands when appropriate
 
 ## Phase 6 — Continuous integration
+
+Status: Implemented and locally verified. Awaiting developer review, commit,
+push, and the first GitHub-hosted CI run, so completion boxes remain unchecked.
+
+Verification summary:
+
+- Clean installs, backend production audit, frontend audit, lint, 16 backend
+  unit tests, 11 backend E2E tests, 5 frontend tests, and both builds passed.
+- MongoDB was healthy and Compose configuration passed.
+- Gitleaks scanned all 19 commits with no remaining findings.
+- Workflow permissions and credential-handling scans passed.
+- Actual GitHub-hosted job execution remains pending.
 
 - [ ] Add GitHub Actions
 - [ ] Configure CI secrets and least-privilege workflow permissions

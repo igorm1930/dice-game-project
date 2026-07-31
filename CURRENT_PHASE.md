@@ -2,65 +2,67 @@
 
 ## Phase
 
-Phase 5 - Automated testing foundation
+Phase 6 - Continuous integration
 
 ## Status
 
-Completed, reviewed, committed, and pushed - awaiting merge
+Implemented and locally verified - awaiting developer review, commit, push,
+and the first GitHub-hosted CI run
 
 ## Goal
 
-Establish reliable backend unit and integration structure, isolated database
-protection, frontend component tests, and root-level verification commands
-before authentication and game rules are added.
+Validate every pull request and main-branch push with locked dependency
+installation, dependency audits, lint, automated tests, builds, MongoDB-backed
+E2E coverage, and a full-history secret scan.
 
 ## Implemented scope
 
-- Added `UsersService` unit coverage for create, duplicate, ordered list,
-  lookup, and not-found behavior
-- Centralized production and E2E Nest application setup
-- Added a dedicated E2E environment and unsafe database-name guard
-- Reused one serial, real-MongoDB E2E test structure
-- Added Vitest, jsdom, and React Testing Library
-- Added React component coverage for loading, success, list, form, progress,
-  and error behavior
-- Added root lint, unit, E2E, build, and complete verification commands
+- Added a pull-request and `main` push GitHub Actions workflow
+- Added a Node.js 22 verification job with locked backend/frontend installs
+- Added a digest-pinned MongoDB service for isolated E2E tests
+- Added blocking backend-production and frontend dependency audits
+- Added lint, unit, E2E, and backend/frontend build execution through the root
+  verification command
+- Added a separate full-history Gitleaks job
+- Pinned every action to a full commit SHA and disabled checkout credential
+  persistence
+- Restricted workflow permissions to read-only repository and pull-request
+  access
+- Changed backend lint to check-only and added an explicit `lint:fix` command
+- Added one fingerprint-scoped Gitleaks ignore for a verified public NestJS
+  starter badge false positive
 
 ## Verification record
 
-- Root `npm.cmd run verify` passed.
-- Backend lint passed.
-- Backend unit tests passed: 5 suites and 16 tests.
-- Backend end-to-end tests passed: 2 suites and 11 tests.
-- Backend build passed.
-- Frontend lint passed.
-- Frontend component tests passed: 1 file and 5 tests.
-- Frontend build passed with Vite 8.1.5 and 20 transformed modules.
-- The unsafe development database URI failed before application startup with
-  the intended dedicated-database error.
-- Development database user count remained unchanged; the E2E database was
-  empty after cleanup.
+- Clean backend and frontend `npm ci` installs passed.
 - Backend production and frontend audits reported zero vulnerabilities.
-- The backend full audit reported the previously documented 25 high-severity
-  development-tool findings; no forced or breaking audit fix was run.
-- Environment, credential, frontend-private-config, and diff checks passed.
-- Browser verification confirmed API connection, empty state, user creation,
-  saved-user rendering, and reload persistence with no application errors.
-- The isolated manual database was cleaned and temporary servers were stopped.
+- Backend install retained the documented 25 high-severity development-tool
+  findings; no forced or breaking fix was run.
+- Root `npm.cmd run verify` passed.
+- Backend lint passed without modifying files.
+- Backend unit tests passed: 5 suites and 16 tests.
+- Backend E2E tests passed against MongoDB: 2 suites and 11 tests.
+- Frontend lint and component tests passed: 1 file and 5 tests.
+- Backend and frontend builds passed; Vite 8.1.5 transformed 20 modules.
+- Docker Compose configuration passed and MongoDB was healthy on
+  `127.0.0.1:27018`.
+- Gitleaks scanned all 19 commits and approximately 685.95 KB with no leaks
+  after applying the one approved fingerprint ignore.
+- The workflow scan found no write permissions, persisted checkout
+  credentials, `pull_request_target`, or repository-secret references.
+- GitHub-hosted execution remains unverified until the branch is pushed.
 
 ## Out of scope
 
-- CI or GitHub Actions
-- Coverage thresholds
-- Automated browser E2E tooling
-- Authentication, authorization, passwords, or JWT
-- Game logic or game tests
-- API, schema, or UI feature changes
-- Deployment or Phase 6 work
+- GitHub repository settings or branch protection
+- GitHub-hosted verification before an approved push
+- Deployment or Phase 7 work
+- Dependabot, CodeQL, SBOM, coverage thresholds, and artifact uploads
+- Automated browser E2E tooling or test matrices
+- Authentication, game logic, API, schema, or UI changes
 
 ## Approval
 
-The developer approved the exact Phase 5 execution proposal before
-implementation, reviewed the completed work, and approved commit and push. The
-implementation is committed as `08bca78` and pushed to
-`origin/phase/05-automated-testing-foundation`.
+The developer approved the exact Phase 6 execution proposal before
+implementation and separately approved the single fingerprint-scoped
+`.gitleaksignore` entry. No Phase 6 commit or push has been performed.
