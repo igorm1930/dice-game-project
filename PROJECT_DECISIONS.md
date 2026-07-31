@@ -639,7 +639,6 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Review the verified Phase 7 production deployment and uncommitted
-build-command/documentation correction. After explicit approval, commit and
-push the correction, open a pull request to trigger hosted CI, verify the real
-idle cold start, and merge only after successful checks. Do not begin Phase 8.
+Review the final Phase 7 verified-reality documentation. After explicit
+approval, commit and push it, confirm draft pull request #8 remains green, and
+merge only after separate explicit approval. Do not begin Phase 8.

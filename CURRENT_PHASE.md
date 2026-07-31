@@ -7,9 +7,9 @@ Phase 7 - Initial deployment flow
 ## Status
 
 The Phase 7 application is deployed and its production health, CORS, frontend,
-and Atlas persistence flow are verified. The initial deployment commit
-`532558b` is pushed. A two-line Render build-command correction and this
-verified-reality documentation remain uncommitted and unpushed.
+Atlas persistence, hosted CI, and real free-tier cold-start flow are verified.
+The deployment and build-command correction are pushed through `f101824`.
+Draft pull request #8 is open into `main` with both required checks passing.
 
 ## Goal
 
@@ -73,15 +73,18 @@ after separate approval to create external resources.
 - Full local verification passed: 20 backend unit tests, 11 backend E2E tests,
   5 frontend tests, lint, and both builds.
 - Gitleaks found no leaks in all 22 commits or the uncommitted diff.
+- Draft pull request #8 passed Verify in 1 minute 10 seconds and Secret scan in
+  6 seconds.
+- After more than 15 minutes of inactivity, the free API cold-started and
+  returned the expected HTTP 200 health response in 32.4 seconds.
+- The hosted frontend then reconnected and still displayed the persisted
+  demonstration user.
 
 ## Remaining before Phase 7 completion
 
-- Review and explicitly approve committing and pushing the build-command and
-  verified-reality documentation changes.
-- Open a pull request or push to `main` so the CI workflow is triggered, then
-  confirm both required jobs pass.
-- Verify the real Render free-tier cold-start delay after the API has idled.
-- Merge only after explicit approval and successful required checks.
+- Review this final verified-reality documentation update.
+- Commit and push it only after explicit approval, then confirm rerun checks.
+- Mark draft pull request #8 ready and merge only after explicit approval.
 
 ## Out of scope
 
@@ -95,6 +98,7 @@ after separate approval to create external resources.
 
 ## Approval
 
-The developer approved the Phase 7 implementation and external Render, Atlas,
-GitHub App, secret-entry, and deployment actions. No new commit, push, pull
-request, or merge is authorized by this status update.
+The developer approved the Phase 7 implementation, external Render and Atlas
+actions, commits through `f101824`, the branch push, and draft pull request #8.
+No additional commit, push, ready-for-review transition, or merge is authorized
+by this status update.

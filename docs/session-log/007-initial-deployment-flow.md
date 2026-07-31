@@ -2,9 +2,10 @@
 
 ## Status
 
-Phase 7 is deployed and its core production flow is verified. A two-line Render
-build-command correction and verified-reality documentation remain uncommitted
-and unpushed. Hosted CI and real idle cold-start verification remain pending.
+Phase 7 is deployed and its production flow, hosted CI, and real idle cold
+start are verified. Draft pull request #8 is open with both required checks
+passing. Only the final verified-reality documentation update, review, and
+merge remain pending.
 
 ## Changes
 
@@ -43,6 +44,12 @@ and unpushed. Hosted CI and real idle cold-start verification remain pending.
 - Static security headers and SPA fallback passed.
 - Full-history Gitleaks scanned 22 commits with no findings; the uncommitted
   diff scan also found no findings.
+- Draft pull request #8 passed Verify in 1 minute 10 seconds and Secret scan in
+  6 seconds.
+- A real free-tier cold start returned HTTP 200 in 32.4 seconds after more than
+  15 idle minutes.
+- The hosted frontend reconnected afterward and retained the demonstration
+  user.
 
 The first root verification stopped at formatting because the edited
 TypeScript files had LF line endings and one expression needed Prettier
@@ -67,8 +74,6 @@ complete root verification then passed.
 
 ## Remaining
 
-- Review the complete uncommitted diff and Git status.
-- Commit and push only after explicit approval.
-- Open a pull request or push to `main` to trigger hosted CI, then confirm it.
-- Verify recovery after the free API service has actually idled.
-- Merge only after explicit approval and successful required checks.
+- Review the final verified-reality documentation diff and Git status.
+- Commit and push only after explicit approval, then confirm rerun checks.
+- Mark draft pull request #8 ready and merge only after explicit approval.

@@ -2,10 +2,9 @@
 
 ## Status
 
-Phase 1 through Phase 7 checks have been run locally. Phase 6 has also passed
-GitHub-hosted verification. Phase 7 production health, CORS, frontend, Atlas,
-and persistence checks passed; hosted CI and a real idle cold-start check remain
-pending.
+Phase 1 through Phase 7 checks have been run locally. Phase 6 and Phase 7 have
+also passed GitHub-hosted verification. Phase 7 production health, CORS,
+frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
 
@@ -100,9 +99,12 @@ For:
   unhandled exception, or error marker.
 - Full-history Gitleaks scanned 22 commits with no findings; the uncommitted
   diff scan also found no findings.
-- GitHub Actions did not run for the phase branch because the workflow triggers
-  only for pull requests and pushes to `main`.
-- Real idle cold-start recovery remains unverified.
+- Draft pull request #8 triggered GitHub Actions: Secret scan passed in 6
+  seconds and Verify passed in 1 minute 10 seconds.
+- After more than 15 idle minutes, the first API health request returned HTTP
+  200 in 32.4 seconds, confirming a real free-tier cold start.
+- Reloading the hosted frontend after recovery showed the connected state and
+  the persisted demonstration user.
 
 ## Phase 6 verification
 

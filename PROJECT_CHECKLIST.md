@@ -172,9 +172,9 @@ Verification summary:
 
 ## Phase 7 — Initial deployment flow
 
-Status: Deployed and production flow verified. The build-command correction,
-verified-reality documentation, hosted CI, cold-start check, review, and merge
-remain pending.
+Status: Deployed and production flow verified. Draft pull request #8 is open
+and both required checks pass. Final documentation review, commit, push, and
+merge remain pending.
 
 Local verification summary:
 
@@ -187,6 +187,9 @@ Local verification summary:
 - Production health, exact-origin CORS, browser user creation, Atlas document
   storage, and reload persistence passed.
 - Full-history and uncommitted-diff Gitleaks scans found no leaks.
+- Draft pull request #8 passed Verify and Secret scan.
+- The real free-tier API cold start returned HTTP 200 in 32.4 seconds, and the
+  hosted frontend reconnected with the persisted user still visible.
 
 - [x] Deploy frontend
 - [x] Deploy backend
@@ -194,7 +197,7 @@ Local verification summary:
 - [x] Configure environment variables
 - [x] Verify health endpoint
 - [x] Verify persistent user flow in production
-- [ ] Confirm CI still passes
+- [x] Confirm CI still passes
 
 ## Phase 8 — Authentication
 

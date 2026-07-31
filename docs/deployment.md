@@ -3,9 +3,9 @@
 ## Current state
 
 Phase 7 is deployed on the approved free Render and MongoDB Atlas resources.
-The hosted health, exact-origin CORS, frontend, Atlas storage, and reload
-persistence checks passed on 2026-07-31. Hosted CI and a real idle cold-start
-check remain pending.
+The hosted health, exact-origin CORS, frontend, Atlas storage, reload
+persistence, hosted CI, and real idle cold-start checks passed on 2026-07-31.
+Draft pull request #8 remains pending review and merge.
 
 ## Planned topology
 
@@ -107,6 +107,10 @@ Run only with non-sensitive demonstration data:
    cold-start delay and recovers.
 9. Review browser console and provider logs for errors and sensitive values.
 10. Delete the demonstration user if cleanup is approved.
+
+The measured cold start returned HTTP 200 with the expected health response in
+32.4 seconds after more than 15 minutes of API inactivity. The hosted frontend
+reconnected afterward and still displayed the persisted demonstration user.
 
 ## Security and operational limits
 
