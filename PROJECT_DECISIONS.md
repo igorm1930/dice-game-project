@@ -620,5 +620,5 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Review the locally verified Phase 6 changes. Commit and push only after
-developer approval, then confirm both GitHub-hosted CI jobs pass before merge.
+Review and merge the green Phase 6 pull request #7. Do not begin Phase 7 until
+the Phase 6 merge is confirmed.

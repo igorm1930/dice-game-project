@@ -147,8 +147,8 @@ Verification summary:
 
 ## Phase 6 — Continuous integration
 
-Status: Implemented and locally verified. Awaiting developer review, commit,
-push, and the first GitHub-hosted CI run, so completion boxes remain unchecked.
+Status: Completed, reviewed, committed as `cac5e7f`, pushed, and verified in
+GitHub Actions. Draft pull request #7 is awaiting merge.
 
 Verification summary:
 
@@ -157,17 +157,18 @@ Verification summary:
 - MongoDB was healthy and Compose configuration passed.
 - Gitleaks scanned all 19 commits with no remaining findings.
 - Workflow permissions and credential-handling scans passed.
-- Actual GitHub-hosted job execution remains pending.
+- GitHub Actions run `30624910984` passed: `Secret scan` in 9 seconds and
+  `Verify` in 56 seconds.
 
-- [ ] Add GitHub Actions
-- [ ] Configure CI secrets and least-privilege workflow permissions
-- [ ] Add dependency and secret scans
-- [ ] Install dependencies
-- [ ] Run lint
-- [ ] Run tests
-- [ ] Build backend
-- [ ] Build frontend
-- [ ] Add MongoDB service when integration tests require it
+- [x] Add GitHub Actions
+- [x] Configure CI secrets and least-privilege workflow permissions
+- [x] Add dependency and secret scans
+- [x] Install dependencies
+- [x] Run lint
+- [x] Run tests
+- [x] Build backend
+- [x] Build frontend
+- [x] Add MongoDB service when integration tests require it
 
 ## Phase 7 — Initial deployment flow
 

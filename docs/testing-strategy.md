@@ -2,8 +2,8 @@
 
 ## Status
 
-Phase 1 through Phase 6 local checks have been run. The first GitHub-hosted
-Phase 6 execution is pending.
+Phase 1 through Phase 6 checks have been run locally. Phase 6 has also passed
+GitHub-hosted verification.
 
 The full testing strategy will grow incrementally.
 
@@ -86,8 +86,10 @@ For:
 - Gitleaks 8.30.1 scanned 19 commits and approximately 685.95 KB.
 - The initial finding was the official public NestJS starter badge placeholder.
   Its exact fingerprint is ignored; the repeated scan reported no leaks.
-- GitHub-hosted workflow syntax, service startup, and job completion remain
-  unverified until the branch is pushed.
+- Pull-request workflow run `30624910984` completed successfully.
+- Hosted `Secret scan` passed in 9 seconds.
+- Hosted `Verify` passed in 56 seconds, including MongoDB service startup,
+  locked installs, audits, lint, all tests, and both builds.
 
 ## Phase 5 verification
 

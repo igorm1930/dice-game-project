@@ -2,8 +2,8 @@
 
 ## Status
 
-Phase 6 continuous-integration architecture is implemented and locally
-verified. GitHub-hosted execution remains pending until an approved push.
+Phase 6 continuous-integration architecture is implemented and verified
+locally and in GitHub Actions.
 
 ## Current implemented architecture
 

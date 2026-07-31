@@ -119,7 +119,7 @@ require custom repository secrets.
 
 ## Current status
 
-Phases 1 through 5 are merged into `main`. Phase 6 is implemented and locally
-verified on `phase/06-continuous-integration`; developer review, commit, push,
-and the first GitHub-hosted run remain pending. See `CURRENT_PHASE.md` and the
-session logs for verification evidence.
+Phases 1 through 5 are merged into `main`. Phase 6 is completed, reviewed,
+committed, pushed, and verified in GitHub Actions on
+`phase/06-continuous-integration`. Draft pull request #7 is awaiting merge.
+See `CURRENT_PHASE.md` and the session logs for verification evidence.

@@ -6,8 +6,8 @@ Phase 6 - Continuous integration
 
 ## Status
 
-Implemented and locally verified - awaiting developer review, commit, push,
-and the first GitHub-hosted CI run
+Completed, reviewed, committed, pushed, and verified in GitHub Actions -
+awaiting pull-request merge
 
 ## Goal
 
@@ -50,12 +50,15 @@ E2E coverage, and a full-history secret scan.
   after applying the one approved fingerprint ignore.
 - The workflow scan found no write permissions, persisted checkout
   credentials, `pull_request_target`, or repository-secret references.
-- GitHub-hosted execution remains unverified until the branch is pushed.
+- GitHub Actions run `30624910984` passed for pull request #7.
+- Hosted `Secret scan` passed in 9 seconds.
+- Hosted `Verify` passed in 56 seconds, including MongoDB startup, locked
+  installs, audits, lint, all tests, and both builds.
 
 ## Out of scope
 
 - GitHub repository settings or branch protection
-- GitHub-hosted verification before an approved push
+- Pull-request merge and Phase 7 work
 - Deployment or Phase 7 work
 - Dependabot, CodeQL, SBOM, coverage thresholds, and artifact uploads
 - Automated browser E2E tooling or test matrices
@@ -65,4 +68,6 @@ E2E coverage, and a full-history secret scan.
 
 The developer approved the exact Phase 6 execution proposal before
 implementation and separately approved the single fingerprint-scoped
-`.gitleaksignore` entry. No Phase 6 commit or push has been performed.
+`.gitleaksignore` entry. The implementation is committed as `cac5e7f`,
+pushed to `origin/phase/06-continuous-integration`, and available in draft
+pull request #7.
