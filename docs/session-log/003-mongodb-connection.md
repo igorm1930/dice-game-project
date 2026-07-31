@@ -2,8 +2,9 @@
 
 ## Status
 
-Phase 3 is implemented and verified on `phase/03-mongodb-connection`. It is
-awaiting developer review. No Phase 3 commit or push has been made.
+Phase 3 is implemented, verified, reviewed, committed, and pushed on
+`phase/03-mongodb-connection`. Commit `285864f` contains the implementation;
+the branch is awaiting merge to `main`.
 
 ## Implemented scope
 

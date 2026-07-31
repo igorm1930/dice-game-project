@@ -116,6 +116,7 @@ npm.cmd run build
 
 ## Current status
 
-Phase 2 is merged into `main`. Phase 3 is implemented and verified on
-`phase/03-mongodb-connection` and is awaiting developer review. Phase 4 has not
-started. See `CURRENT_PHASE.md` and the session logs for verification evidence.
+Phase 2 is merged into `main`. Phase 3 is implemented, verified, reviewed,
+committed, and pushed on `phase/03-mongodb-connection`; it is awaiting merge.
+Phase 4 has not started. See `CURRENT_PHASE.md` and the session logs for
+verification evidence.

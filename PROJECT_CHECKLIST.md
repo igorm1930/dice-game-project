@@ -84,9 +84,7 @@ Verification summary:
 
 ## Phase 3 — MongoDB connection
 
-Status: Implemented and verified; awaiting developer review and the approved
-Git completion workflow. Items remain unchecked until the checklist rule at
-the top of this file is satisfied.
+Status: Completed, reviewed, committed, and pushed. Awaiting merge to `main`.
 
 Verification summary:
 
@@ -98,13 +96,13 @@ Verification summary:
 - Dependency audits and configuration/security scans passed.
 - MongoDB is bound only to `127.0.0.1:27018`.
 
-- [ ] Add Mongoose
-- [ ] Add private MongoDB environment configuration
-- [ ] Add typed NestJS configuration validation
-- [ ] Add `.env.example`
-- [ ] Connect NestJS to MongoDB
-- [ ] Verify successful database connection
-- [ ] Verify understandable failure behavior
+- [x] Add Mongoose
+- [x] Add private MongoDB environment configuration
+- [x] Add typed NestJS configuration validation
+- [x] Add `.env.example`
+- [x] Connect NestJS to MongoDB
+- [x] Verify successful database connection
+- [x] Verify understandable failure behavior
 
 ## Phase 4 — Persistent user flow
 
