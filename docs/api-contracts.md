@@ -50,6 +50,56 @@ Invoke-RestMethod -Uri 'http://localhost:3000/api/health'
 The backend uses a global `/api` prefix, so the generated root greeting is
 available at `GET /api`, not `GET /`.
 
+## User endpoints
+
+Authentication: not required in Phase 4.
+
+### Create user
+
+`POST /api/users`
+
+Request body: one `username` field. The backend trims the value and requires
+3-30 letters, numbers, dots, underscores, or hyphens. Unknown fields are
+rejected.
+
+Success: `201 Created` with `id`, `username`, `createdAt`, and `updatedAt`.
+
+Errors:
+
+- `400 Bad Request` for missing, invalid, or extra input
+- `409 Conflict` with `Username is already in use` for a case-insensitive
+  duplicate
+
+```powershell
+$body = @{ username = 'Player.One' } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://localhost:3000/api/users' `
+  -ContentType 'application/json' -Body $body
+```
+
+### List users
+
+`GET /api/users`
+
+Success: `200 OK` with an array of public user responses ordered by creation
+time and ID. An empty collection returns an empty array.
+
+```powershell
+Invoke-RestMethod -Uri 'http://localhost:3000/api/users'
+```
+
+### Get user by ID
+
+`GET /api/users/:id`
+
+Success: `200 OK` with one public user response.
+
+Errors:
+
+- `400 Bad Request` when `id` is not a MongoDB ID
+- `404 Not Found` with `User not found` when a valid ID has no user
+
+MongoDB `_id`, version fields, and internal documents are never returned.
+
 ## Documentation rule
 
 For every implemented endpoint, document:
