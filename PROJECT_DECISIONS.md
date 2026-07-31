@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 15:43 (Israel time)_
+_Last updated: 2026-07-31 20:44 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -120,6 +120,22 @@ These decisions will be implemented when we reach the game-engine phase:
 14. A participant may start a new game at any time.
 15. Starting a new game ends or abandons the previous active game.
 16. Lifetime win totals should survive between games once persistence is implemented.
+
+### Phase 10 game-domain decisions
+
+- The engine is a framework-independent TypeScript class with injected dice.
+- Game state and its nested players are readonly; transitions return new state.
+- Player IDs must be exactly two distinct, non-empty strings.
+- The winning score must be a positive safe integer and defaults to 100.
+- A single six behaves like every other non-double-six roll.
+- Hold with zero round score is allowed and passes the turn.
+- The most recent dice remain visible after Hold.
+- Victory leaves the winning player active and blocks further Roll or Hold.
+- Restart is allowed before or after victory, preserves players and the winning
+  score, resets all scores and dice, and gives Player 1 the first turn.
+- Changing the winning score requires creating a new game.
+- Invalid setup, invalid injected dice, and post-victory actions use explicit
+  domain error codes.
 
 ## 6. Backend authority decisions
 
@@ -649,6 +665,8 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phase 7 is completed, deployed, verified, and merged into `main` as
-`dd3e1bc`. Wait for explicit approval and an exact execution proposal before
-beginning Phase 8.
+Phase 9 is completed and merged into `main` as `8b26fce`. Phase 10 is
+implemented, locally verified, developer-approved, committed as `bd01e44`, and
+pushed on `phase/10-pure-game-engine`. Pull request #11 is ready for review and
+its required checks pass. Wait for explicit approval before merging, and do
+not begin Phase 11 first.

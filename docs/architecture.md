@@ -2,22 +2,22 @@
 
 ## Status
 
-Phase 8 backend authentication is merged into `main`. Phase 9 two-seat
-frontend authentication is implemented and locally verified on its phase
-branch. The deployed application remains on the previous frontend version.
+Phase 9 two-seat frontend authentication is merged into `main`. Phase 10's
+pure game engine is implemented and locally verified on its phase branch. The
+deployed application remains on the previous frontend version.
 
 ## Current implemented architecture
 
 ```text
 dice-game-project/
-|-- api/          NestJS, authentication, validation, Mongoose, health, users
+|-- api/          NestJS API plus framework-independent game domain
 |-- web/          React two-seat authentication, health, and public user list
 |-- .github/      Read-only CI verification and secret scanning
 |-- render.yaml   Planned Render API and static-site services
 `-- compose.yaml  Local MongoDB development service
 ```
 
-Game authorization and game-domain implementation have not started.
+Game API integration and participant authorization have not started.
 
 ### Backend request path
 
@@ -73,6 +73,30 @@ users because MongoDB owns the data.
 7. A 401 removes only the rejected seat, logout removes only its selected
    session, and page refresh clears both sessions.
 8. React renders usernames as text, so stored values are escaped.
+
+### Pure game engine
+
+`api/src/game/domain` contains a framework-independent `GameEngine`. It owns
+the immutable game state and the `createGame`, `roll`, `hold`, and
+`restart` transitions.
+
+```text
+injected DiceRoller
+  -> GameEngine.roll(readonly GameState)
+  -> validated two-die result
+  -> new GameState
+```
+
+The state contains exactly two player IDs and global scores, the active-player
+index, round score, winning score, most recent dice, status, and winner ID.
+Only double six busts. Hold is the only transition that banks points and checks
+for `globalScore >= winningScore`.
+
+The engine throws explicit `GameRuleError` codes for invalid players, invalid
+winning scores, invalid injected dice, and actions after victory. It imports no
+NestJS, HTTP, Mongoose, MongoDB, authentication, or React code. Phase 11 will
+derive the caller from JWT authentication, enforce participation and turn
+authorization, and call this domain layer.
 
 ### Security boundary
 
@@ -137,5 +161,5 @@ the external resources and production flow are separately verified.
 
 ## Future sections
 
-When implemented, document the game engine boundaries, repository interfaces,
-and game error flow.
+When implemented, document game API boundaries, repository interfaces, and the
+HTTP mapping of game-rule errors.

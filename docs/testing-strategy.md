@@ -2,11 +2,37 @@
 
 ## Status
 
-Phase 1 through Phase 9 checks have been run locally. Phase 6 through Phase 8
+Phase 1 through Phase 10 checks have been run locally. Phase 6 through Phase 9
 have also passed GitHub-hosted verification. Phase 7 production health, CORS,
 frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
+
+## Phase 10 verification
+
+### Pure game rules
+
+- Focused game-engine coverage passed: 1 suite and 29 deterministic tests.
+- Coverage verifies initial state, default and custom winning scores, invalid
+  players and targets, repeated rolls, ordinary single sixes, double-six busts,
+  both players' Hold behavior, exact and above-target wins, post-win rejection,
+  invalid dice-provider output, restart, and immutable prior state.
+- Dice values come from an injected sequence; no test depends on randomness.
+- The compiled engine was loaded directly and traced through Roll, Hold,
+  double-six, turn switching, and Restart without NestJS or MongoDB.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 60 backend unit tests, 30
+  backend E2E tests, 14 frontend tests, and both builds.
+- Vite transformed 22 modules.
+- Backend production and frontend audits reported zero vulnerabilities.
+- The known 25 high backend development-tool findings remain unchanged.
+- Full-history Gitleaks scanned 29 commits with no leaks.
+- A local Phase 10 file scan found no credential, private-key, or
+  secret-assignment patterns.
+- No dependency, secret, environment variable, API, database field, or
+  frontend game logic was added.
 
 ## Phase 9 verification
 

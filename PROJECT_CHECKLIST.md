@@ -214,9 +214,8 @@ Status: Completed and merged to `main` in `ee1bae5`.
 
 ## Phase 9 — Two authenticated users on one page
 
-Status: Implemented, locally verified, developer-approved, committed, and
-pushed on `phase/09-two-authenticated-users`. Awaiting pull-request review and
-required checks.
+Status: Completed and merged to `main` through pull request #10 in
+`8b26fce`.
 
 - [x] Add Seat A session
 - [x] Add Seat B session
@@ -227,16 +226,20 @@ required checks.
 
 ## Phase 10 — Pure backend game engine
 
-- [ ] Define game state
-- [ ] Implement game creation
-- [ ] Implement roll
-- [ ] Implement Hold
-- [ ] Implement turn switching
-- [ ] Implement double-six behavior
-- [ ] Implement winner detection
-- [ ] Inject deterministic dice roller
-- [ ] Add complete game-rule unit tests
-- [ ] Keep engine independent of HTTP and MongoDB
+Status: Implemented, locally verified, developer-approved, committed as
+`bd01e44`, and pushed on `phase/10-pure-game-engine`. Pull request #11 is ready
+for review and its required checks pass; it is not merged.
+
+- [x] Define game state
+- [x] Implement game creation
+- [x] Implement roll
+- [x] Implement Hold
+- [x] Implement turn switching
+- [x] Implement double-six behavior
+- [x] Implement winner detection
+- [x] Inject deterministic dice roller
+- [x] Add complete game-rule unit tests
+- [x] Keep engine independent of HTTP and MongoDB
 
 ## Phase 11 — In-memory game API
 
