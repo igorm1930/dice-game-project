@@ -2,64 +2,63 @@
 
 ## Phase
 
-Phase 4 - Persistent user flow
+Phase 5 - Automated testing foundation
 
 ## Status
 
-Completed, reviewed, committed, and pushed - awaiting merge
+Implemented and verified - awaiting developer review
 
 ## Goal
 
-Prove one complete persistent vertical flow from a validated React user form,
-through the NestJS API, into MongoDB, and back to a rendered user list.
+Establish reliable backend unit and integration structure, isolated database
+protection, frontend component tests, and root-level verification commands
+before authentication and game rules are added.
 
 ## Implemented scope
 
-- Added validated user creation and ID parameter DTOs
-- Added a MongoDB user schema with case-insensitive username uniqueness
-- Added `POST /api/users`, `GET /api/users`, and `GET /api/users/:id`
-- Added explicit public user response mapping
-- Added global request validation with whitelist and extra-field rejection
-- Added real-MongoDB end-to-end coverage
-- Added a React username form and persisted user list
-- Added loading, empty, success, duplicate, and API-error UI states
+- Added `UsersService` unit coverage for create, duplicate, ordered list,
+  lookup, and not-found behavior
+- Centralized production and E2E Nest application setup
+- Added a dedicated E2E environment and unsafe database-name guard
+- Reused one serial, real-MongoDB E2E test structure
+- Added Vitest, jsdom, and React Testing Library
+- Added React component coverage for loading, success, list, form, progress,
+  and error behavior
+- Added root lint, unit, E2E, build, and complete verification commands
 
 ## Verification record
 
+- Root `npm.cmd run verify` passed.
 - Backend lint passed.
-- Backend unit tests passed: 4 suites and 11 tests.
+- Backend unit tests passed: 5 suites and 16 tests.
 - Backend end-to-end tests passed: 2 suites and 11 tests.
 - Backend build passed.
 - Frontend lint passed.
-- Frontend configured build passed with 20 transformed modules.
-- Direct runtime requests verified create, list, lookup, validation, duplicate,
-  and extra-field behavior.
-- A real API-process restart preserved the manually created user.
-- The frontend development server returned HTTP 200 with the React entry.
-- Exact configured CORS behavior remained intact.
-- Backend production/full and frontend audits reported zero vulnerabilities.
-- Environment, credential, frontend-private-config, runtime-log, and diff
-  security checks passed.
-- Chrome verified the empty state, form submission, saved-user rendering,
-  case-insensitive duplicate feedback, reload persistence, and native invalid
-  username handling.
-- Desktop and 390px mobile layouts rendered without overflow or clipping.
-- Browser verification found an HTML pattern compatibility issue with an
-  unescaped hyphen. The pattern was corrected, then frontend lint, build, and
-  browser validation passed.
+- Frontend component tests passed: 1 file and 5 tests.
+- Frontend build passed with Vite 8.1.5 and 20 transformed modules.
+- The unsafe development database URI failed before application startup with
+  the intended dedicated-database error.
+- Development database user count remained unchanged; the E2E database was
+  empty after cleanup.
+- Backend production and frontend audits reported zero vulnerabilities.
+- The backend full audit reported the previously documented 25 high-severity
+  development-tool findings; no forced or breaking audit fix was run.
+- Environment, credential, frontend-private-config, and diff checks passed.
+- Browser verification confirmed API connection, empty state, user creation,
+  saved-user rendering, and reload persistence with no application errors.
+- The isolated manual database was cleaned and temporary servers were stopped.
 
 ## Out of scope
 
-- Passwords, authentication, JWT, authorization, or sessions
-- Authentication-only user fields
-- Updating or deleting users
-- Pagination, search, rate limiting, CI, or deployment
-- Game state or game logic
-- Phase 5 or later work
+- CI or GitHub Actions
+- Coverage thresholds
+- Automated browser E2E tooling
+- Authentication, authorization, passwords, or JWT
+- Game logic or game tests
+- API, schema, or UI feature changes
+- Deployment or Phase 6 work
 
 ## Approval
 
-The developer approved the exact Phase 4 execution proposal before
-implementation, reviewed the completed implementation, and approved commit and
-push. The implementation is committed as `b3f1959` and pushed to
-`origin/phase/04-persistent-user-flow`.
+The developer approved the exact Phase 5 execution proposal before
+implementation. No commit or push has been made.

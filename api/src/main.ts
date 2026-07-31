@@ -1,8 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import type { CustomOrigin } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { configureApplication } from './app.setup';
 import type { EnvironmentVariables } from './config/environment';
 
 async function bootstrap() {
@@ -10,22 +9,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService<EnvironmentVariables, true>);
   const frontendOrigin = configService.get('FRONTEND_ORIGIN', { infer: true });
   const port = configService.get('PORT', { infer: true });
-  const corsOrigin: CustomOrigin = (origin, callback) => {
-    callback(null, !origin || origin === frontendOrigin);
-  };
 
-  app.setGlobalPrefix('api');
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-  app.enableCors({
-    origin: corsOrigin,
-    credentials: false,
-  });
+  configureApplication(app, frontendOrigin);
   await app.listen(port);
 }
 

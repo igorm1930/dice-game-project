@@ -106,8 +106,7 @@ Verification summary:
 
 ## Phase 4 — Persistent user flow
 
-Status: Completed, reviewed, committed in `b3f1959`, and pushed. Awaiting merge
-to `main`.
+Status: Completed and merged to `main` in `12196ad`.
 
 Verification summary:
 
@@ -127,6 +126,19 @@ Verification summary:
 - [x] Verify persistence after backend restart
 
 ## Phase 5 — Automated testing foundation
+
+Status: Implemented and verified; developer review and Git completion are
+pending. Items remain unchecked under the checklist completion rule.
+
+Verification summary:
+
+- Root verification, backend/frontend lint, backend/frontend builds, 16 unit
+  tests, 11 E2E tests, and 5 frontend component tests passed.
+- Unsafe database selection failed before startup; the development database
+  remained unchanged and E2E cleanup finished empty.
+- Backend production and frontend audits reported zero vulnerabilities; the
+  unchanged backend development-tool audit finding remains documented.
+- Browser smoke testing passed with isolated data and no application errors.
 
 - [ ] Add backend unit-test structure
 - [ ] Add backend integration-test structure
