@@ -1,18 +1,43 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
+import { AuthApiError, getCurrentUser, login, register } from './api/auth'
 import {
-  AuthApiError,
-  getCurrentUser,
-  login,
-  register,
-} from './api/auth'
+  createGame,
+  GameApiError,
+  getGame,
+  holdGame,
+  restartGame,
+  rollGame,
+  type GameResponse,
+} from './api/games'
 import { getHealth } from './api/health'
 import { listUsers, type UserResponse } from './api/users'
 
 vi.mock('./api/health', () => ({ getHealth: vi.fn() }))
 vi.mock('./api/users', () => ({ listUsers: vi.fn() }))
+vi.mock('./api/games', () => {
+  class MockGameApiError extends Error {
+    readonly status: number
+    readonly code?: string
+
+    constructor(message: string, status: number, code?: string) {
+      super(message)
+      this.status = status
+      this.code = code
+    }
+  }
+
+  return {
+    GameApiError: MockGameApiError,
+    createGame: vi.fn(),
+    getGame: vi.fn(),
+    rollGame: vi.fn(),
+    holdGame: vi.fn(),
+    restartGame: vi.fn(),
+  }
+})
 vi.mock('./api/auth', () => {
   class MockAuthApiError extends Error {
     readonly status: number
@@ -38,6 +63,11 @@ const mockListUsers = vi.mocked(listUsers)
 const mockRegister = vi.mocked(register)
 const mockLogin = vi.mocked(login)
 const mockGetCurrentUser = vi.mocked(getCurrentUser)
+const mockCreateGame = vi.mocked(createGame)
+const mockGetGame = vi.mocked(getGame)
+const mockRollGame = vi.mocked(rollGame)
+const mockHoldGame = vi.mocked(holdGame)
+const mockRestartGame = vi.mocked(restartGame)
 
 const seatAUser: UserResponse = {
   id: '507f1f77bcf86cd799439011',
@@ -53,6 +83,21 @@ const seatBUser: UserResponse = {
   wins: 0,
   createdAt: '2026-01-02T00:00:00.000Z',
   updatedAt: '2026-01-02T00:00:00.000Z',
+}
+
+const game: GameResponse = {
+  id: 'd43acc2f-a715-49a1-bf4f-74b16592e553',
+  players: [
+    { id: seatAUser.id, globalScore: 0 },
+    { id: seatBUser.id, globalScore: 0 },
+  ],
+  activePlayerId: seatAUser.id,
+  roundScore: 0,
+  winningScore: 25,
+  lastRoll: null,
+  status: 'active',
+  winnerId: null,
+  allowedActions: ['roll', 'hold', 'restart'],
 }
 
 function seatRegion(seatName: 'Seat A' | 'Seat B') {
@@ -72,7 +117,32 @@ async function signIn(
   const seat = seatRegion(seatName)
   await actor.type(seat.getByLabelText('Username'), username)
   await actor.type(seat.getByLabelText('Password'), 'private password')
-  await actor.click(seat.getByRole('button', { name: `Sign in to ${seatName}` }))
+  await actor.click(
+    seat.getByRole('button', { name: `Sign in to ${seatName}` }),
+  )
+}
+
+function mockTwoLogins() {
+  mockLogin
+    .mockResolvedValueOnce({
+      accessToken: 'token-a',
+      tokenType: 'Bearer',
+      expiresIn: 1800,
+    })
+    .mockResolvedValueOnce({
+      accessToken: 'token-b',
+      tokenType: 'Bearer',
+      expiresIn: 1800,
+    })
+  mockGetCurrentUser
+    .mockResolvedValueOnce(seatAUser)
+    .mockResolvedValueOnce(seatBUser)
+}
+
+async function signInBoth(actor: ReturnType<typeof userEvent.setup>) {
+  mockTwoLogins()
+  await signIn(actor, 'Seat A', 'SeatAlpha')
+  await signIn(actor, 'Seat B', 'SeatBravo')
 }
 
 describe('App', () => {
@@ -85,6 +155,11 @@ describe('App', () => {
     mockRegister.mockReset()
     mockLogin.mockReset()
     mockGetCurrentUser.mockReset()
+    mockCreateGame.mockReset()
+    mockGetGame.mockReset()
+    mockRollGame.mockReset()
+    mockHoldGame.mockReset()
+    mockRestartGame.mockReset()
   })
 
   it('shows health and player loading states', () => {
@@ -100,7 +175,9 @@ describe('App', () => {
   it('shows connected and empty success states', async () => {
     render(<App />)
 
-    expect(await screen.findByText('dice-game-api connected')).toBeInTheDocument()
+    expect(
+      await screen.findByText('dice-game-api connected'),
+    ).toBeInTheDocument()
     expect(await screen.findByText('No players saved yet.')).toBeInTheDocument()
   })
 
@@ -118,7 +195,9 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByText('API unavailable: Health offline')).toBeInTheDocument()
+    expect(
+      await screen.findByText('API unavailable: Health offline'),
+    ).toBeInTheDocument()
     expect(await screen.findByText('Users offline')).toBeInTheDocument()
   })
 
@@ -131,7 +210,9 @@ describe('App', () => {
     await actor.click(seat.getByRole('button', { name: 'Create account' }))
     await actor.type(seat.getByLabelText('Username'), 'SeatAlpha')
     await actor.type(seat.getByLabelText('Password'), 'private password')
-    await actor.click(seat.getAllByRole('button', { name: 'Create account' }).at(-1)!)
+    await actor.click(
+      seat.getAllByRole('button', { name: 'Create account' }).at(-1)!,
+    )
 
     expect(mockRegister).toHaveBeenCalledWith({
       username: 'SeatAlpha',
@@ -147,17 +228,29 @@ describe('App', () => {
   it('keeps two sessions independent and selects the exact acting-seat token', async () => {
     const actor = userEvent.setup()
     mockLogin
-      .mockResolvedValueOnce({ accessToken: 'token-a', tokenType: 'Bearer', expiresIn: 1800 })
-      .mockResolvedValueOnce({ accessToken: 'token-b', tokenType: 'Bearer', expiresIn: 1800 })
+      .mockResolvedValueOnce({
+        accessToken: 'token-a',
+        tokenType: 'Bearer',
+        expiresIn: 1800,
+      })
+      .mockResolvedValueOnce({
+        accessToken: 'token-b',
+        tokenType: 'Bearer',
+        expiresIn: 1800,
+      })
     mockGetCurrentUser
       .mockResolvedValueOnce(seatAUser)
       .mockResolvedValueOnce(seatBUser)
     render(<App />)
 
     await signIn(actor, 'Seat A', 'SeatAlpha')
-    expect(await seatRegion('Seat A').findByText(/authenticated as/)).toHaveTextContent('SeatAlpha')
+    expect(
+      await seatRegion('Seat A').findByText(/authenticated as/),
+    ).toHaveTextContent('SeatAlpha')
     await signIn(actor, 'Seat B', 'SeatBravo')
-    expect(await seatRegion('Seat B').findByText(/authenticated as/)).toHaveTextContent('SeatBravo')
+    expect(
+      await seatRegion('Seat B').findByText(/authenticated as/),
+    ).toHaveTextContent('SeatBravo')
 
     const seatARadio = screen.getByRole('radio', { name: /Seat A/ })
     const seatBRadio = screen.getByRole('radio', { name: /Seat B/ })
@@ -165,17 +258,29 @@ describe('App', () => {
 
     mockGetCurrentUser.mockResolvedValueOnce(seatBUser)
     await actor.click(seatBRadio)
-    await actor.click(screen.getByRole('button', { name: 'Verify acting identity' }))
+    await actor.click(
+      screen.getByRole('button', { name: 'Verify acting identity' }),
+    )
 
     expect(mockGetCurrentUser).toHaveBeenLastCalledWith('token-b')
-    expect(await screen.findByText(/Backend verified Seat B as/)).toHaveTextContent('SeatBravo')
+    expect(
+      await screen.findByText(/Backend verified Seat B as/),
+    ).toHaveTextContent('SeatBravo')
   })
 
   it('logs out only one seat and keeps the other seat active', async () => {
     const actor = userEvent.setup()
     mockLogin
-      .mockResolvedValueOnce({ accessToken: 'token-a', tokenType: 'Bearer', expiresIn: 1800 })
-      .mockResolvedValueOnce({ accessToken: 'token-b', tokenType: 'Bearer', expiresIn: 1800 })
+      .mockResolvedValueOnce({
+        accessToken: 'token-a',
+        tokenType: 'Bearer',
+        expiresIn: 1800,
+      })
+      .mockResolvedValueOnce({
+        accessToken: 'token-b',
+        tokenType: 'Bearer',
+        expiresIn: 1800,
+      })
     mockGetCurrentUser
       .mockResolvedValueOnce(seatAUser)
       .mockResolvedValueOnce(seatBUser)
@@ -183,10 +288,16 @@ describe('App', () => {
 
     await signIn(actor, 'Seat A', 'SeatAlpha')
     await signIn(actor, 'Seat B', 'SeatBravo')
-    await actor.click(seatRegion('Seat A').getByRole('button', { name: 'Log out Seat A' }))
+    await actor.click(
+      seatRegion('Seat A').getByRole('button', { name: 'Log out Seat A' }),
+    )
 
-    expect(seatRegion('Seat A').getByRole('button', { name: 'Sign in to Seat A' })).toBeInTheDocument()
-    expect(seatRegion('Seat B').getByText(/authenticated as/)).toHaveTextContent('SeatBravo')
+    expect(
+      seatRegion('Seat A').getByRole('button', { name: 'Sign in to Seat A' }),
+    ).toBeInTheDocument()
+    expect(
+      seatRegion('Seat B').getByText(/authenticated as/),
+    ).toHaveTextContent('SeatBravo')
     expect(screen.getByRole('radio', { name: /Seat B/ })).toBeChecked()
   })
 
@@ -218,12 +329,133 @@ describe('App', () => {
     render(<App />)
 
     await signIn(actor, 'Seat A', 'SeatAlpha')
-    mockGetCurrentUser.mockRejectedValueOnce(new AuthApiError('Unauthorized', 401))
-    await actor.click(screen.getByRole('button', { name: 'Verify acting identity' }))
+    mockGetCurrentUser.mockRejectedValueOnce(
+      new AuthApiError('Unauthorized', 401),
+    )
+    await actor.click(
+      screen.getByRole('button', { name: 'Verify acting identity' }),
+    )
 
     expect(
-      await seatRegion('Seat A').findByText('This session expired or is invalid. Sign in again.'),
+      await seatRegion('Seat A').findByText(
+        'This session expired or is invalid. Sign in again.',
+      ),
     ).toBeInTheDocument()
-    expect(seatRegion('Seat A').getByRole('button', { name: 'Sign in to Seat A' })).toBeInTheDocument()
+    expect(
+      seatRegion('Seat A').getByRole('button', { name: 'Sign in to Seat A' }),
+    ).toBeInTheDocument()
+  })
+
+  it('creates a game from the exact active token and other-seat identity', async () => {
+    const actor = userEvent.setup()
+    mockCreateGame.mockResolvedValue(game)
+    render(<App />)
+
+    await signInBoth(actor)
+    const winningScore = screen.getByLabelText('Winning score')
+    await actor.clear(winningScore)
+    await actor.type(winningScore, '25')
+    await actor.click(screen.getByRole('button', { name: 'Start game' }))
+
+    expect(mockCreateGame).toHaveBeenCalledWith('token-a', {
+      opponentId: seatBUser.id,
+      winningScore: 25,
+    })
+    expect(
+      await screen.findByRole('heading', { name: 'Game in progress' }),
+    ).toBeInTheDocument()
+  })
+
+  it('refetches caller-specific permissions when the acting seat changes', async () => {
+    const actor = userEvent.setup()
+    mockCreateGame.mockResolvedValue(game)
+    mockGetGame.mockResolvedValue({
+      ...game,
+      allowedActions: ['restart'],
+    })
+    render(<App />)
+
+    await signInBoth(actor)
+    await actor.click(screen.getByRole('button', { name: 'Start game' }))
+    await actor.click(screen.getByRole('radio', { name: /Seat B/ }))
+
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledWith('token-b', game.id)
+    })
+    expect(screen.getByRole('button', { name: 'Roll dice' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'New game' })).toBeEnabled()
+  })
+
+  it('sends game actions with the active token and renders returned state', async () => {
+    const actor = userEvent.setup()
+    mockCreateGame.mockResolvedValue(game)
+    mockRollGame.mockResolvedValue({
+      ...game,
+      roundScore: 5,
+      lastRoll: [2, 3],
+    })
+    render(<App />)
+
+    await signInBoth(actor)
+    await actor.click(screen.getByRole('button', { name: 'Start game' }))
+    await actor.click(screen.getByRole('button', { name: 'Roll dice' }))
+
+    expect(mockRollGame).toHaveBeenCalledWith('token-a', game.id)
+    expect(
+      await screen.findByText('5', { selector: '.round-score strong' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Die 1: 2')).toBeInTheDocument()
+    expect(screen.getByLabelText('Die 2: 3')).toBeInTheDocument()
+  })
+
+  it('returns to setup when an in-memory game is no longer available', async () => {
+    const actor = userEvent.setup()
+    mockCreateGame.mockResolvedValue(game)
+    mockGetGame.mockRejectedValue(
+      new GameApiError('Game not found.', 404, 'GAME_NOT_FOUND'),
+    )
+    render(<App />)
+
+    await signInBoth(actor)
+    await actor.click(screen.getByRole('button', { name: 'Start game' }))
+    await actor.click(screen.getByRole('radio', { name: /Seat B/ }))
+
+    expect(
+      await screen.findByText(
+        'This in-memory game is no longer available. Start a new game.',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Start a new game' }),
+    ).toBeInTheDocument()
+  })
+
+  it('clears only a seat rejected by a game request', async () => {
+    const actor = userEvent.setup()
+    mockCreateGame.mockResolvedValue(game)
+    mockRollGame.mockRejectedValue(
+      new GameApiError('Authentication required.', 401, 'UNAUTHORIZED'),
+    )
+    mockGetGame.mockResolvedValue({
+      ...game,
+      allowedActions: ['restart'],
+    })
+    render(<App />)
+
+    await signInBoth(actor)
+    await actor.click(screen.getByRole('button', { name: 'Start game' }))
+    await actor.click(screen.getByRole('button', { name: 'Roll dice' }))
+
+    expect(
+      await seatRegion('Seat A').findByRole('button', {
+        name: 'Sign in to Seat A',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      seatRegion('Seat B').getByText(/authenticated as/),
+    ).toHaveTextContent('SeatBravo')
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledWith('token-b', game.id)
+    })
   })
 })

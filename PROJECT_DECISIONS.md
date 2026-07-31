@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 20:44 (Israel time)_
+_Last updated: 2026-07-31 22:30 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -184,6 +184,27 @@ The client must never send trusted values for:
 - Allowed actions
 
 The acting player will eventually be derived from the authentication token.
+
+### Phase 12 frontend game decisions
+
+- Keep the first playable UI on React state plus the existing `fetch` style;
+  do not add TanStack Query or another dependency yet.
+- Keep game state and access tokens in memory only. An API restart or page
+  refresh does not resume a Phase 12 game.
+- The selected authenticated seat's bearer token is the only acting identity
+  sent by the frontend.
+- Game creation uses the selected seat as Player 1, the other signed-in seat as
+  the opponent, and a user-selected winning score.
+- Refetch the game when the selected seat changes so `allowedActions` remain
+  caller-specific.
+- Render server state and `allowedActions` directly. React does not calculate
+  dice, scores, busts, turns, winners, or authoritative permissions.
+- Roll, Hold, and Restart send empty JSON objects through the game API client.
+- Validate all game responses before rendering them.
+- A game-request 401 clears only the rejected seat. A missing in-memory game
+  returns the UI to setup with a safe message.
+- Game persistence, optimistic concurrency, duplicate-action protection,
+  lifetime wins, and UI polish remain deferred.
 
 ### Phase 8 authentication compatibility
 
@@ -687,7 +708,7 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phase 10 is completed and merged into `main` as `0c68d23`. Phase 11 is
-implemented, locally verified, and developer-approved on
-`phase/11-in-memory-game-api`. Commit and push are authorized. After
-publication, wait; do not merge, deploy, or begin Phase 12.
+Phase 11 is completed and merged into `main` as `28db4f1`. Phase 12 is
+implemented, locally verified, and developer-reviewed on
+`phase/12-playable-react-game`; commit and push are authorized. Do not merge,
+deploy, or begin Phase 13 without explicit approval.

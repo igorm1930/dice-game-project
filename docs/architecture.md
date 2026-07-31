@@ -2,23 +2,24 @@
 
 ## Status
 
-Phase 10 is merged into `main`. Phase 11's authenticated in-memory game API is
-implemented and locally verified on its phase branch. The deployed application
-remains on the previous frontend version.
+Phase 11 is merged into `main`. Phase 12's playable React game is implemented
+and locally verified on its phase branch. The deployed application remains on
+the previous frontend version.
 
 ## Current implemented architecture
 
 ```text
 dice-game-project/
 |-- api/          NestJS API plus framework-independent game domain
-|-- web/          React two-seat authentication, health, and public user list
+|-- web/          React two-seat authentication and playable game interface
 |-- .github/      Read-only CI verification and secret scanning
 |-- render.yaml   Planned Render API and static-site services
 `-- compose.yaml  Local MongoDB development service
 ```
 
-Game API integration and participant/turn authorization are implemented in
-the backend. React game integration has not started.
+The backend remains authoritative for game rules and participant/turn
+authorization. React renders validated server state and caller-specific
+permissions.
 
 ### Backend request path
 
@@ -75,6 +76,27 @@ users because MongoDB owns the data.
    session, and page refresh clears both sessions.
 8. React renders usernames as text, so stored values are escaped.
 
+### Frontend game path
+
+```text
+two in-memory authenticated seats
+  -> selected acting-seat token
+  -> web/src/api/games.ts
+  -> authenticated game endpoint
+  -> validated caller-specific game response
+  -> GameBoard server-state rendering
+```
+
+The selected seat creates a game against the other signed-in seat. Changing
+the selected seat refetches the game with that seat's bearer token so the
+backend can return its `allowedActions`. Roll, Hold, and Restart send empty
+action bodies. `GameBoard` displays player scores, round score, dice, turn,
+winner, and action availability without reproducing game rules.
+
+Game state and access tokens remain only in React memory. A game-request 401
+clears only the rejected seat; a missing in-memory game returns the screen to
+game setup.
+
 ### Pure game engine
 
 `api/src/game/domain` contains a framework-independent `GameEngine`. It owns
@@ -118,7 +140,7 @@ restart. `SecureDiceRoller` implements the domain dice interface with Node
 The service hides records from nonparticipants, limits Roll and Hold to the
 active player, permits either participant to Restart, and maps domain state to
 caller-specific allowed actions. User lookup permits only credentialed
-opponents. No Mongoose game schema or frontend game rule exists yet.
+opponents. No Mongoose game schema or frontend game rule exists.
 
 ### Security boundary
 

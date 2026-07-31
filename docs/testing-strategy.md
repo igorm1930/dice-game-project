@@ -2,11 +2,46 @@
 
 ## Status
 
-Phase 1 through Phase 11 checks have been run locally. Phase 6 through Phase 10
+Phase 1 through Phase 12 checks have been run locally. Phase 6 through Phase 10
 have also passed GitHub-hosted verification. Phase 7 production health, CORS,
 frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
+
+## Phase 12 verification
+
+### Playable React game
+
+- Focused game API, GameBoard, and App tests passed: 3 files and 31 tests.
+- Coverage verifies exact bearer tokens and request bodies, strict response
+  validation, setup target submission, server-state rendering,
+  caller-specific actions, seat-change refetching, Roll/Hold/Restart updates,
+  victory, missing games, and selective 401 session removal.
+- Browser verification registered and signed in two isolated users, created a
+  target-20 game, rolled, held, switched the acting seat, restarted from the
+  other participant, and played through a win.
+- Roll and Hold were disabled for the wrong participant and after victory;
+  Restart followed the server-provided permission.
+- The 390px layout had no horizontal overflow.
+- Stopping the temporary API produced a visible `Failed to fetch` alert while
+  preserving the rendered game state.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 70 backend unit tests, 42
+  backend E2E tests, 36 frontend tests, and both builds.
+- Vite transformed 24 modules.
+- Backend production, backend full, and frontend dependency audits reported
+  zero vulnerabilities.
+- Full-history Gitleaks scanned 32 commits with no leaks. The full directory
+  scan found only the verified public NestJS badge URL; a focused frontend scan
+  found no leaks.
+- Static scanning found no production browser-storage, cookie, raw-HTML, or
+  client-side randomness use.
+- Browser logs contained no application warnings or errors before the
+  deliberate API outage; warnings came from an unrelated extension.
+- No dependency, secret, environment variable, backend source, or database
+  schema was added.
 
 ## Phase 11 verification
 
