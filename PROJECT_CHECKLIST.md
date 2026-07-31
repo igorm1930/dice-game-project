@@ -106,8 +106,8 @@ Verification summary:
 
 ## Phase 4 — Persistent user flow
 
-Status: Implemented and verified; developer review and Git completion are
-pending. Items remain unchecked under the checklist completion rule.
+Status: Completed, reviewed, committed in `b3f1959`, and pushed. Awaiting merge
+to `main`.
 
 Verification summary:
 
@@ -119,12 +119,12 @@ Verification summary:
 - Chrome verified creation, duplicate feedback, reload persistence, native
   invalid-input handling, and desktop/mobile rendering.
 
-- [ ] Create the first user schema
-- [ ] Create a user-creation endpoint
-- [ ] Create a simple React user form
-- [ ] Store users in MongoDB
-- [ ] Display created users
-- [ ] Verify persistence after backend restart
+- [x] Create the first user schema
+- [x] Create a user-creation endpoint
+- [x] Create a simple React user form
+- [x] Store users in MongoDB
+- [x] Display created users
+- [x] Verify persistence after backend restart
 
 ## Phase 5 — Automated testing foundation
 

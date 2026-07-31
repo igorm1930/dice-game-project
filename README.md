@@ -119,6 +119,6 @@ npm.cmd run build
 ## Current status
 
 Phases 1 through 3 are merged into `main`. Phase 4 is implemented on
-`phase/04-persistent-user-flow`, verified, and awaiting developer review. Phase
-5 has not started. See `CURRENT_PHASE.md` and the session logs for verification
-evidence.
+`phase/04-persistent-user-flow`, verified, reviewed, committed, and pushed.
+Phase 4 is awaiting merge; Phase 5 has not started. See `CURRENT_PHASE.md` and
+the session logs for verification evidence.

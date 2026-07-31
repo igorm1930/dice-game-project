@@ -3,8 +3,10 @@
 ## Status
 
 Phase 4 is implemented on `phase/04-persistent-user-flow`. Automated, direct
-API, database-restart, build, audit, security, and Chrome checks passed. No
-commit or push has been made.
+API, database-restart, build, audit, security, and Chrome checks passed. The
+developer reviewed the implementation and approved publication. The
+implementation is committed as `b3f1959` and pushed to
+`origin/phase/04-persistent-user-flow`; Phase 4 is awaiting merge.
 
 ## Implemented scope
 

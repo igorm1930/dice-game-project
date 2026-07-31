@@ -6,7 +6,7 @@ Phase 4 - Persistent user flow
 
 ## Status
 
-Implemented and verified - awaiting developer review
+Completed, reviewed, committed, and pushed - awaiting merge
 
 ## Goal
 
@@ -60,4 +60,6 @@ through the NestJS API, into MongoDB, and back to a rendered user list.
 ## Approval
 
 The developer approved the exact Phase 4 execution proposal before
-implementation. No commit or push has been made.
+implementation, reviewed the completed implementation, and approved commit and
+push. The implementation is committed as `b3f1959` and pushed to
+`origin/phase/04-persistent-user-flow`.
