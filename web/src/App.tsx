@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { getHealth, type HealthResponse } from './api/health'
-import { createUser, listUsers, type UserResponse } from './api/users'
+import { listUsers, type UserResponse } from './api/users'
 import './App.css'
 
 type HealthState =
@@ -24,9 +24,6 @@ function errorMessage(error: unknown): string {
 function App() {
   const [health, setHealth] = useState<HealthState>({ status: 'loading' })
   const [users, setUsers] = useState<UsersState>({ status: 'loading' })
-  const [username, setUsername] = useState('')
-  const [isCreating, setIsCreating] = useState(false)
-  const [formError, setFormError] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -60,34 +57,15 @@ function App() {
     return () => controller.abort()
   }, [])
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsCreating(true)
-    setFormError('')
-
-    try {
-      const user = await createUser(username)
-      setUsers((current) => ({
-        status: 'success',
-        data: current.status === 'success' ? [...current.data, user] : [user],
-      }))
-      setUsername('')
-    } catch (error: unknown) {
-      setFormError(errorMessage(error))
-    } finally {
-      setIsCreating(false)
-    }
-  }
-
   return (
     <main className={'user-page'}>
       <header className={'page-header'}>
         <div>
           <p className={'eyebrow'}>Dice game</p>
-          <h1>Persistent players</h1>
+          <h1>Registered players</h1>
           <p className={'intro'}>
-            Create the players who will join a future game. Authentication is
-            intentionally coming later.
+            Authentication is now enforced by the API. Two-player sign-in will
+            be added in the next phase.
           </p>
         </div>
 
@@ -102,47 +80,12 @@ function App() {
       </header>
 
       <div className={'content-grid'}>
-        <section className={'panel'} aria-labelledby={'create-user-heading'}>
-          <p className={'step'}>Step 01</p>
-          <h2 id={'create-user-heading'}>Create a player</h2>
-          <p className={'panel-copy'}>
-            Usernames use 3-30 letters, numbers, dots, underscores, or hyphens.
-          </p>
-
-          <form onSubmit={handleSubmit}>
-            <label htmlFor={'username'}>Username</label>
-            <input
-              id={'username'}
-              name={'username'}
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              minLength={3}
-              maxLength={30}
-              pattern={'[a-zA-Z0-9._\\-]{3,30}'}
-              autoComplete={'off'}
-              required
-              disabled={isCreating}
-            />
-            <button
-              type={'submit'}
-              disabled={isCreating || !username.trim()}
-            >
-              {isCreating ? 'Creating...' : 'Create player'}
-            </button>
-          </form>
-
-          {formError && (
-            <p className={'form-error'} role={'alert'}>
-              {formError}
-            </p>
-          )}
-        </section>
-
         <section className={'panel'} aria-labelledby={'saved-users-heading'}>
-          <p className={'step'}>Step 02</p>
+          <p className={'step'}>Players</p>
           <h2 id={'saved-users-heading'}>Saved players</h2>
           <p className={'panel-copy'}>
-            This list is loaded from MongoDB and survives an API restart.
+            This public list is loaded from MongoDB. Registration and login are
+            handled securely by the backend API.
           </p>
 
           <div className={'users-region'} aria-live={'polite'}>

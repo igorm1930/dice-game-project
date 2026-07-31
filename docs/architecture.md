@@ -2,22 +2,22 @@
 
 ## Status
 
-Phase 7 deployment configuration is implemented and verified locally. The
-Render and MongoDB Atlas resources are not provisioned.
+Phase 8 backend authentication is implemented and locally verified on its
+phase branch. Phase 7 remains deployed on Render and MongoDB Atlas.
 
 ## Current implemented architecture
 
 ```text
 dice-game-project/
-|-- api/          NestJS, validation, Mongoose, health, and users
-|-- web/          React health status, user form, and user list
+|-- api/          NestJS, authentication, validation, Mongoose, health, users
+|-- web/          React health status and read-only public user list
 |-- .github/      Read-only CI verification and secret scanning
 |-- render.yaml   Planned Render API and static-site services
 `-- compose.yaml  Local MongoDB development service
 ```
 
-Authentication, authorization, and game-domain implementation have not
-started.
+Game authorization and game-domain implementation have not started. The
+two-seat frontend authentication model remains Phase 9.
 
 ### Backend request path
 
@@ -25,24 +25,33 @@ started.
 2. `DatabaseModule` connects Mongoose with bounded retries.
 3. A global `ValidationPipe` transforms DTOs, removes no silently accepted
    fields, and rejects non-whitelisted properties.
-4. `UsersController` exposes create, list, and ID lookup routes.
-5. `UsersService` owns persistence, duplicate error mapping, lookup, and
-   explicit response construction.
-6. The user schema stores `username` and Mongoose timestamps. A
-   case-insensitive unique index protects username uniqueness under races.
-7. API responses expose only `id`, `username`, `createdAt`, and `updatedAt`.
+4. `AuthController` exposes rate-limited registration and login plus protected
+   current-user lookup.
+5. `AuthService` hashes passwords with Argon2id and signs HS256 access tokens.
+6. `JwtAuthGuard` verifies signature, algorithm, expiry, issuer, audience,
+   subject, and token use before attaching the derived caller identity.
+7. `UsersService` owns persistence, normalized duplicate mapping, safe lookup,
+   and explicit response construction.
+8. The user schema stores normalized usernames, excluded password hashes, win
+   totals, and timestamps. Unique indexes protect username races.
+9. API responses expose only `id`, `username`, `wins`, `createdAt`, and
+   `updatedAt`.
 
-### User persistence flow
+### Registration and login flow
 
 ```text
-React form
-  -> createUser(username)
-  -> POST /api/users
-  -> CreateUserDto validation and trimming
-  -> UsersService
-  -> MongoDB users collection
-  -> explicit UserResponseDto
-  -> React saved-player list
+POST /api/auth/register
+  -> RegisterDto validation
+  -> Argon2id password hash
+  -> normalized unique user document
+  -> explicit public UserResponseDto
+
+POST /api/auth/login
+  -> generic credential verification
+  -> HS256 access token
+  -> GET /api/auth/me
+  -> verified JWT sub
+  -> explicit public UserResponseDto
 ```
 
 `GET /api/users` reloads the persisted list. `GET /api/users/:id` validates the
@@ -52,23 +61,24 @@ users because MongoDB owns the data.
 ### Frontend path
 
 1. The existing health request renders API connection state.
-2. `web/src/api/users.ts` performs create/list calls, checks HTTP failures, and
-   validates response shapes.
+2. `web/src/api/users.ts` performs the public list call, checks HTTP failures,
+   and validates response shapes.
 3. `App` loads stored users on mount and renders loading, error, empty, or list
    state.
-4. The labeled username form provides native constraints and renders server
-   errors without trusting client validation.
-5. React renders usernames as text, so stored values are escaped.
+4. React renders usernames as text, so stored values are escaped.
+5. Phase 9 will add memory-only Seat A and Seat B authentication sessions.
 
 ### Security boundary
 
-The only new persisted user input is `username`. The backend trims it and
-requires 3-30 characters from letters, numbers, dots, underscores, or hyphens.
-Clients cannot supply IDs or timestamps. No passwords, tokens, authentication,
-or private frontend configuration exist in Phase 4.
+Registration accepts an untrusted username and password through validated DTOs.
+Passwords are never trimmed, stored, returned, or logged. Password hashes are
+excluded from normal Mongoose queries. JWT secrets exist only in backend
+runtime configuration, while tokens contain only account identity claims.
 
-The user endpoints are intentionally unauthenticated until Phase 8 and must not
-be treated as production-ready account endpoints.
+`POST /api/users` is removed so callers cannot create passwordless accounts.
+The public list and ID routes remain read-only. Existing Phase 4-7 records can
+still be listed with a derived zero-win response, but cannot authenticate and
+their case-insensitive usernames remain reserved.
 
 ### Local database
 
@@ -107,7 +117,8 @@ Render static site (Frankfurt)
 
 The Blueprint pins Node.js 22.22.0, waits for passing GitHub checks before
 automatic deployment, uses `/api/health` as the API health check, and keeps
-`MONGODB_URI` out of source. The API listens on all container interfaces but
+`MONGODB_URI` and `JWT_SECRET` out of source. The API listens on all container
+interfaces but
 production CORS accepts only the configured HTTPS frontend origin.
 
 Atlas is planned with a database-scoped application user and only Render's
@@ -117,6 +128,5 @@ the external resources and production flow are separately verified.
 
 ## Future sections
 
-When implemented, document authentication, the two-seat identity model, game
-engine boundaries, repository interfaces, and error flow. Update the deployment
-section with verified provider identifiers only after provisioning.
+When implemented, document the two-seat identity model, game engine boundaries,
+repository interfaces, and game error flow.

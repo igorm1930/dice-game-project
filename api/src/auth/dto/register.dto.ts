@@ -7,7 +7,7 @@ function trimString(value: unknown): unknown {
   return typeof value === 'string' ? value.trim() : value;
 }
 
-export class CreateUserDto {
+export class RegisterDto {
   @Transform((params: TransformFnParams) => trimString(params.value))
   @IsString()
   @Length(3, 30)
@@ -16,4 +16,8 @@ export class CreateUserDto {
       'username may contain only letters, numbers, dots, underscores, and hyphens',
   })
   username!: string;
+
+  @IsString()
+  @Length(10, 128)
+  password!: string;
 }

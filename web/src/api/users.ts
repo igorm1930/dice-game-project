@@ -3,6 +3,7 @@ import { config } from '../config'
 export interface UserResponse {
   id: string
   username: string
+  wins: number
   createdAt: string
   updatedAt: string
 }
@@ -17,6 +18,7 @@ function isUserResponse(value: unknown): value is UserResponse {
   return (
     typeof user.id === 'string' &&
     typeof user.username === 'string' &&
+    typeof user.wins === 'number' &&
     typeof user.createdAt === 'string' &&
     typeof user.updatedAt === 'string'
   )
@@ -57,26 +59,6 @@ export async function listUsers(signal?: AbortSignal): Promise<UserResponse[]> {
 
   if (!Array.isArray(data) || !data.every(isUserResponse)) {
     throw new Error('Users response has an unexpected format')
-  }
-
-  return data
-}
-
-export async function createUser(username: string): Promise<UserResponse> {
-  const response = await fetch(`${config.apiUrl}/api/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username }),
-  })
-
-  if (!response.ok) {
-    throw new Error(await getErrorMessage(response))
-  }
-
-  const data: unknown = await response.json()
-
-  if (!isUserResponse(data)) {
-    throw new Error('User response has an unexpected format')
   }
 
   return data

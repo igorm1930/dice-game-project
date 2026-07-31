@@ -44,11 +44,17 @@ Environment values:
 | API     | `NODE_VERSION`    | Public operational value     | Blueprint                |
 | API     | `FRONTEND_ORIGIN` | Public origin                | Blueprint                |
 | API     | `MONGODB_URI`     | Secret                       | Enter directly in Render |
+| API     | `JWT_SECRET`      | Secret                       | Enter directly in Render |
+| API     | `JWT_EXPIRES_IN`  | Public token lifetime        | Blueprint                |
+| API     | `JWT_ISSUER`      | Public token issuer          | Blueprint                |
+| API     | `JWT_AUDIENCE`    | Public token audience        | Blueprint                |
 | Web     | `NODE_VERSION`    | Public operational value     | Blueprint                |
 | Web     | `VITE_API_URL`    | Public browser configuration | Blueprint                |
 
 `VITE_API_URL` is intentionally public because Vite embeds it in the browser
-bundle. `MONGODB_URI` must never use a `VITE_` prefix or be stored in Git.
+bundle. `MONGODB_URI` and `JWT_SECRET` must never use a `VITE_` prefix or be
+stored in Git. `JWT_SECRET` must contain at least 32 random bytes and must be
+different from development and test secrets.
 
 ## MongoDB Atlas
 
@@ -74,7 +80,8 @@ The application rejects production MongoDB values that are not
 3. Confirm both services use the planned names, Frankfurt region, free plans,
    and checks-passed auto-deploy policy.
 4. Create Atlas resources and network restrictions as described above.
-5. Enter `MONGODB_URI` directly in the API service.
+5. Enter `MONGODB_URI` and a newly generated `JWT_SECRET` directly in the API
+   service without printing either value.
 6. Deploy the API and wait for `GET /api/health` to become healthy.
 7. Deploy the static site.
 8. Confirm the resolved service URLs match the configured origins. If Render
@@ -101,9 +108,9 @@ Run only with non-sensitive demonstration data:
    names that origin.
 3. Confirm an unapproved origin receives no CORS permission.
 4. Open the hosted frontend and confirm connected and empty/list states.
-5. Create a uniquely named demonstration user.
-6. Confirm Atlas contains the user without exposing database credentials.
-7. Refresh the page and confirm the user remains visible.
+5. Register a uniquely named demonstration user through the authentication API.
+6. Confirm Atlas contains only an Argon2id password hash, never plaintext.
+7. Log in, call `GET /api/auth/me`, and confirm the token-derived identity.
 8. Allow the free API service to idle, then confirm the frontend handles the
    cold-start delay and recovers.
 9. Review browser console and provider logs for errors and sensitive values.
@@ -115,8 +122,11 @@ reconnected afterward and still displayed the persisted demonstration user.
 
 ## Security and operational limits
 
-- The user endpoints remain deliberately unauthenticated until Phase 8. Use
-  demonstration data only and do not treat them as production accounts.
+- Authentication requires `JWT_SECRET` to be configured before deploying the
+  Phase 8 code. The public user routes are read-only; account creation is
+  available only through rate-limited registration.
+- Login throttling uses in-memory counters and Render's forwarded client IP.
+  Counters reset on restart and are not shared by multiple service instances.
 - Render free web services can spin down and have cold-start delays.
 - Atlas M0 and Render free tiers have capacity and availability limits.
 - Provider MFA and credentials are entered only by the account owner.

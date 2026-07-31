@@ -1,25 +1,23 @@
-import { act, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { getHealth } from './api/health'
-import { createUser, listUsers, type UserResponse } from './api/users'
+import { listUsers, type UserResponse } from './api/users'
 
 vi.mock('./api/health', () => ({
   getHealth: vi.fn(),
 }))
 
 vi.mock('./api/users', () => ({
-  createUser: vi.fn(),
   listUsers: vi.fn(),
 }))
 
 const mockGetHealth = vi.mocked(getHealth)
-const mockCreateUser = vi.mocked(createUser)
 const mockListUsers = vi.mocked(listUsers)
 const savedUser: UserResponse = {
   id: '507f1f77bcf86cd799439011',
   username: 'SavedPlayer',
+  wins: 0,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
 }
@@ -60,39 +58,9 @@ describe('App', () => {
     expect(await screen.findByText('SavedPlayer')).toBeInTheDocument()
   })
 
-  it('submits the form, shows progress, and appends the created user', async () => {
-    const user = userEvent.setup()
-    let resolveCreate: (value: UserResponse) => void = () => undefined
-    mockCreateUser.mockReturnValue(
-      new Promise((resolve) => {
-        resolveCreate = resolve
-      }),
-    )
-
-    render(<App />)
-    await screen.findByText('No players saved yet.')
-
-    await user.type(screen.getByLabelText('Username'), 'SavedPlayer')
-    await user.click(screen.getByRole('button', { name: 'Create player' }))
-
-    expect(mockCreateUser).toHaveBeenCalledWith('SavedPlayer')
-    expect(
-      screen.getByRole('button', { name: 'Creating...' }),
-    ).toBeDisabled()
-
-    await act(async () => {
-      resolveCreate(savedUser)
-    })
-
-    expect(await screen.findByText('SavedPlayer')).toBeInTheDocument()
-    expect(screen.getByLabelText('Username')).toHaveValue('')
-  })
-
-  it('shows API loading and form errors', async () => {
-    const user = userEvent.setup()
+  it('shows API and player-list errors', async () => {
     mockGetHealth.mockRejectedValue(new Error('Health offline'))
     mockListUsers.mockRejectedValue(new Error('Users offline'))
-    mockCreateUser.mockRejectedValue(new Error('Username is already in use'))
 
     render(<App />)
 
@@ -101,11 +69,5 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(await screen.findByText('Users offline')).toBeInTheDocument()
 
-    await user.type(screen.getByLabelText('Username'), 'SavedPlayer')
-    await user.click(screen.getByRole('button', { name: 'Create player' }))
-
-    expect(
-      await screen.findByText('Username is already in use'),
-    ).toBeInTheDocument()
   })
 })

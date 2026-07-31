@@ -147,6 +147,16 @@ The client must never send trusted values for:
 
 The acting player will eventually be derived from the authentication token.
 
+### Phase 8 authentication compatibility
+
+- New users are created only through `POST /api/auth/register` with a password.
+- The old unauthenticated `POST /api/users` endpoint is removed.
+- Public user list and ID lookup remain read-only for the current demo UI.
+- Existing Phase 4-7 passwordless records are not mutated or deleted. They can
+  be listed, cannot authenticate, and keep their usernames reserved.
+- Phase 8 leaves the frontend list-only; Phase 9 adds the approved independent
+  Seat A and Seat B memory-only sessions.
+
 ## 7. Concrete implementation phases
 
 ### Phase 0 — Repository preparation

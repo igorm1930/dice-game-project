@@ -18,6 +18,14 @@ services:
         value: https://dice-game-web-igorm1930.onrender.com
       - key: MONGODB_URI
         sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 30m
+      - key: JWT_ISSUER
+        value: dice-game-api
+      - key: JWT_AUDIENCE
+        value: dice-game-web
 
   - type: web
     runtime: static
