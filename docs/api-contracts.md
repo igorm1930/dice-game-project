@@ -173,18 +173,18 @@ Every successful game operation returns the caller-specific state:
 
 ```json
 {
-  id: d43acc2f-a715-49a1-bf4f-74b16592e553,
-  players: [
-    { id: 66c10cb50d521a70d4d8d111, globalScore: 0 },
-    { id: 66c10cb50d521a70d4d8d222, globalScore: 0 }
+  "id": "d43acc2f-a715-49a1-bf4f-74b16592e553",
+  "players": [
+    { "id": "66c10cb50d521a70d4d8d111", "globalScore": 0 },
+    { "id": "66c10cb50d521a70d4d8d222", "globalScore": 0 }
   ],
-  activePlayerId: 66c10cb50d521a70d4d8d111,
-  roundScore: 0,
-  winningScore: 100,
-  lastRoll: null,
-  status: active,
-  winnerId: null,
-  allowedActions: [roll, hold, restart]
+  "activePlayerId": "66c10cb50d521a70d4d8d111",
+  "roundScore": 0,
+  "winningScore": 100,
+  "lastRoll": null,
+  "status": "active",
+  "winnerId": null,
+  "allowedActions": ["roll", "hold", "restart"]
 }
 ```
 
@@ -199,7 +199,10 @@ participant or either participant after victory receives only `restart`.
 Body:
 
 ```json
-{ opponentId: 66c10cb50d521a70d4d8d222, winningScore: 100 }
+{
+  "opponentId": "66c10cb50d521a70d4d8d222",
+  "winningScore": 100
+}
 ```
 
 `opponentId` must be a MongoDB object ID for a distinct credentialed user.

@@ -6,9 +6,19 @@ import {
   register,
   type AuthCredentials,
 } from './api/auth'
+import {
+  createGame,
+  GameApiError,
+  getGame,
+  holdGame,
+  restartGame,
+  rollGame,
+  type GameResponse,
+} from './api/games'
 import { getHealth, type HealthResponse } from './api/health'
 import { listUsers, type UserResponse } from './api/users'
 import { AuthSeat, type SeatId } from './components/AuthSeat'
+import { GameBoard } from './components/GameBoard'
 import './App.css'
 
 type HealthState =
@@ -38,6 +48,13 @@ type IdentityState =
   | { status: 'success'; seatId: SeatId; user: UserResponse }
   | { status: 'error'; message: string }
 
+interface GameState {
+  data: GameResponse | null
+  playerNames: Record<string, string>
+  busy: boolean
+  error: string | null
+}
+
 function emptySeat(): SeatState {
   return { session: null, busy: false, error: null, notice: null }
 }
@@ -63,6 +80,12 @@ function App() {
   })
   const [activeSeat, setActiveSeat] = useState<SeatId | null>(null)
   const [identity, setIdentity] = useState<IdentityState>({ status: 'idle' })
+  const [game, setGame] = useState<GameState>({
+    data: null,
+    playerNames: {},
+    busy: false,
+    error: null,
+  })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -97,10 +120,139 @@ function App() {
     }))
   }
 
-  async function handleRegister(
+  function expireSeat(seatId: SeatId) {
+    const fallbackSeat = otherSeat(seatId)
+    const fallbackSession = seats[fallbackSeat].session
+    const shouldChangeActiveSeat = activeSeat === seatId
+
+    updateSeat(seatId, {
+      session: null,
+      error: 'This session expired or is invalid. Sign in again.',
+      notice: null,
+    })
+    setActiveSeat((current) =>
+      current === seatId
+        ? seats[fallbackSeat].session
+          ? fallbackSeat
+          : null
+        : current,
+    )
+
+    if (shouldChangeActiveSeat && fallbackSession && game.data) {
+      void refreshGameForSeat(fallbackSeat, fallbackSession, game.data.id)
+    }
+  }
+
+  function handleGameError(error: unknown, seatId: SeatId) {
+    if (error instanceof GameApiError && error.status === 401) {
+      expireSeat(seatId)
+    }
+
+    if (
+      error instanceof GameApiError &&
+      error.status === 404 &&
+      error.code === 'GAME_NOT_FOUND'
+    ) {
+      setGame((current) => ({
+        ...current,
+        data: null,
+        busy: false,
+        error: 'This in-memory game is no longer available. Start a new game.',
+      }))
+      return
+    }
+
+    setGame((current) => ({
+      ...current,
+      busy: false,
+      error: errorMessage(error),
+    }))
+  }
+
+  async function refreshGameForSeat(
     seatId: SeatId,
-    credentials: AuthCredentials,
+    session: AuthSession,
+    gameId: string,
   ) {
+    setGame((current) => ({ ...current, busy: true, error: null }))
+
+    try {
+      const data = await getGame(session.accessToken, gameId)
+      setGame((current) => ({
+        ...current,
+        data,
+        busy: false,
+        error: null,
+      }))
+    } catch (error) {
+      handleGameError(error, seatId)
+    }
+  }
+
+  async function handleActiveSeatChange(seatId: SeatId) {
+    const session = seats[seatId].session
+    if (!session) return
+
+    setActiveSeat(seatId)
+    setIdentity({ status: 'idle' })
+
+    if (game.data) {
+      await refreshGameForSeat(seatId, session, game.data.id)
+    }
+  }
+
+  async function handleCreateGame(winningScore: number) {
+    if (!activeSeat) return
+
+    const creator = seats[activeSeat].session
+    const opponent = seats[otherSeat(activeSeat)].session
+    if (!creator || !opponent) return
+
+    setGame((current) => ({ ...current, busy: true, error: null }))
+
+    try {
+      const data = await createGame(creator.accessToken, {
+        opponentId: opponent.user.id,
+        winningScore,
+      })
+      setGame({
+        data,
+        playerNames: {
+          [creator.user.id]: creator.user.username,
+          [opponent.user.id]: opponent.user.username,
+        },
+        busy: false,
+        error: null,
+      })
+    } catch (error) {
+      handleGameError(error, activeSeat)
+    }
+  }
+
+  async function handleGameAction(
+    request: (accessToken: string, gameId: string) => Promise<GameResponse>,
+  ) {
+    if (!activeSeat || !game.data) return
+
+    const session = seats[activeSeat].session
+    if (!session) return
+
+    setGame((current) => ({ ...current, busy: true, error: null }))
+
+    try {
+      const data = await request(session.accessToken, game.data.id)
+      setGame((current) => ({
+        ...current,
+        data,
+        busy: false,
+        error: null,
+      }))
+    } catch (error) {
+      handleGameError(error, activeSeat)
+    }
+  }
+
+  async function handleRegister(seatId: SeatId, credentials: AuthCredentials) {
     updateSeat(seatId, { busy: true, error: null, notice: null })
 
     try {
@@ -114,10 +266,8 @@ function App() {
     }
   }
 
-  async function handleLogin(
-    seatId: SeatId,
-    credentials: AuthCredentials,
-  ) {
+  async function handleLogin(seatId: SeatId, credentials: AuthCredentials) {
+    const shouldActivateSeat = activeSeat === null
     updateSeat(seatId, { busy: true, error: null, notice: null })
 
     try {
@@ -131,6 +281,14 @@ function App() {
       })
       setActiveSeat((current) => current ?? seatId)
       setIdentity({ status: 'idle' })
+
+      if (shouldActivateSeat && game.data) {
+        await refreshGameForSeat(
+          seatId,
+          { user, accessToken: token.accessToken },
+          game.data.id,
+        )
+      }
     } catch (error) {
       updateSeat(seatId, {
         session: null,
@@ -142,6 +300,8 @@ function App() {
 
   function handleLogout(seatId: SeatId) {
     const fallbackSeat = otherSeat(seatId)
+    const shouldChangeActiveSeat = activeSeat === seatId
+    const fallbackSession = seats[fallbackSeat].session
 
     updateSeat(seatId, {
       session: null,
@@ -157,6 +317,10 @@ function App() {
         : current,
     )
     setIdentity({ status: 'idle' })
+
+    if (shouldChangeActiveSeat && fallbackSession && game.data) {
+      void refreshGameForSeat(fallbackSeat, fallbackSession, game.data.id)
+    }
   }
 
   async function verifyActiveIdentity() {
@@ -172,30 +336,27 @@ function App() {
       setIdentity({ status: 'success', seatId: activeSeat, user })
     } catch (error) {
       if (error instanceof AuthApiError && error.status === 401) {
-        const expiredSeat = activeSeat
-        const fallbackSeat = otherSeat(expiredSeat)
-
-        updateSeat(expiredSeat, {
-          session: null,
-          error: 'This session expired or is invalid. Sign in again.',
-          notice: null,
-        })
-        setActiveSeat(seats[fallbackSeat].session ? fallbackSeat : null)
+        expireSeat(activeSeat)
       }
 
       setIdentity({ status: 'error', message: errorMessage(error) })
     }
   }
 
+  const creatorSession = activeSeat ? seats[activeSeat].session : null
+  const opponentSession = activeSeat
+    ? seats[otherSeat(activeSeat)].session
+    : null
+
   return (
     <main className={'user-page'}>
       <header className={'page-header'}>
         <div>
           <p className={'eyebrow'}>Dice game</p>
-          <h1>Two player sessions</h1>
+          <h1>Two players, one game</h1>
           <p className={'intro'}>
-            Sign in two players independently, then choose which authenticated
-            seat is acting. Sessions stay only in this browser tab's memory.
+            Sign in two players independently, choose the acting seat, and play
+            entirely through server-owned game state and permissions.
           </p>
         </div>
 
@@ -244,11 +405,8 @@ function App() {
                 name={'active-seat'}
                 value={seatId}
                 checked={activeSeat === seatId}
-                disabled={!seats[seatId].session}
-                onChange={() => {
-                  setActiveSeat(seatId)
-                  setIdentity({ status: 'idle' })
-                }}
+                disabled={!seats[seatId].session || game.busy}
+                onChange={() => void handleActiveSeatChange(seatId)}
               />
               <span>
                 Seat {seatId.toUpperCase()}
@@ -285,6 +443,20 @@ function App() {
           )}
         </div>
       </section>
+
+      <GameBoard
+        game={game.data}
+        playerNames={game.playerNames}
+        creatorName={creatorSession?.user.username ?? null}
+        opponentName={opponentSession?.user.username ?? null}
+        actingUsername={creatorSession?.user.username ?? null}
+        busy={game.busy}
+        error={game.error}
+        onCreate={(winningScore) => void handleCreateGame(winningScore)}
+        onRoll={() => void handleGameAction(rollGame)}
+        onHold={() => void handleGameAction(holdGame)}
+        onRestart={() => void handleGameAction(restartGame)}
+      />
 
       <section
         className={'panel players-panel'}

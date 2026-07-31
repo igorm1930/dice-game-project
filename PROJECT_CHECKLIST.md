@@ -241,9 +241,8 @@ Status: Completed and merged to `main` through pull request #11 as `0c68d23`.
 
 ## Phase 11 — In-memory game API
 
-Status: Implemented, locally verified, and developer-approved on
-`phase/11-in-memory-game-api`. Commit and push are authorized; it is not
-deployed or merged.
+Status: Completed and merged to `main` through pull request #12 as
+`28db4f1`.
 
 - [x] Add game endpoints
 - [x] Create game
@@ -257,6 +256,20 @@ deployed or merged.
 - [x] Test API behavior independently from React
 
 ## Phase 12 — Simple playable React game
+
+Status: Implemented, locally verified, and developer-reviewed on
+`phase/12-playable-react-game`. Commit and push are authorized; items remain
+unchecked until publication is complete.
+
+Verification summary:
+
+- Focused frontend tests passed: 3 files and 31 tests.
+- Root verification passed 70 backend unit tests, 42 backend E2E tests, 36
+  frontend tests, lint, and both builds.
+- Browser verification passed creation, caller-specific actions, Roll, Hold,
+  turn switching, Restart, victory, API failure feedback, and 390px rendering.
+- Dependency audits reported zero vulnerabilities and full-history Gitleaks
+  found no leaks.
 
 - [ ] Add game creation form
 - [ ] Add player panels
