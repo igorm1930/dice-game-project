@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 13:35 (Israel time)_
+_Last updated: 2026-07-31 14:11 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -372,6 +372,24 @@ Production test:
 4. Confirm MongoDB stores the user.
 5. Refresh and confirm the user remains available.
 
+Approved implementation decisions:
+
+- Use Render's free Node web-service plan for the API and free static-site plan
+  for the frontend, both in Frankfurt.
+- Use `dice-game-api-igorm1930` and `dice-game-web-igorm1930` as the planned
+  service names.
+- Use MongoDB Atlas M0 for a `dice-game-production` project/cluster and the
+  explicit `dice_game` database.
+- Give `dice_game_app` only `readWrite` access to that database.
+- Restrict Atlas to Render's current Frankfurt outbound IP ranges; never use
+  `0.0.0.0/0`.
+- Store `MONGODB_URI` only as a Render secret. The browser receives only the
+  public `VITE_API_URL`.
+- Pin Node.js 22.22.0 and deploy automatically only after GitHub checks pass.
+- Disable preview services and do not use paid fallback resources.
+- Require a separate approval before external provider resources are created.
+- Keep Phase 8 authentication and later game work out of scope.
+
 Suggested commit:
 
 ```text
@@ -620,5 +638,6 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Review and merge the green Phase 6 pull request #7. Do not begin Phase 7 until
-the Phase 6 merge is confirmed.
+Review the verified local Phase 7 configuration. After separate approval,
+provision the exact free Render and Atlas resources, enter the secret directly
+in Render, and run production verification. Do not begin Phase 8.

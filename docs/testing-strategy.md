@@ -2,8 +2,9 @@
 
 ## Status
 
-Phase 1 through Phase 6 checks have been run locally. Phase 6 has also passed
-GitHub-hosted verification.
+Phase 1 through Phase 7 checks have been run locally. Phase 6 has also passed
+GitHub-hosted verification. Phase 7 production checks remain pending because no
+external resources have been provisioned.
 
 The full testing strategy will grow incrementally.
 
@@ -61,6 +62,36 @@ For:
 - authentication
 - two-user simulation
 - complete game flow
+
+## Phase 7 local verification
+
+### Deployment safeguards
+
+- Focused production environment tests passed: 1 suite and 10 tests.
+- Production rejects non-HTTPS frontend origins.
+- Production rejects non-SRV MongoDB connections.
+- Every MongoDB URI requires an explicit database name.
+- The API binds to `0.0.0.0` for the hosted container environment.
+- Render Blueprint formatting and Docker Compose configuration passed.
+
+### Regression and security checks
+
+- Root verification passed backend/frontend lint, 20 backend unit tests, 11
+  backend E2E tests, 5 frontend component tests, and both builds.
+- Backend production and frontend dependency audits reported zero
+  vulnerabilities.
+- The frontend build contained the expected public Render API URL.
+- No MongoDB URI, `MONGODB_URI`, `FRONTEND_ORIGIN`, or planned database user
+  name appeared in the browser bundle.
+
+### Production checks still required
+
+- Render and Atlas resources have not been provisioned.
+- Provider-side Blueprint validation, hosted health, exact-origin CORS, Atlas
+  persistence, refresh persistence, cold-start recovery, provider-log review,
+  and hosted GitHub checks are not yet verified.
+- These checks must not be marked complete until external provisioning receives
+  separate approval and the commands are actually run.
 
 ## Phase 6 verification
 

@@ -26,7 +26,10 @@ function requiredString(
   return value.trim();
 }
 
-function validateFrontendOrigin(value: string): string {
+function validateFrontendOrigin(
+  value: string,
+  nodeEnvironment: NodeEnvironment,
+): string {
   let url: URL;
 
   try {
@@ -44,12 +47,34 @@ function validateFrontendOrigin(value: string): string {
     throw new Error('FRONTEND_ORIGIN must be a valid HTTP origin');
   }
 
+  if (nodeEnvironment === 'production' && url.protocol !== 'https:') {
+    throw new Error('FRONTEND_ORIGIN must use HTTPS in production');
+  }
+
   return value;
 }
 
-function validateMongoUri(value: string): string {
+function validateMongoUri(
+  value: string,
+  nodeEnvironment: NodeEnvironment,
+): string {
   if (!value.startsWith('mongodb://') && !value.startsWith('mongodb+srv://')) {
     throw new Error('MONGODB_URI must use the mongodb or mongodb+srv scheme');
+  }
+
+  const authorityStart = value.indexOf('://') + 3;
+  const databasePathStart = value.indexOf('/', authorityStart);
+  const databaseName =
+    databasePathStart === -1
+      ? ''
+      : value.slice(databasePathStart + 1).split('?')[0];
+
+  if (!databaseName) {
+    throw new Error('MONGODB_URI must include a database name');
+  }
+
+  if (nodeEnvironment === 'production' && !value.startsWith('mongodb+srv://')) {
+    throw new Error('MONGODB_URI must use mongodb+srv in production');
   }
 
   return value;
@@ -71,14 +96,19 @@ export function validateEnvironment(
     throw new Error('PORT must be an integer between 1 and 65535');
   }
 
+  const typedNodeEnvironment = nodeEnv as NodeEnvironment;
   const frontendOrigin = validateFrontendOrigin(
     requiredString(config, 'FRONTEND_ORIGIN'),
+    typedNodeEnvironment,
   );
-  const mongodbUri = validateMongoUri(requiredString(config, 'MONGODB_URI'));
+  const mongodbUri = validateMongoUri(
+    requiredString(config, 'MONGODB_URI'),
+    typedNodeEnvironment,
+  );
 
   return {
     ...config,
-    NODE_ENV: nodeEnv as NodeEnvironment,
+    NODE_ENV: typedNodeEnvironment,
     PORT: port,
     FRONTEND_ORIGIN: frontendOrigin,
     MONGODB_URI: mongodbUri,

@@ -59,7 +59,8 @@ the health endpoint reports success. Phase 4 adds validated persistent users,
 user API endpoints, and the React creation/list flow. Phase 5 adds backend test
 structure, database safety, frontend component tests, and root verification
 commands. Phase 6 adds read-only, SHA-pinned GitHub Actions verification and
-full-history secret scanning.
+full-history secret scanning. Phase 7 prepares a Render and MongoDB Atlas
+deployment without committing production credentials.
 
 Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
@@ -117,9 +118,23 @@ command, and MongoDB-backed E2E tests on Node.js 22. A separate Gitleaks job
 scans full Git history. The workflow uses read-only permissions and does not
 require custom repository secrets.
 
+### Deployment configuration
+
+`render.yaml` defines the planned free Render API and static-site services in
+Frankfurt. The target URLs are:
+
+- `https://dice-game-api-igorm1930.onrender.com`
+- `https://dice-game-web-igorm1930.onrender.com`
+
+These services are not live yet. MongoDB Atlas M0 provisioning and all provider
+changes require separate approval. `MONGODB_URI` must be entered directly as
+a Render secret, and Atlas must allow only Render's current Frankfurt outbound
+IP ranges. See `docs/deployment.md` for the approved sequence and checks.
+
 ## Current status
 
-Phases 1 through 5 are merged into `main`. Phase 6 is completed, reviewed,
-committed, pushed, and verified in GitHub Actions on
-`phase/06-continuous-integration`. Draft pull request #7 is awaiting merge.
-See `CURRENT_PHASE.md` and the session logs for verification evidence.
+Phases 1 through 6 are merged into `main`. Phase 7's local configuration is
+implemented and verified on `phase/07-initial-deployment-flow`. External
+services have not been provisioned, and the Phase 7 changes are not committed
+or pushed. See `CURRENT_PHASE.md`, `docs/deployment.md`, and the session logs
+for verification evidence.
