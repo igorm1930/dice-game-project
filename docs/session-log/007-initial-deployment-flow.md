@@ -2,10 +2,9 @@
 
 ## Status
 
-Phase 7 is deployed and its production flow, hosted CI, and real idle cold
-start are verified. Draft pull request #8 is open with both required checks
-passing. Only the final verified-reality documentation update, review, and
-merge remain pending.
+Phase 7 is completed, deployed, verified, and merged into `main` as
+`dd3e1bc`. The production flow, pull-request checks, post-merge `main`
+checks, and real idle cold start all passed.
 
 ## Changes
 
@@ -46,6 +45,8 @@ merge remain pending.
   diff scan also found no findings.
 - Draft pull request #8 passed Verify in 1 minute 10 seconds and Secret scan in
   6 seconds.
+- Post-merge `main` Verify passed in 1 minute 2 seconds and Secret scan passed
+  in 8 seconds.
 - A real free-tier cold start returned HTTP 200 in 32.4 seconds after more than
   15 idle minutes.
 - The hosted frontend reconnected afterward and retained the demonstration
@@ -72,8 +73,8 @@ complete root verification then passed.
 - A deploy-hook URL exposed by the provider settings accessibility output was
   immediately rotated and was never stored or used.
 
-## Remaining
+## Completion
 
-- Review the final verified-reality documentation diff and Git status.
-- Commit and push only after explicit approval, then confirm rerun checks.
-- Mark draft pull request #8 ready and merge only after explicit approval.
+- Pull request #8 was marked ready and merged as `dd3e1bc`.
+- Required post-merge `main` checks passed.
+- Phase 8 has not started and requires a separate approved proposal.

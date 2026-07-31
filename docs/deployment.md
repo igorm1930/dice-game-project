@@ -5,7 +5,8 @@
 Phase 7 is deployed on the approved free Render and MongoDB Atlas resources.
 The hosted health, exact-origin CORS, frontend, Atlas storage, reload
 persistence, hosted CI, and real idle cold-start checks passed on 2026-07-31.
-Draft pull request #8 remains pending review and merge.
+Pull request #8 was merged into `main` as `dd3e1bc`, and the post-merge
+Verify and Secret scan jobs passed.
 
 ## Planned topology
 

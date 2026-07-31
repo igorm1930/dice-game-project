@@ -172,9 +172,7 @@ Verification summary:
 
 ## Phase 7 — Initial deployment flow
 
-Status: Deployed and production flow verified. Draft pull request #8 is open
-and both required checks pass. Final documentation review, commit, push, and
-merge remain pending.
+Status: Completed and merged to `main` in `dd3e1bc`.
 
 Local verification summary:
 
@@ -188,6 +186,7 @@ Local verification summary:
   storage, and reload persistence passed.
 - Full-history and uncommitted-diff Gitleaks scans found no leaks.
 - Draft pull request #8 passed Verify and Secret scan.
+- Post-merge `main` Verify and Secret scan also passed.
 - The real free-tier API cold start returned HTTP 200 in 32.4 seconds, and the
   hosted frontend reconnected with the persisted user still visible.
 
