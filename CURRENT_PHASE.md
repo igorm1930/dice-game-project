@@ -2,80 +2,77 @@
 
 ## Phase
 
-Phase 9 - Two authenticated users on one page
+Phase 10 - Pure backend game engine
 
 ## Status
 
-Phase 9 is implemented, locally verified, and approved by the developer on
-`phase/09-two-authenticated-users`. The implementation commit `7645b7a` and
-approval-record commit `12a7e8a` are pushed. Phase 9 is not deployed or merged.
+Phase 9 was merged into `main` through pull request #10 as `8b26fce`.
+Phase 10 is implemented and locally verified on
+`phase/10-pure-game-engine`. It has not been reviewed, approved, committed,
+pushed, deployed, or merged.
 
 ## Implemented scope
 
-- Added independent Seat A and Seat B frontend authentication sessions.
-- Added registration and login controls for each seat.
-- Kept registration separate from login.
-- Validated each login token through protected `GET /api/auth/me` before
-  accepting the session.
-- Added an explicit acting-seat selector.
-- Sent only the selected seat's bearer token for protected identity checks.
-- Derived displayed identity only from the backend response.
-- Added independent logout and per-seat authentication errors.
-- Kept passwords and access tokens only in React memory.
-- Preserved the health check and public read-only player list.
+- Added an immutable two-player game-state model.
+- Added `createGame()`, `roll()`, `hold()`, and `restart()`.
+- Added the default winning score of 100 and validated custom targets.
+- Added repeated roll accumulation and ordinary single-six behavior.
+- Added double-six bust, round reset, and turn switching.
+- Added Hold banking, round reset, turn switching, and winner detection.
+- Evaluated victory only after Hold using `globalScore >= winningScore`.
+- Added deterministic injected dice and runtime dice-result validation.
+- Added explicit rule errors for invalid setup, invalid dice, and finished games.
+- Kept the engine independent of NestJS, HTTP, MongoDB, Mongoose, and React.
 
 ## Local verification
 
+- Focused game-engine tests passed: 1 suite and 29 tests.
 - Root lint passed for backend and frontend.
-- Backend unit tests passed: 6 suites and 31 tests.
+- Backend unit tests passed: 7 suites and 60 tests.
 - MongoDB E2E tests passed: 3 suites and 30 tests.
 - Frontend tests passed: 2 files and 14 tests.
 - Backend and frontend builds passed; Vite transformed 22 modules.
 - Backend production and frontend dependency audits found zero vulnerabilities.
 - The known backend development-tool audit remains at 25 high findings.
-- Gitleaks scanned 26 commits and the uncommitted Phase 9 diff with no leaks.
+- Gitleaks scanned 29 commits with no leaks.
+- A local Phase 10 file scan found no credential, private-key, or
+  secret-assignment patterns.
 - `git diff --check` passed.
 
 ## Manual verification
 
-- Registered two temporary accounts in an isolated local database.
-- Confirmed registration did not authenticate either seat.
-- Logged Seat A and Seat B in independently.
-- Verified the acting selector resolved Seat A and Seat B to their own
-  backend-derived identities.
-- Confirmed logging out Seat B preserved Seat A and selected it as the
-  fallback acting seat.
-- Confirmed a page refresh logged out both memory-only sessions.
-- Confirmed the 390px layout had no horizontal overflow.
-- Confirmed signed-out seat regions have distinct accessible names.
-- Found no application console errors; warnings came from an unrelated browser
-  extension.
-- Deleted the two-user `dice_game_phase9_manual` database after verification.
+- Built the engine and loaded the compiled JavaScript directly.
+- Created a two-player game with a target of 10.
+- Rolled 2 and 3, held 5 points, and switched to Player 2.
+- Rolled double six, cleared the round score, and switched back to Player 1.
+- Restarted the game and confirmed both scores, the dice, and winner state reset
+  while player IDs and the winning score remained unchanged.
+- No browser or HTTP check was required because Phase 10 exposes no UI or API.
 
 ## Security boundary
 
-- Tokens are never rendered, logged, stored in browser storage, placed in URLs,
-  or sent in request bodies.
-- Password fields are cleared after each authentication submission.
-- No client-supplied `userId`, `playerId`, or `actorId` is used.
-- A protected-request 401 clears only the rejected seat.
-- `VITE_API_URL` remains the only frontend configuration and is public.
-- No backend authentication, authorization, CORS, schema, or configuration
-  behavior changed.
-- Authentication still does not authorize future game actions.
+- No secret, environment variable, dependency, database field, or network
+  interface was added.
+- Dice are provided through a backend-side injected interface; React does not
+  generate or submit dice.
+- The engine validates exactly two distinct non-empty player IDs, a positive
+  safe-integer winning score, and two integer dice from 1 through 6.
+- Game state fields are readonly and every operation returns new objects.
+- Authentication and participant/turn authorization remain unchanged and will
+  be connected to the engine only in Phase 11.
 
 ## Out of scope
 
-- Phase 10 game engine
-- Game endpoints, persistence, or playable UI
+- NestJS game modules, controllers, DTOs, or endpoints
 - Participant, turn, or action authorization
-- Refresh tokens, cookies, OAuth, or password recovery
-- Persistent frontend authentication
-- Backend or database-schema changes
+- In-memory or MongoDB game repositories
+- Game IDs, API response contracts, or persistence
+- React game UI or frontend game rules
+- Lifetime win counters or concurrency controls
 - Production deployment or provider configuration
-- Merge
+- Commit, push, pull request, or merge
 
 ## Next action
 
-Proceed through Phase 9 pull-request review and required checks. Do not deploy,
-merge, or begin Phase 10 without explicit approval.
+Wait for developer review and explicit approval of the verified Phase 10
+implementation. Do not commit, push, deploy, merge, or begin Phase 11.

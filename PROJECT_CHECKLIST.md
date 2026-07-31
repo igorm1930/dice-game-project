@@ -214,9 +214,8 @@ Status: Completed and merged to `main` in `ee1bae5`.
 
 ## Phase 9 — Two authenticated users on one page
 
-Status: Implemented, locally verified, developer-approved, committed, and
-pushed on `phase/09-two-authenticated-users`. Awaiting pull-request review and
-required checks.
+Status: Completed and merged to `main` through pull request #10 in
+`8b26fce`.
 
 - [x] Add Seat A session
 - [x] Add Seat B session
@@ -226,6 +225,10 @@ required checks.
 - [x] Verify backend identity comes from the token
 
 ## Phase 10 — Pure backend game engine
+
+Status: Implemented and locally verified on
+`phase/10-pure-game-engine`. Awaiting developer review and approval; not
+committed or pushed.
 
 - [ ] Define game state
 - [ ] Implement game creation
