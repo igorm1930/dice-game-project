@@ -6,7 +6,7 @@ Phase 2 — API connection
 
 ## Status
 
-Approved — awaiting Git completion
+Completed
 
 ## Goal
 
@@ -100,9 +100,8 @@ Wait for explicit approval.
 
 ## Completion record
 
-Phase 2 implementation and verification were approved by the developer. The
-phase awaits an explicitly authorized commit and push before the repository
-checklist can mark it complete.
+Phase 2 implementation and verification were approved by the developer and
+committed in `53b5555` (`feat: complete Phase 2 API connection`).
 
 Verified implementation:
 

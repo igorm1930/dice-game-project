@@ -19,14 +19,14 @@
 
 ## Security checklist for every phase
 
-- [ ] Security impact reviewed
-- [ ] No secrets or credentials added to source
-- [ ] Environment-variable changes documented
-- [ ] `.env.example` updated where applicable
-- [ ] `.gitignore` verified
-- [ ] Client bundle contains no private configuration
-- [ ] Logs checked for sensitive data
-- [ ] Dependency/security checks run where applicable
+- [x] Security impact reviewed
+- [x] No secrets or credentials added to source
+- [x] Environment-variable changes documented
+- [x] `.env.example` updated where applicable
+- [x] `.gitignore` verified
+- [x] Client bundle contains no private configuration
+- [x] Logs checked for sensitive data
+- [x] Dependency/security checks run where applicable
 
 ## Phase 1 — Project foundation
 
@@ -60,9 +60,7 @@ Security follow-up: Completed and pushed in commit `7f699a1`.
 
 ## Phase 2 — API connection
 
-Status: Implemented, verified, and approved; awaiting an explicitly authorized
-commit and push. Items remain unchecked until the checklist rule at the top of
-this file is satisfied.
+Status: Completed, verified, reviewed, and committed in `53b5555`.
 
 Verification summary:
 
@@ -74,15 +72,15 @@ Verification summary:
 - Original checkpoint browser verification covered loading, success, and error
   states; the fresh-clone browser surface was unavailable for a repeat check.
 
-- [ ] Add `GET /api/health`
-- [ ] Add public frontend API URL configuration with `VITE_API_URL`
-- [ ] Add backend frontend-origin configuration
-- [ ] Document the public configuration values
-- [ ] Connect React to the backend
-- [ ] Display loading, success, and error states
-- [ ] Test the endpoint directly
-- [ ] Test the frontend-to-backend flow
-- [ ] Resolve local CORS or development-proxy configuration
+- [x] Add `GET /api/health`
+- [x] Add public frontend API URL configuration with `VITE_API_URL`
+- [x] Add backend frontend-origin configuration
+- [x] Document the public configuration values
+- [x] Connect React to the backend
+- [x] Display loading, success, and error states
+- [x] Test the endpoint directly
+- [x] Test the frontend-to-backend flow
+- [x] Resolve local CORS or development-proxy configuration
 
 ## Phase 3 — MongoDB connection
 

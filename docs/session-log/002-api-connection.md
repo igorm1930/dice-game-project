@@ -2,12 +2,11 @@
 
 ## Status
 
-Phase 2 implementation and verification were approved by the developer on
+Phase 2 implementation and verification were approved and completed on
 `phase/02-api-connection`.
 
-The phase awaits an explicitly authorized commit and push before its checklist
-items can be marked complete. No completion commit, push, or pull request has
-been created.
+The reviewed implementation is committed in `53b5555`. No pull request or
+merge has been created.
 
 ## Implemented
 
@@ -109,9 +108,8 @@ temporary API and port-5174 frontend processes were stopped after verification.
 ## Review and Git status
 
 - Developer review is approved.
-- Checklist boxes remain unchecked until the checklist's review and Git rules
-  are satisfied.
-- No completion commit or push has been made.
+- Checklist items are complete.
+- Implementation commit: `53b5555 feat: complete Phase 2 API connection`.
 - No pull request has been opened.
 - Phase 3 has not started.
 

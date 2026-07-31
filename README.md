@@ -102,7 +102,7 @@ npm.cmd run build
 
 ## Current status
 
-Phase 2 is implemented, verified, and approved on `phase/02-api-connection`.
-Its completion changes have not been committed, pushed, or merged. Phase 3 has
-not started. See `CURRENT_PHASE.md` and
+Phase 2 is complete on `phase/02-api-connection`. Its reviewed implementation
+is recorded in commit `53b5555`. The branch has not been merged into `main`,
+and Phase 3 has not started. See `CURRENT_PHASE.md` and
 `docs/session-log/002-api-connection.md` for the evidence and limitations.
