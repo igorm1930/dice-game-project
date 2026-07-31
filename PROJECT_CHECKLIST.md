@@ -226,9 +226,7 @@ Status: Completed and merged to `main` through pull request #10 in
 
 ## Phase 10 — Pure backend game engine
 
-Status: Implemented, locally verified, developer-approved, committed as
-`bd01e44`, and pushed on `phase/10-pure-game-engine`. Pull request #11 is ready
-for review and its required checks pass; it is not merged.
+Status: Completed and merged to `main` through pull request #11 as `0c68d23`.
 
 - [x] Define game state
 - [x] Implement game creation
@@ -243,16 +241,20 @@ for review and its required checks pass; it is not merged.
 
 ## Phase 11 — In-memory game API
 
-- [ ] Add game endpoints
-- [ ] Create game
-- [ ] Get game
-- [ ] Roll
-- [ ] Hold
-- [ ] Restart
-- [ ] Protect endpoints
-- [ ] Validate participant and turn
-- [ ] Use an in-memory repository first
-- [ ] Test API behavior independently from React
+Status: Implemented, locally verified, and developer-approved on
+`phase/11-in-memory-game-api`. Commit and push are authorized; it is not
+deployed or merged.
+
+- [x] Add game endpoints
+- [x] Create game
+- [x] Get game
+- [x] Roll
+- [x] Hold
+- [x] Restart
+- [x] Protect endpoints
+- [x] Validate participant and turn
+- [x] Use an in-memory repository first
+- [x] Test API behavior independently from React
 
 ## Phase 12 — Simple playable React game
 

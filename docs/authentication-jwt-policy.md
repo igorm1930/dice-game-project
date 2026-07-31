@@ -3,13 +3,14 @@
 ## Status and implementation phases
 
 This document records approved authentication, JWT, and authorization-boundary
-decisions. The Phase 8 backend portion is merged into `main`; the Phase 9
-frontend session portion is implemented and locally verified on its phase
-branch.
+decisions. Phases 8 through 10 are merged into `main`; Phase 11 object and
+action authorization is implemented and locally verified on its phase branch.
 
 - Phase 8 implements backend authentication.
 - Phase 9 implements two independent memory-only frontend seat sessions and an
   explicit acting-seat selector.
+- Phase 11 protects every game route and applies participant and turn
+  authorization to JWT-derived identity.
 
 ## Authentication model
 
@@ -187,13 +188,24 @@ Authorization separately verifies:
 
 A valid JWT alone must never authorize a game action.
 
+Phase 11 enforces this boundary as follows:
+
+- every game controller route uses the existing strict JWT guard
+- only the verified JWT subject is passed to the game service
+- missing games and records hidden from nonparticipants share one 404 response
+- Roll and Hold require the active participant
+- Restart is available to either participant
+- action bodies are empty and reject identity or authoritative game fields
+- response permissions are derived by the backend for the authenticated caller
+- only credentialed users may be selected as opponents
+
 ## Error rules
 
 - Missing, invalid, or expired token: HTTP 401.
 - Authenticated non-participant requesting another user's game: HTTP 404.
 - Participant acting outside their turn: HTTP 409 with code
   `NOT_YOUR_TURN`.
-- Action on a completed or abandoned game: HTTP 409.
+- Roll or Hold on a completed game: HTTP 409 with code `GAME_FINISHED`.
 
 ## Backend configuration
 

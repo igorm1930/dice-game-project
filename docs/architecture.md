@@ -2,9 +2,9 @@
 
 ## Status
 
-Phase 9 two-seat frontend authentication is merged into `main`. Phase 10's
-pure game engine is implemented and locally verified on its phase branch. The
-deployed application remains on the previous frontend version.
+Phase 10 is merged into `main`. Phase 11's authenticated in-memory game API is
+implemented and locally verified on its phase branch. The deployed application
+remains on the previous frontend version.
 
 ## Current implemented architecture
 
@@ -17,7 +17,8 @@ dice-game-project/
 `-- compose.yaml  Local MongoDB development service
 ```
 
-Game API integration and participant authorization have not started.
+Game API integration and participant/turn authorization are implemented in
+the backend. React game integration has not started.
 
 ### Backend request path
 
@@ -94,9 +95,30 @@ for `globalScore >= winningScore`.
 
 The engine throws explicit `GameRuleError` codes for invalid players, invalid
 winning scores, invalid injected dice, and actions after victory. It imports no
-NestJS, HTTP, Mongoose, MongoDB, authentication, or React code. Phase 11 will
-derive the caller from JWT authentication, enforce participation and turn
-authorization, and call this domain layer.
+NestJS, HTTP, Mongoose, MongoDB, authentication, or React code.
+
+### In-memory game API
+
+`GameModule` connects authenticated HTTP requests to the pure engine:
+
+```text
+verified JWT subject
+  -> GameController
+  -> GameService authorization
+  -> GameEngine transition
+  -> InMemoryGameRepository
+  -> caller-specific GameResponseDto
+```
+
+The repository interface stores records with UUID v4 IDs. Its current
+`Map` implementation is process-local and intentionally loses games on API
+restart. `SecureDiceRoller` implements the domain dice interface with Node
+`crypto.randomInt`; tests replace the same injection token deterministically.
+
+The service hides records from nonparticipants, limits Roll and Hold to the
+active player, permits either participant to Restart, and maps domain state to
+caller-specific allowed actions. User lookup permits only credentialed
+opponents. No Mongoose game schema or frontend game rule exists yet.
 
 ### Security boundary
 
@@ -161,5 +183,5 @@ the external resources and production flow are separately verified.
 
 ## Future sections
 
-When implemented, document game API boundaries, repository interfaces, and the
-HTTP mapping of game-rule errors.
+When implemented, document the persistent game repository, concurrency model,
+and frontend game rendering path.
