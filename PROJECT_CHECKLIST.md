@@ -147,8 +147,7 @@ Verification summary:
 
 ## Phase 6 — Continuous integration
 
-Status: Completed, reviewed, committed as `cac5e7f`, pushed, and verified in
-GitHub Actions. Draft pull request #7 is awaiting merge.
+Status: Completed and merged to `main` in `972cf8f`.
 
 Verification summary:
 
@@ -157,8 +156,9 @@ Verification summary:
 - MongoDB was healthy and Compose configuration passed.
 - Gitleaks scanned all 19 commits with no remaining findings.
 - Workflow permissions and credential-handling scans passed.
-- GitHub Actions run `30624910984` passed: `Secret scan` in 9 seconds and
-  `Verify` in 56 seconds.
+- Pull-request GitHub Actions run `30624910984` passed.
+- Main-branch GitHub Actions run `30625300406` passed: `Secret scan` in 9
+  seconds and `Verify` in 1 minute 1 second.
 
 - [x] Add GitHub Actions
 - [x] Configure CI secrets and least-privilege workflow permissions
@@ -172,13 +172,32 @@ Verification summary:
 
 ## Phase 7 — Initial deployment flow
 
-- [ ] Deploy frontend
-- [ ] Deploy backend
-- [ ] Connect production MongoDB
-- [ ] Configure environment variables
-- [ ] Verify health endpoint
-- [ ] Verify persistent user flow in production
-- [ ] Confirm CI still passes
+Status: Deployed and production flow verified. Draft pull request #8 is open
+and both required checks pass. Final documentation review, commit, push, and
+merge remain pending.
+
+Local verification summary:
+
+- Production environment validation passed: 1 suite and 10 tests.
+- Root lint, 20 backend unit tests, 11 backend E2E tests, 5 frontend component
+  tests, and both builds passed.
+- Production dependency audits, Compose validation, Blueprint formatting, and
+  frontend private-configuration scans passed.
+- Render API/static services and the Atlas M0 cluster are live on free plans.
+- Production health, exact-origin CORS, browser user creation, Atlas document
+  storage, and reload persistence passed.
+- Full-history and uncommitted-diff Gitleaks scans found no leaks.
+- Draft pull request #8 passed Verify and Secret scan.
+- The real free-tier API cold start returned HTTP 200 in 32.4 seconds, and the
+  hosted frontend reconnected with the persisted user still visible.
+
+- [x] Deploy frontend
+- [x] Deploy backend
+- [x] Connect production MongoDB
+- [x] Configure environment variables
+- [x] Verify health endpoint
+- [x] Verify persistent user flow in production
+- [x] Confirm CI still passes
 
 ## Phase 8 — Authentication
 

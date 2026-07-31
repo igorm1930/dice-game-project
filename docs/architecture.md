@@ -2,8 +2,8 @@
 
 ## Status
 
-Phase 6 continuous-integration architecture is implemented and verified
-locally and in GitHub Actions.
+Phase 7 deployment configuration is implemented and verified locally. The
+Render and MongoDB Atlas resources are not provisioned.
 
 ## Current implemented architecture
 
@@ -12,6 +12,7 @@ dice-game-project/
 |-- api/          NestJS, validation, Mongoose, health, and users
 |-- web/          React health status, user form, and user list
 |-- .github/      Read-only CI verification and secret scanning
+|-- render.yaml   Planned Render API and static-site services
 `-- compose.yaml  Local MongoDB development service
 ```
 
@@ -94,7 +95,28 @@ credentials are not persisted, actions use full commit SHAs, and no custom
 repository secrets are required. The one Gitleaks ignore entry is scoped to the
 exact fingerprint of a verified public NestJS starter badge false positive.
 
+### Configured deployment path
+
+```text
+Render static site (Frankfurt)
+  -> exact HTTPS CORS origin
+  -> Render Node API (Frankfurt)
+  -> SRV connection with explicit dice_game database
+  -> MongoDB Atlas M0
+```
+
+The Blueprint pins Node.js 22.22.0, waits for passing GitHub checks before
+automatic deployment, uses `/api/health` as the API health check, and keeps
+`MONGODB_URI` out of source. The API listens on all container interfaces but
+production CORS accepts only the configured HTTPS frontend origin.
+
+Atlas is planned with a database-scoped application user and only Render's
+current Frankfurt outbound IP ranges. No wildcard network rule, paid fallback,
+or preview environment is approved. This topology is configuration only until
+the external resources and production flow are separately verified.
+
 ## Future sections
 
 When implemented, document authentication, the two-seat identity model, game
-engine boundaries, repository interfaces, error flow, and deployment.
+engine boundaries, repository interfaces, and error flow. Update the deployment
+section with verified provider identifiers only after provisioning.

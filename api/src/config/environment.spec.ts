@@ -52,4 +52,52 @@ describe('validateEnvironment', () => {
       }),
     ).toThrow('MONGODB_URI must use the mongodb or mongodb+srv scheme');
   });
+
+  it('requires an explicit MongoDB database name', () => {
+    expect(() =>
+      validateEnvironment({
+        ...validEnvironment,
+        MONGODB_URI: 'mongodb://127.0.0.1:27018',
+      }),
+    ).toThrow('MONGODB_URI must include a database name');
+  });
+
+  it('accepts HTTPS and MongoDB SRV configuration in production', () => {
+    expect(
+      validateEnvironment({
+        ...validEnvironment,
+        NODE_ENV: 'production',
+        FRONTEND_ORIGIN: 'https://dice-game-web.example.com',
+        MONGODB_URI:
+          'mongodb+srv://cluster.example.mongodb.net/dice_game?retryWrites=true',
+      }),
+    ).toMatchObject({
+      NODE_ENV: 'production',
+      FRONTEND_ORIGIN: 'https://dice-game-web.example.com',
+      MONGODB_URI:
+        'mongodb+srv://cluster.example.mongodb.net/dice_game?retryWrites=true',
+    });
+  });
+
+  it('requires HTTPS for the production frontend origin', () => {
+    expect(() =>
+      validateEnvironment({
+        ...validEnvironment,
+        NODE_ENV: 'production',
+        FRONTEND_ORIGIN: 'http://dice-game-web.example.com',
+        MONGODB_URI: 'mongodb+srv://cluster.example.mongodb.net/dice_game',
+      }),
+    ).toThrow('FRONTEND_ORIGIN must use HTTPS in production');
+  });
+
+  it('requires MongoDB SRV for the production database', () => {
+    expect(() =>
+      validateEnvironment({
+        ...validEnvironment,
+        NODE_ENV: 'production',
+        FRONTEND_ORIGIN: 'https://dice-game-web.example.com',
+        MONGODB_URI: 'mongodb://database.example.com/dice_game',
+      }),
+    ).toThrow('MONGODB_URI must use mongodb+srv in production');
+  });
 });
