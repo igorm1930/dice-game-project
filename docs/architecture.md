@@ -2,8 +2,8 @@
 
 ## Status
 
-Phase 4 persistent user architecture is implemented and verified through
-automated, direct API, database-restart, build, security, and Chrome checks.
+Phase 6 continuous-integration architecture is implemented and verified
+locally and in GitHub Actions.
 
 ## Current implemented architecture
 
@@ -11,6 +11,7 @@ automated, direct API, database-restart, build, security, and Chrome checks.
 dice-game-project/
 |-- api/          NestJS, validation, Mongoose, health, and users
 |-- web/          React health status, user form, and user list
+|-- .github/      Read-only CI verification and secret scanning
 `-- compose.yaml  Local MongoDB development service
 ```
 
@@ -72,6 +73,26 @@ be treated as production-ready account endpoints.
 
 MongoDB 7.0.39 remains bound only to `127.0.0.1:27018` with a named volume and
 healthcheck.
+
+### Continuous-integration path
+
+```text
+pull request or push to main
+  |-- Verify
+  |     |-- Node.js 22
+  |     |-- locked backend and frontend installs
+  |     |-- production dependency audits
+  |     |-- digest-pinned MongoDB service
+  |     `-- lint -> unit tests -> E2E tests -> both builds
+  `-- Secret scan
+        |-- full Git history checkout
+        `-- Gitleaks 8.30.1
+```
+
+Both jobs run with read-only repository and pull-request permissions. Checkout
+credentials are not persisted, actions use full commit SHAs, and no custom
+repository secrets are required. The one Gitleaks ignore entry is scoped to the
+exact fingerprint of a verified public NestJS starter badge false positive.
 
 ## Future sections
 

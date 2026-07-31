@@ -2,7 +2,8 @@
 
 ## Status
 
-Phase 1 through Phase 5 checks have been run.
+Phase 1 through Phase 6 checks have been run locally. Phase 6 has also passed
+GitHub-hosted verification.
 
 The full testing strategy will grow incrementally.
 
@@ -60,6 +61,35 @@ For:
 - authentication
 - two-user simulation
 - complete game flow
+
+## Phase 6 verification
+
+### Continuous integration
+
+- The workflow runs for pull requests and pushes to `main`.
+- The verification job uses Node.js 22 and a digest-pinned MongoDB 7.0.39
+  service.
+- Backend and frontend dependencies install independently from committed
+  lockfiles.
+- The backend production audit and frontend full audit are blocking.
+- Root verification runs backend/frontend lint, 16 backend unit tests,
+  11 backend E2E tests, 5 frontend component tests, and both builds.
+- Backend lint now checks without silently rewriting source.
+
+### CI security checks
+
+- Workflow permissions are explicitly read-only.
+- Checkout credentials are not persisted.
+- Actions use full commit SHA references.
+- `pull_request_target`, write permissions, persisted credentials, and
+  repository-secret references were absent.
+- Gitleaks 8.30.1 scanned 19 commits and approximately 685.95 KB.
+- The initial finding was the official public NestJS starter badge placeholder.
+  Its exact fingerprint is ignored; the repeated scan reported no leaks.
+- Pull-request workflow run `30624910984` completed successfully.
+- Hosted `Secret scan` passed in 9 seconds.
+- Hosted `Verify` passed in 56 seconds, including MongoDB service startup,
+  locked installs, audits, lint, all tests, and both builds.
 
 ## Phase 5 verification
 

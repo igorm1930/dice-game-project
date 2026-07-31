@@ -127,8 +127,7 @@ Verification summary:
 
 ## Phase 5 — Automated testing foundation
 
-Status: Completed, reviewed, committed in `08bca78`, and pushed. Awaiting merge
-to `main`.
+Status: Completed and merged to `main` in `4729338`.
 
 Verification summary:
 
@@ -148,15 +147,28 @@ Verification summary:
 
 ## Phase 6 — Continuous integration
 
-- [ ] Add GitHub Actions
-- [ ] Configure CI secrets and least-privilege workflow permissions
-- [ ] Add dependency and secret scans
-- [ ] Install dependencies
-- [ ] Run lint
-- [ ] Run tests
-- [ ] Build backend
-- [ ] Build frontend
-- [ ] Add MongoDB service when integration tests require it
+Status: Completed, reviewed, committed as `cac5e7f`, pushed, and verified in
+GitHub Actions. Draft pull request #7 is awaiting merge.
+
+Verification summary:
+
+- Clean installs, backend production audit, frontend audit, lint, 16 backend
+  unit tests, 11 backend E2E tests, 5 frontend tests, and both builds passed.
+- MongoDB was healthy and Compose configuration passed.
+- Gitleaks scanned all 19 commits with no remaining findings.
+- Workflow permissions and credential-handling scans passed.
+- GitHub Actions run `30624910984` passed: `Secret scan` in 9 seconds and
+  `Verify` in 56 seconds.
+
+- [x] Add GitHub Actions
+- [x] Configure CI secrets and least-privilege workflow permissions
+- [x] Add dependency and secret scans
+- [x] Install dependencies
+- [x] Run lint
+- [x] Run tests
+- [x] Build backend
+- [x] Build frontend
+- [x] Add MongoDB service when integration tests require it
 
 ## Phase 7 — Initial deployment flow
 

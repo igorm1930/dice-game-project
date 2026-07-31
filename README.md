@@ -58,7 +58,8 @@ validated MongoDB configuration and requires a live database connection before
 the health endpoint reports success. Phase 4 adds validated persistent users,
 user API endpoints, and the React creation/list flow. Phase 5 adds backend test
 structure, database safety, frontend component tests, and root verification
-commands.
+commands. Phase 6 adds read-only, SHA-pinned GitHub Actions verification and
+full-history secret scanning.
 
 Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
@@ -99,7 +100,7 @@ prefix. Real `.env` files must not be committed.
 The project MongoDB service is bound only to `127.0.0.1:27018`. It intentionally
 does not use the already-occupied port 27017.
 
-### Verify Phase 5
+### Verify Phase 6 locally
 
 ```powershell
 docker compose up -d mongodb
@@ -111,10 +112,14 @@ Remove-Item Env:VITE_API_URL
 The E2E suite defaults to `dice_game_e2e`, runs serially, cleans the user
 collection, and rejects database names that do not end in `_test` or `_e2e`.
 
+CI repeats locked installs, production dependency audits, the root verification
+command, and MongoDB-backed E2E tests on Node.js 22. A separate Gitleaks job
+scans full Git history. The workflow uses read-only permissions and does not
+require custom repository secrets.
+
 ## Current status
 
-Phases 1 through 4 are merged into `main`. Phase 5 is implemented, verified,
-reviewed, committed, and pushed on
-`phase/05-automated-testing-foundation`. Phase 5 is awaiting merge; Phase 6 has
-not started. See `CURRENT_PHASE.md` and the session logs for verification
-evidence.
+Phases 1 through 5 are merged into `main`. Phase 6 is completed, reviewed,
+committed, pushed, and verified in GitHub Actions on
+`phase/06-continuous-integration`. Draft pull request #7 is awaiting merge.
+See `CURRENT_PHASE.md` and the session logs for verification evidence.
