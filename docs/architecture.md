@@ -2,78 +2,76 @@
 
 ## Status
 
-Phase 3 MongoDB connection architecture is implemented and verified.
-
-This document describes only architecture that exists in the repository.
+Phase 4 persistent user architecture is implemented and verified through
+automated, direct API, database-restart, build, security, and Chrome checks.
 
 ## Current implemented architecture
 
-The repository contains two applications and a local MongoDB service:
-
 ```text
 dice-game-project/
-|-- api/          NestJS, TypeScript, and Mongoose backend
-|-- web/          React, TypeScript, and Vite frontend
+|-- api/          NestJS, validation, Mongoose, health, and users
+|-- web/          React health status, user form, and user list
 `-- compose.yaml  Local MongoDB development service
 ```
 
-The backend has a verified MongoDB connection but no schemas, models, or
-persisted domain data. Authentication, authorization, and game-domain
-implementation have not started.
+Authentication, authorization, and game-domain implementation have not
+started.
 
-### Backend execution path
+### Backend request path
 
-1. The global Nest `ConfigModule` validates and types all backend environment
-   variables before startup can complete.
-2. `DatabaseModule` configures Mongoose with the validated `MONGODB_URI` and
-   bounded connection retry settings.
-3. `api/src/main.ts` bootstraps NestJS, applies the global `/api` prefix, and
-   enables CORS for only the configured origin or requests without an
-   `Origin` header.
-4. `HealthModule` uses `DatabaseHealthService` to inspect the live Mongoose
-   connection state.
-5. `GET /api/health` returns the fixed success payload only while connected;
-   otherwise it returns HTTP 503.
-6. The generated root greeting remains available at `GET /api`.
+1. `ConfigModule` validates backend runtime configuration.
+2. `DatabaseModule` connects Mongoose with bounded retries.
+3. A global `ValidationPipe` transforms DTOs, removes no silently accepted
+   fields, and rejects non-whitelisted properties.
+4. `UsersController` exposes create, list, and ID lookup routes.
+5. `UsersService` owns persistence, duplicate error mapping, lookup, and
+   explicit response construction.
+6. The user schema stores `username` and Mongoose timestamps. A
+   case-insensitive unique index protects username uniqueness under races.
+7. API responses expose only `id`, `username`, `createdAt`, and `updatedAt`.
 
-Startup requires `NODE_ENV`, `PORT`, `FRONTEND_ORIGIN`, and `MONGODB_URI` to
-pass typed validation. The application listens on the validated `PORT`.
-
-### Frontend execution path
-
-1. `web/src/config.ts` requires public `VITE_API_URL` configuration.
-2. `web/src/api/health.ts` requests `/api/health`, checks the HTTP result, and
-   validates the response shape.
-3. `web/src/App.tsx` renders loading, success, or error state and cleans up its
-   request during React Strict Mode remounting.
-
-No development proxy is used; the browser calls the configured backend URL
-directly.
-
-### Request flow
+### User persistence flow
 
 ```text
-React App
-  -> fetch(VITE_API_URL + /api/health)
-  -> NestJS HealthController
-  -> Mongoose connection-state check
-  -> 200 fixed health payload or 503 unavailable
-  -> validated frontend state
+React form
+  -> createUser(username)
+  -> POST /api/users
+  -> CreateUserDto validation and trimming
+  -> UsersService
+  -> MongoDB users collection
+  -> explicit UserResponseDto
+  -> React saved-player list
 ```
 
-### Configuration boundary
+`GET /api/users` reloads the persisted list. `GET /api/users/:id` validates the
+MongoDB ID before querying. A verified API-process restart preserved stored
+users because MongoDB owns the data.
 
-`VITE_API_URL` and `FRONTEND_ORIGIN` are public operational values.
-`MONGODB_URI` is private backend configuration and must never use the `VITE_`
-prefix. Placeholder values are documented in `.env.example` files; real
-`.env` files remain ignored.
+### Frontend path
+
+1. The existing health request renders API connection state.
+2. `web/src/api/users.ts` performs create/list calls, checks HTTP failures, and
+   validates response shapes.
+3. `App` loads stored users on mount and renders loading, error, empty, or list
+   state.
+4. The labeled username form provides native constraints and renders server
+   errors without trusting client validation.
+5. React renders usernames as text, so stored values are escaped.
+
+### Security boundary
+
+The only new persisted user input is `username`. The backend trims it and
+requires 3-30 characters from letters, numbers, dots, underscores, or hyphens.
+Clients cannot supply IDs or timestamps. No passwords, tokens, authentication,
+or private frontend configuration exist in Phase 4.
+
+The user endpoints are intentionally unauthenticated until Phase 8 and must not
+be treated as production-ready account endpoints.
 
 ### Local database
 
-`compose.yaml` runs MongoDB 7.0.39 with a named volume. Its port is bound to
-`127.0.0.1:27018`, avoiding the existing service on port 27017 and preventing
-exposure on other host interfaces. The Compose healthcheck uses MongoDB's
-`ping` command.
+MongoDB 7.0.39 remains bound only to `127.0.0.1:27018` with a named volume and
+healthcheck.
 
 ## Future sections
 

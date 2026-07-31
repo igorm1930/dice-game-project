@@ -106,12 +106,25 @@ Verification summary:
 
 ## Phase 4 — Persistent user flow
 
-- [ ] Create the first user schema
-- [ ] Create a user-creation endpoint
-- [ ] Create a simple React user form
-- [ ] Store users in MongoDB
-- [ ] Display created users
-- [ ] Verify persistence after backend restart
+Status: Completed, reviewed, committed in `b3f1959`, and pushed. Awaiting merge
+to `main`.
+
+Verification summary:
+
+- Backend unit tests passed: 4 suites and 11 tests.
+- Real-MongoDB end-to-end tests passed: 2 suites and 11 tests.
+- Direct runtime checks verified create, list, lookup, validation, duplicate,
+  extra-field rejection, and persistence across API restart.
+- Backend/frontend lint and builds passed; all dependency audits reported zero.
+- Chrome verified creation, duplicate feedback, reload persistence, native
+  invalid-input handling, and desktop/mobile rendering.
+
+- [x] Create the first user schema
+- [x] Create a user-creation endpoint
+- [x] Create a simple React user form
+- [x] Store users in MongoDB
+- [x] Display created users
+- [x] Verify persistence after backend restart
 
 ## Phase 5 — Automated testing foundation
 

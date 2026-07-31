@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { validateEnvironment } from './config/environment';
 import { HealthModule } from './health/health.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { HealthModule } from './health/health.module';
       validate: validateEnvironment,
     }),
     HealthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

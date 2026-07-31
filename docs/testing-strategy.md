@@ -61,6 +61,50 @@ For:
 - two-user simulation
 - complete game flow
 
+## Phase 4 verification
+
+### Backend and database
+
+- `npm.cmd run lint`: passed.
+- `npm.cmd test -- --runInBand`: 4 suites and 11 tests passed.
+- `npm.cmd run test:e2e -- --runInBand`: 2 suites and 11 tests passed against
+  `dice_game_phase4_test`.
+- `npm.cmd run build`: passed.
+- E2E coverage verified trimming, response-field protection, list/lookup,
+  invalid input, unknown fields, case-insensitive duplicates, malformed and
+  unknown IDs, and persistence across a Nest application restart.
+- Direct runtime checks repeated create, list, lookup, 400, 409, and restart
+  persistence behavior against `dice_game_phase4_manual`.
+- Configured and disallowed CORS origins retained the expected headers.
+
+### Frontend
+
+- `npm.cmd run lint`: passed.
+- Configured `npm.cmd run build`: passed with Vite 8.1.5 and 20 transformed
+  modules.
+- The development server returned HTTP 200 and included the React root and
+  source entry.
+- Chrome verified the empty state, successful creation, saved-user rendering,
+  case-insensitive duplicate feedback, reload persistence, and native invalid
+  username handling.
+- Desktop and 390px mobile layouts rendered without overflow or clipping.
+- Browser verification found an invalid modern HTML pattern caused by an
+  unescaped hyphen. The pattern was corrected; frontend lint, build, and native
+  Chromium validation then passed.
+- No application console errors were found. Observed warnings came from an
+  unrelated installed Chrome extension.
+
+### Dependency and security checks
+
+- Backend production audit: 0 vulnerabilities.
+- Backend full audit: 0 vulnerabilities.
+- Frontend audit: 0 vulnerabilities.
+- Only `.env.example` files are tracked; no real `.env` file was found.
+- No credential-bearing MongoDB URI, private frontend configuration, or
+  sensitive runtime-log content was found.
+- Explicit response DTOs omit MongoDB internals.
+- `git diff --check`: passed.
+
 ## Phase 3 verification
 
 ### Backend and database
