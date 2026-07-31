@@ -2,105 +2,80 @@
 
 ## Status
 
-Phase 2 API connection architecture is implemented and verified.
+Phase 3 MongoDB connection architecture is implemented and verified.
 
-This document must describe only architecture that actually exists in the repository.
-
-Do not document planned components as completed components.
-
-## Approved direction
-
-The planned direction is:
-
-- NestJS backend
-- React frontend
-- MongoDB persistence
-- JWT authentication
-- backend-owned game logic
-- frontend renders server state
-- incremental implementation
+This document describes only architecture that exists in the repository.
 
 ## Current implemented architecture
 
-The repository contains two applications connected through an HTTP health
-request:
+The repository contains two applications and a local MongoDB service:
 
 ```text
 dice-game-project/
-├── api/   NestJS and TypeScript backend
-└── web/   React, TypeScript, and Vite frontend
+|-- api/          NestJS, TypeScript, and Mongoose backend
+|-- web/          React, TypeScript, and Vite frontend
+`-- compose.yaml  Local MongoDB development service
 ```
 
-There is no database, authentication, authorization, or game-domain
-implementation yet.
+The backend has a verified MongoDB connection but no schemas, models, or
+persisted domain data. Authentication, authorization, and game-domain
+implementation have not started.
 
 ### Backend execution path
 
-1. `api/src/main.ts` requires `FRONTEND_ORIGIN` before creating the server.
-2. It bootstraps NestJS with `AppModule`, applies the global `/api` prefix,
-   and enables CORS for only the configured origin or requests without an
+1. The global Nest `ConfigModule` validates and types all backend environment
+   variables before startup can complete.
+2. `DatabaseModule` configures Mongoose with the validated `MONGODB_URI` and
+   bounded connection retry settings.
+3. `api/src/main.ts` bootstraps NestJS, applies the global `/api` prefix, and
+   enables CORS for only the configured origin or requests without an
    `Origin` header.
-3. `api/src/app.module.ts` imports `HealthModule` alongside the generated
-   controller and service.
-4. `api/src/health/health.controller.ts` maps `GET /api/health` and returns
-   the fixed health payload.
-5. The generated root greeting remains available at `GET /api`.
+4. `HealthModule` uses `DatabaseHealthService` to inspect the live Mongoose
+   connection state.
+5. `GET /api/health` returns the fixed success payload only while connected;
+   otherwise it returns HTTP 503.
+6. The generated root greeting remains available at `GET /api`.
 
-The application listens on `process.env.PORT` when supplied, or port `3000`
-otherwise.
+Startup requires `NODE_ENV`, `PORT`, `FRONTEND_ORIGIN`, and `MONGODB_URI` to
+pass typed validation. The application listens on the validated `PORT`.
 
 ### Frontend execution path
 
-1. `web/index.html` supplies the browser document and the `root` element.
-2. `web/src/main.tsx` creates the React root and renders `App` in
-   `StrictMode`.
-3. `web/src/config.ts` requires the public `VITE_API_URL` value and normalizes
-   trailing slashes.
-4. `web/src/api/health.ts` requests `/api/health`, checks the HTTP result, and
+1. `web/src/config.ts` requires public `VITE_API_URL` configuration.
+2. `web/src/api/health.ts` requests `/api/health`, checks the HTTP result, and
    validates the response shape.
-5. `web/src/App.tsx` starts that request in an effect and renders loading,
-   success, or error state. An `AbortController` cleans up the request during
-   React Strict Mode remounting.
-6. `web/src/index.css` and `web/src/App.css` provide the page styling.
+3. `web/src/App.tsx` renders loading, success, or error state and cleans up its
+   request during React Strict Mode remounting.
 
-`web/vite.config.ts` enables the React plugin and rejects development startup
-or production builds when `VITE_API_URL` is missing. No development proxy is
-used; the browser calls the configured backend URL directly.
+No development proxy is used; the browser calls the configured backend URL
+directly.
 
 ### Request flow
 
 ```text
 React App
-  -> getHealth()
   -> fetch(VITE_API_URL + /api/health)
   -> NestJS HealthController
-  -> { "status": "ok", "service": "dice-game-api" }
+  -> Mongoose connection-state check
+  -> 200 fixed health payload or 503 unavailable
   -> validated frontend state
-  -> loading, success, or error UI
 ```
 
-`VITE_API_URL` and `FRONTEND_ORIGIN` are public operational values documented
-with placeholders in `web/.env.example` and `api/.env.example`. Real `.env`
-files remain ignored.
+### Configuration boundary
 
-### Generated and project-specific files
+`VITE_API_URL` and `FRONTEND_ORIGIN` are public operational values.
+`MONGODB_URI` is private backend configuration and must never use the `VITE_`
+prefix. Placeholder values are documented in `.env.example` files; real
+`.env` files remain ignored.
 
-Nest CLI generated the backend source, tests, TypeScript, Jest, ESLint,
-Prettier, and npm configuration. Vite generated the frontend source, assets,
-TypeScript, Oxlint, Vite, and npm configuration.
+### Local database
 
-`api/.gitignore` excludes dependencies, build/test output, logs, and local
-environment files while allowing `.env.example`.
+`compose.yaml` runs MongoDB 7.0.39 with a named volume. Its port is bound to
+`127.0.0.1:27018`, avoiding the existing service on port 27017 and preventing
+exposure on other host interfaces. The Compose healthcheck uses MongoDB's
+`ping` command.
 
 ## Future sections
 
-When implemented, document:
-
-- repository structure
-- MongoDB connection
-- authentication flow
-- two-seat identity model
-- game-engine boundary
-- repository interfaces
-- error flow
-- deployment architecture
+When implemented, document authentication, the two-seat identity model, game
+engine boundaries, repository interfaces, error flow, and deployment.

@@ -1,0 +1,17 @@
+services:
+  mongodb:
+    image: mongo:7.0.39
+    ports:
+      - '127.0.0.1:27018:27017'
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand(`ping`).ok']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  mongodb-data:

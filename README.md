@@ -53,17 +53,23 @@ The repository contains two applications:
 - `api/` — NestJS and TypeScript backend
 - `web/` — React, TypeScript, and Vite frontend
 
-Phase 2 connects React to the backend through `GET /api/health`. The frontend
-shows loading, connected, and unavailable states based on the server response.
+Phase 2 connects React to the backend through `GET /api/health`. Phase 3 adds
+validated MongoDB configuration and requires a live database connection before
+the health endpoint reports success.
 
 Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
 ### Run the backend
 
 ```powershell
+docker compose up -d mongodb
+
 Set-Location api
 npm.cmd ci
+$env:NODE_ENV='development'
+$env:PORT='3000'
 $env:FRONTEND_ORIGIN='http://localhost:5173'
+$env:MONGODB_URI='mongodb://127.0.0.1:27018/dice_game'
 npm.cmd run start:dev
 ```
 
@@ -81,14 +87,22 @@ npm.cmd run dev -- --host localhost --port 5173 --strictPort
 
 The frontend is available at `http://localhost:5173`.
 
-`VITE_API_URL` is public frontend configuration. `FRONTEND_ORIGIN` is backend
-operational configuration used for exact-origin CORS. Neither value is a
-secret. Real `.env` files must not be committed.
+`VITE_API_URL` is public frontend configuration. `NODE_ENV`, `PORT`,
+`FRONTEND_ORIGIN`, and `MONGODB_URI` are backend runtime configuration.
+`MONGODB_URI` is private backend configuration and must never use the `VITE_`
+prefix. Real `.env` files must not be committed.
 
-### Verify Phase 2
+The project MongoDB service is bound only to `127.0.0.1:27018`. It intentionally
+does not use the already-occupied port 27017.
+
+### Verify Phase 3
 
 ```powershell
 Set-Location api
+$env:NODE_ENV='test'
+$env:PORT='3001'
+$env:FRONTEND_ORIGIN='http://localhost:5173'
+$env:MONGODB_URI='mongodb://127.0.0.1:27018/dice_game_e2e'
 npm.cmd run lint
 npm.cmd test -- --runInBand
 npm.cmd run test:e2e -- --runInBand
@@ -102,7 +116,6 @@ npm.cmd run build
 
 ## Current status
 
-Phase 2 is complete on `phase/02-api-connection`. Its reviewed implementation
-is recorded in commit `53b5555`. The branch has not been merged into `main`,
-and Phase 3 has not started. See `CURRENT_PHASE.md` and
-`docs/session-log/002-api-connection.md` for the evidence and limitations.
+Phase 2 is merged into `main`. Phase 3 is implemented and verified on
+`phase/03-mongodb-connection` and is awaiting developer review. Phase 4 has not
+started. See `CURRENT_PHASE.md` and the session logs for verification evidence.
