@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 20:09 (Israel time)_
+_Last updated: 2026-07-31 20:44 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -666,6 +666,7 @@ This is the fixed high-level order for the project. We should not skip forward u
 ## 11. Current next action
 
 Phase 9 is completed and merged into `main` as `8b26fce`. Phase 10 is
-implemented and locally verified on `phase/10-pure-game-engine`. Wait for
-developer review and explicit approval before committing, pushing, or
-beginning Phase 11.
+implemented, locally verified, developer-approved, committed as `bd01e44`, and
+pushed on `phase/10-pure-game-engine`. Pull request #11 is ready for review and
+its required checks pass. Wait for explicit approval before merging, and do
+not begin Phase 11 first.

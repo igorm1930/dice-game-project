@@ -7,9 +7,9 @@ Phase 10 - Pure backend game engine
 ## Status
 
 Phase 9 was merged into `main` through pull request #10 as `8b26fce`.
-Phase 10 is implemented and locally verified on
-`phase/10-pure-game-engine`. It has not been reviewed, approved, committed,
-pushed, deployed, or merged.
+Phase 10 is implemented, locally verified, and developer-approved on
+`phase/10-pure-game-engine`. Commit `bd01e44` is pushed, pull request #11 is
+ready for review, and both required CI checks pass. Phase 10 is not merged.
 
 ## Implemented scope
 
@@ -70,9 +70,9 @@ pushed, deployed, or merged.
 - React game UI or frontend game rules
 - Lifetime win counters or concurrency controls
 - Production deployment or provider configuration
-- Commit, push, pull request, or merge
+- Merge or Phase 11 implementation
 
 ## Next action
 
-Wait for developer review and explicit approval of the verified Phase 10
-implementation. Do not commit, push, deploy, merge, or begin Phase 11.
+Wait for explicit approval before merging pull request #11. Do not begin
+Phase 11 before Phase 10 is merged and its completion state is recorded.

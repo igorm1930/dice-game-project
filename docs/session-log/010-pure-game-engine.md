@@ -60,9 +60,9 @@ No browser or HTTP check applies because this phase exposes neither.
 
 ## Remaining
 
-- The uncommitted diff was not sent to the third-party Gitleaks container after
-  the execution environment rejected that code-egress path. The local
-  Phase 10 file scan found no credential, private-key, or secret-assignment
-  patterns, and CI will scan committed history before merge.
-- Developer review and approval are required before commit or push.
+- The developer approved the verified implementation. Commit `bd01e44` is
+  pushed on `phase/10-pure-game-engine`, and pull request #11 is ready for
+  review.
+- GitHub CI passed both `Verify` and `Secret scan` on the committed branch.
+- Merge still requires explicit approval.
 - Phase 11 has not started.
