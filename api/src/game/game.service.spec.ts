@@ -40,12 +40,12 @@ describe('GameService', () => {
     );
   }
 
-  function expectHttpError(
-    action: () => unknown,
+  async function expectHttpError(
+    action: () => Promise<unknown>,
     expectedResponse: object,
-  ): void {
+  ): Promise<void> {
     try {
-      action();
+      await action();
     } catch (error) {
       expect(error).toBeInstanceOf(HttpException);
       expect((error as HttpException).getResponse()).toEqual(expectedResponse);
@@ -104,11 +104,11 @@ describe('GameService', () => {
     const service = createService();
     const game = await service.create(playerA, { opponentId: playerB });
 
-    expectHttpError(
+    await expectHttpError(
       () => service.get(game.id, outsider),
       GAME_NOT_FOUND_RESPONSE,
     );
-    expectHttpError(
+    await expectHttpError(
       () => service.get('00000000-0000-4000-8000-000000000000', playerA),
       GAME_NOT_FOUND_RESPONSE,
     );
@@ -118,12 +118,12 @@ describe('GameService', () => {
     const service = createService([2, 3]);
     const game = await service.create(playerA, { opponentId: playerB });
 
-    expectHttpError(
+    await expectHttpError(
       () => service.roll(game.id, playerB),
       NOT_YOUR_TURN_RESPONSE,
     );
 
-    expect(service.roll(game.id, playerA)).toMatchObject({
+    await expect(service.roll(game.id, playerA)).resolves.toMatchObject({
       activePlayerId: playerA,
       roundScore: 5,
       lastRoll: [2, 3],
@@ -133,9 +133,9 @@ describe('GameService', () => {
   it('banks Hold and returns caller-specific allowed actions', async () => {
     const service = createService([3, 4]);
     const game = await service.create(playerA, { opponentId: playerB });
-    const rolled = service.roll(game.id, playerA);
+    const rolled = await service.roll(game.id, playerA);
 
-    const held = service.hold(rolled.id, playerA);
+    const held = await service.hold(rolled.id, playerA);
 
     expect(held).toMatchObject({
       players: [
@@ -146,18 +146,16 @@ describe('GameService', () => {
       roundScore: 0,
       allowedActions: ['restart'],
     });
-    expect(service.get(game.id, playerB).allowedActions).toEqual([
-      'roll',
-      'hold',
-      'restart',
-    ]);
+    await expect(service.get(game.id, playerB)).resolves.toMatchObject({
+      allowedActions: ['roll', 'hold', 'restart'],
+    });
   });
 
   it('applies double-six bust behavior through the domain engine', async () => {
     const service = createService([6, 6]);
     const game = await service.create(playerA, { opponentId: playerB });
 
-    expect(service.roll(game.id, playerA)).toMatchObject({
+    await expect(service.roll(game.id, playerA)).resolves.toMatchObject({
       activePlayerId: playerB,
       roundScore: 0,
       lastRoll: [6, 6],
@@ -170,20 +168,20 @@ describe('GameService', () => {
       opponentId: playerB,
       winningScore: 10,
     });
-    service.roll(game.id, playerA);
+    await service.roll(game.id, playerA);
 
-    const won = service.hold(game.id, playerA);
+    const won = await service.hold(game.id, playerA);
 
     expect(won).toMatchObject({
       status: 'won',
       winnerId: playerA,
       allowedActions: ['restart'],
     });
-    expectHttpError(
+    await expectHttpError(
       () => service.roll(game.id, playerA),
       GAME_FINISHED_RESPONSE,
     );
-    expectHttpError(
+    await expectHttpError(
       () => service.hold(game.id, playerA),
       GAME_FINISHED_RESPONSE,
     );
@@ -195,9 +193,9 @@ describe('GameService', () => {
       opponentId: playerB,
       winningScore: 25,
     });
-    service.roll(game.id, playerA);
+    await service.roll(game.id, playerA);
 
-    expect(service.restart(game.id, playerB)).toMatchObject({
+    await expect(service.restart(game.id, playerB)).resolves.toMatchObject({
       players: [
         { id: playerA, globalScore: 0 },
         { id: playerB, globalScore: 0 },

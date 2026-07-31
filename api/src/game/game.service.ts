@@ -52,20 +52,23 @@ export class GameService {
       [actorId, opponent.id],
       createGameDto.winningScore,
     );
-    const record = this.gameRepository.create(state);
+    const record = await this.gameRepository.create(state);
 
     return new GameResponseDto(record, actorId);
   }
 
-  get(gameId: string, actorId: string): GameResponseDto {
-    return new GameResponseDto(this.findVisibleGame(gameId, actorId), actorId);
+  async get(gameId: string, actorId: string): Promise<GameResponseDto> {
+    return new GameResponseDto(
+      await this.findVisibleGame(gameId, actorId),
+      actorId,
+    );
   }
 
-  roll(gameId: string, actorId: string): GameResponseDto {
-    const record = this.findVisibleGame(gameId, actorId);
+  async roll(gameId: string, actorId: string): Promise<GameResponseDto> {
+    const record = await this.findVisibleGame(gameId, actorId);
     this.ensureActorsTurn(record.state, actorId);
 
-    const updated = this.gameRepository.save({
+    const updated = await this.gameRepository.save({
       ...record,
       state: this.gameEngine.roll(record.state),
     });
@@ -73,11 +76,11 @@ export class GameService {
     return new GameResponseDto(updated, actorId);
   }
 
-  hold(gameId: string, actorId: string): GameResponseDto {
-    const record = this.findVisibleGame(gameId, actorId);
+  async hold(gameId: string, actorId: string): Promise<GameResponseDto> {
+    const record = await this.findVisibleGame(gameId, actorId);
     this.ensureActorsTurn(record.state, actorId);
 
-    const updated = this.gameRepository.save({
+    const updated = await this.gameRepository.save({
       ...record,
       state: this.gameEngine.hold(record.state),
     });
@@ -85,9 +88,9 @@ export class GameService {
     return new GameResponseDto(updated, actorId);
   }
 
-  restart(gameId: string, actorId: string): GameResponseDto {
-    const record = this.findVisibleGame(gameId, actorId);
-    const updated = this.gameRepository.save({
+  async restart(gameId: string, actorId: string): Promise<GameResponseDto> {
+    const record = await this.findVisibleGame(gameId, actorId);
+    const updated = await this.gameRepository.save({
       ...record,
       state: this.gameEngine.restart(record.state),
     });
@@ -95,8 +98,11 @@ export class GameService {
     return new GameResponseDto(updated, actorId);
   }
 
-  private findVisibleGame(gameId: string, actorId: string): GameRecord {
-    const record = this.gameRepository.findById(gameId);
+  private async findVisibleGame(
+    gameId: string,
+    actorId: string,
+  ): Promise<GameRecord> {
+    const record = await this.gameRepository.findById(gameId);
 
     if (
       !record ||

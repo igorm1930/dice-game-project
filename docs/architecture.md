@@ -2,9 +2,9 @@
 
 ## Status
 
-Phase 11 is merged into `main`. Phase 12's playable React game is implemented
-and locally verified on its phase branch. The deployed application remains on
-the previous frontend version.
+Phase 12 is merged into `main`. Phase 13's MongoDB-backed game persistence is
+implemented and locally verified on its phase branch. The deployed application
+remains on the previous backend version.
 
 ## Current implemented architecture
 
@@ -93,9 +93,10 @@ backend can return its `allowedActions`. Roll, Hold, and Restart send empty
 action bodies. `GameBoard` displays player scores, round score, dice, turn,
 winner, and action availability without reproducing game rules.
 
-Game state and access tokens remain only in React memory. A game-request 401
-clears only the rejected seat; a missing in-memory game returns the screen to
-game setup.
+The current game reference and access tokens remain only in React memory, while
+the authoritative game record is stored in MongoDB. An open page can refetch
+its known game after an API restart. A game-request 401 clears only the
+rejected seat; a missing game returns the screen to game setup.
 
 ### Pure game engine
 
@@ -119,7 +120,7 @@ The engine throws explicit `GameRuleError` codes for invalid players, invalid
 winning scores, invalid injected dice, and actions after victory. It imports no
 NestJS, HTTP, Mongoose, MongoDB, authentication, or React code.
 
-### In-memory game API
+### Persistent game API
 
 `GameModule` connects authenticated HTTP requests to the pure engine:
 
@@ -128,19 +129,27 @@ verified JWT subject
   -> GameController
   -> GameService authorization
   -> GameEngine transition
-  -> InMemoryGameRepository
+  -> MongooseGameRepository
+  -> MongoDB games document
   -> caller-specific GameResponseDto
 ```
 
-The repository interface stores records with UUID v4 IDs. Its current
-`Map` implementation is process-local and intentionally loses games on API
-restart. `SecureDiceRoller` implements the domain dice interface with Node
+The asynchronous repository interface still stores records with UUID v4 IDs.
+Production uses the UUID as the MongoDB string `_id` and persists both players
+and scores, active-player index, round score, winning score, last roll, status,
+winner, and timestamps in one `games` document. Each action updates that
+single document after the service authorizes the caller and runs the pure
+engine transition.
+
+The previous `Map` repository remains only for isolated service tests.
+`SecureDiceRoller` implements the domain dice interface with Node
 `crypto.randomInt`; tests replace the same injection token deterministically.
 
 The service hides records from nonparticipants, limits Roll and Hold to the
 active player, permits either participant to Restart, and maps domain state to
 caller-specific allowed actions. User lookup permits only credentialed
-opponents. No Mongoose game schema or frontend game rule exists.
+opponents. The API contract and frontend game client are unchanged, and no
+frontend game rule exists.
 
 ### Security boundary
 
@@ -151,6 +160,13 @@ runtime configuration, while tokens contain only account identity claims.
 The browser keeps access tokens only in React memory and clears passwords after
 submission. It does not use cookies, browser storage, URLs, or request-body
 identity fields for authentication.
+
+Game documents contain participant IDs and authoritative state but no access
+tokens, password data, or client-provided actor identity. Schema validators
+constrain UUID and player IDs, exactly two distinct players, safe scores, dice,
+status, and winner consistency. Optimistic concurrency is deferred, so Phase
+13 provides durable single-document writes without duplicate-action
+protection.
 
 `POST /api/users` is removed so callers cannot create passwordless accounts.
 The public list and ID routes remain read-only. Existing Phase 4-7 records can

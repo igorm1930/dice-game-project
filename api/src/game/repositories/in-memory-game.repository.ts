@@ -7,19 +7,19 @@ import type { GameRecord, GameRepository } from './game.repository';
 export class InMemoryGameRepository implements GameRepository {
   private readonly games = new Map<string, GameRecord>();
 
-  create(state: GameState): GameRecord {
+  create(state: GameState): Promise<GameRecord> {
     const record = { id: randomUUID(), state };
     this.games.set(record.id, record);
-    return record;
+    return Promise.resolve(record);
   }
 
-  findById(id: string): GameRecord | undefined {
-    return this.games.get(id);
+  findById(id: string): Promise<GameRecord | undefined> {
+    return Promise.resolve(this.games.get(id));
   }
 
-  save(record: GameRecord): GameRecord {
+  save(record: GameRecord): Promise<GameRecord> {
     const storedRecord = { ...record };
     this.games.set(storedRecord.id, storedRecord);
-    return storedRecord;
+    return Promise.resolve(storedRecord);
   }
 }

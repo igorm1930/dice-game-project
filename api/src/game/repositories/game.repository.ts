@@ -6,7 +6,7 @@ export interface GameRecord {
 }
 
 export interface GameRepository {
-  create(state: GameState): GameRecord;
-  findById(id: string): GameRecord | undefined;
-  save(record: GameRecord): GameRecord;
+  create(state: GameState): Promise<GameRecord>;
+  findById(id: string): Promise<GameRecord | undefined>;
+  save(record: GameRecord): Promise<GameRecord>;
 }

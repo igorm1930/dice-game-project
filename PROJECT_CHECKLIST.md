@@ -257,9 +257,8 @@ Status: Completed and merged to `main` through pull request #12 as
 
 ## Phase 12 — Simple playable React game
 
-Status: Implemented, locally verified, and developer-reviewed on
-`phase/12-playable-react-game`. Commit and push are authorized; items remain
-unchecked until publication is complete.
+Status: Completed and merged to `main` through pull request #13 as
+`badca27`.
 
 Verification summary:
 
@@ -271,19 +270,34 @@ Verification summary:
 - Dependency audits reported zero vulnerabilities and full-history Gitleaks
   found no leaks.
 
-- [ ] Add game creation form
-- [ ] Add player panels
-- [ ] Add scores
-- [ ] Add round score
-- [ ] Add dice display
-- [ ] Add Roll button
-- [ ] Add Hold button
-- [ ] Add New Game button
-- [ ] Add API error handling
-- [ ] Render server-provided permissions
-- [ ] Do not calculate game rules in React
+- [x] Add game creation form
+- [x] Add player panels
+- [x] Add scores
+- [x] Add round score
+- [x] Add dice display
+- [x] Add Roll button
+- [x] Add Hold button
+- [x] Add New Game button
+- [x] Add API error handling
+- [x] Render server-provided permissions
+- [x] Do not calculate game rules in React
 
 ## Phase 13 — Persistent game state
+
+Status: Implemented, locally verified, and developer-reviewed on
+`phase/13-persistent-game-state`. Commit and push are authorized; items remain
+unchecked until publication is complete.
+
+Verification summary:
+
+- Focused repository/service tests passed: 2 suites and 14 tests.
+- Focused real-MongoDB game E2E tests passed: 1 suite and 12 tests.
+- Root verification passed 75 backend unit tests, 42 backend E2E tests, 36
+  frontend tests, lint, and both builds.
+- Browser verification recovered rolled and restarted state across two API
+  process restarts.
+- Production dependency and frontend audits found zero vulnerabilities; secret
+  scans found no leaks.
 
 - [ ] Replace the in-memory repository with MongoDB
 - [ ] Preserve the repository interface

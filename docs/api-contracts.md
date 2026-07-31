@@ -2,8 +2,9 @@
 
 ## Status
 
-The health, read-only user, authentication, and Phase 11 game endpoints are
-implemented and tested.
+The health, read-only user, authentication, and game endpoints are implemented
+and tested. Phase 13 moved game records to MongoDB without changing the HTTP
+contract.
 
 Only document endpoints after they exist and have been tested.
 
@@ -166,6 +167,11 @@ tokens return:
 All game endpoints require `Authorization: Bearer <access-token>`. The acting
 player is always the verified JWT subject; request bodies never select the
 actor. An invalid or missing token returns `401 UNAUTHORIZED`.
+
+Game IDs remain UUID v4 strings. The complete authoritative state is stored in
+one MongoDB `games` document and survives API-process restarts. The API does
+not expose a game-listing or browser-refresh resume endpoint; a client must
+already know the game ID.
 
 ### Game response
 

@@ -5,6 +5,10 @@ import { Types, type Model } from 'mongoose';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import type { DiceRoll, DiceRoller } from '../src/game/domain/dice-roller';
+import {
+  PersistedGame,
+  type PersistedGameDocument,
+} from '../src/game/schemas/game.schema';
 import { User, type UserDocument } from '../src/users/schemas/user.schema';
 import { createTestApplication } from './test-application';
 
@@ -40,6 +44,7 @@ interface GameResponse {
 describe('Game API (e2e)', () => {
   let app: INestApplication<App>;
   let userModel: Model<UserDocument>;
+  let gameModel: Model<PersistedGameDocument>;
   let playerA: TestUser;
   let playerB: TestUser;
   let outsider: TestUser;
@@ -86,10 +91,24 @@ describe('Game API (e2e)', () => {
     };
   }
 
+  async function restartApplication(): Promise<void> {
+    await app.close();
+    app = await createTestApplication({ diceRoller });
+    userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
+    gameModel = app.get<Model<PersistedGameDocument>>(
+      getModelToken(PersistedGame.name),
+    );
+  }
+
   beforeAll(async () => {
     app = await createTestApplication({ diceRoller });
     userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
+    gameModel = app.get<Model<PersistedGameDocument>>(
+      getModelToken(PersistedGame.name),
+    );
     await userModel.init();
+    await gameModel.init();
+    await gameModel.deleteMany({}).exec();
     await userModel.deleteMany({}).exec();
     playerA = await registerAndLogin('GamePlayerA', '198.51.100.101');
     playerB = await registerAndLogin('GamePlayerB', '198.51.100.102');
@@ -248,6 +267,19 @@ describe('Game API (e2e)', () => {
         });
       });
 
+    await restartApplication();
+    await request(app.getHttpServer())
+      .get(`/api/games/${game.id}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toMatchObject({
+          activePlayerId: playerA.id,
+          roundScore: 5,
+          lastRoll: [2, 3],
+        });
+      });
+
     await request(app.getHttpServer())
       .post(`/api/games/${game.id}/hold`)
       .set('Authorization', `Bearer ${playerA.accessToken}`)
@@ -263,6 +295,23 @@ describe('Game API (e2e)', () => {
           roundScore: 0,
         });
       });
+
+    await restartApplication();
+    await request(app.getHttpServer())
+      .get(`/api/games/${game.id}`)
+      .set('Authorization', `Bearer ${playerB.accessToken}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toMatchObject({
+          players: [
+            { id: playerA.id, globalScore: 5 },
+            { id: playerB.id, globalScore: 0 },
+          ],
+          activePlayerId: playerB.id,
+          roundScore: 0,
+          allowedActions: ['roll', 'hold', 'restart'],
+        });
+      });
   });
 
   it('applies double-six bust and passes the turn', async () => {
@@ -270,6 +319,19 @@ describe('Game API (e2e)', () => {
       .post(`/api/games/${game.id}/roll`)
       .set('Authorization', `Bearer ${playerB.accessToken}`)
       .send({})
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toMatchObject({
+          activePlayerId: playerA.id,
+          roundScore: 0,
+          lastRoll: [6, 6],
+        });
+      });
+
+    await restartApplication();
+    await request(app.getHttpServer())
+      .get(`/api/games/${game.id}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
       .expect(200)
       .expect((response) => {
         expect(response.body).toMatchObject({
@@ -296,6 +358,19 @@ describe('Game API (e2e)', () => {
       .post(`/api/games/${game.id}/hold`)
       .set('Authorization', `Bearer ${playerA.accessToken}`)
       .send({})
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toMatchObject({
+          status: 'won',
+          winnerId: playerA.id,
+          allowedActions: ['restart'],
+        });
+      });
+
+    await restartApplication();
+    await request(app.getHttpServer())
+      .get(`/api/games/${game.id}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
       .expect(200)
       .expect((response) => {
         expect(response.body).toMatchObject({
@@ -341,6 +416,27 @@ describe('Game API (e2e)', () => {
           allowedActions: ['restart'],
         });
       });
+
+    await restartApplication();
+    await request(app.getHttpServer())
+      .get(`/api/games/${game.id}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toMatchObject({
+          players: [
+            { id: playerA.id, globalScore: 0 },
+            { id: playerB.id, globalScore: 0 },
+          ],
+          activePlayerId: playerA.id,
+          roundScore: 0,
+          winningScore: 10,
+          lastRoll: null,
+          status: 'active',
+          winnerId: null,
+          allowedActions: ['roll', 'hold', 'restart'],
+        });
+      });
   });
 
   it('validates game identifiers before lookup', async () => {
@@ -351,6 +447,9 @@ describe('Game API (e2e)', () => {
   });
 
   afterAll(async () => {
+    if (gameModel) {
+      await gameModel.deleteMany({}).exec();
+    }
     if (userModel) {
       await userModel.deleteMany({}).exec();
     }
