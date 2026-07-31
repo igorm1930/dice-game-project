@@ -145,7 +145,7 @@ Atlas must allow only Render's current Frankfurt outbound IP ranges. See
 
 ## Current status
 
-Phases 1 through 8 are merged into `main`. Phase 9 is implemented and locally
-verified on `phase/09-two-authenticated-users`; it has not been committed,
-pushed, deployed, reviewed, or merged. The deployed frontend remains on the
-previous phase until a separately approved deployment.
+Phases 1 through 8 are merged into `main`. Phase 9 is implemented, locally
+verified, and developer-approved on `phase/09-two-authenticated-users`; it has
+not been committed, pushed, deployed, or merged. The deployed frontend remains
+on the previous phase until a separately approved deployment.

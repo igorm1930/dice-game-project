@@ -6,9 +6,9 @@ Phase 9 - Two authenticated users on one page
 
 ## Status
 
-Phase 9 is implemented and locally verified on
+Phase 9 is implemented, locally verified, and approved by the developer on
 `phase/09-two-authenticated-users`. It has not been committed, pushed,
-deployed, reviewed, or merged.
+deployed, or merged.
 
 ## Implemented scope
 
@@ -77,5 +77,5 @@ deployed, reviewed, or merged.
 
 ## Next action
 
-Wait for developer review. Do not commit, push, deploy, merge, or begin Phase 10
-without explicit approval.
+Wait for explicit commit and push instructions. Do not deploy, merge, or begin
+Phase 10 without explicit approval.
