@@ -2,7 +2,7 @@
 
 ## Status
 
-The Phase 2 health endpoint is implemented and tested.
+The Phase 3 database-aware health endpoint is implemented and tested.
 
 Only document endpoints after they exist and have been tested.
 
@@ -28,11 +28,18 @@ Status: `200 OK`
 ```
 
 Both response fields are fixed strings. The endpoint accepts no user input.
+Success requires an active Mongoose connection.
 
 ### Errors
 
-The endpoint has no application-specific error response. Network, startup, or
-unexpected server failures prevent a successful response.
+If the API is running but MongoDB becomes disconnected, the endpoint returns
+`503 Service Unavailable` with Nest's standard error body and the message
+`Database connection is unavailable`.
+
+If MongoDB is unavailable during startup, the API makes three bounded
+connection attempts and exits instead of serving an unhealthy application.
+Invalid or missing runtime configuration also prevents startup with a clear
+validation error.
 
 ### Example
 

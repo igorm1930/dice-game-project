@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 1 foundation checks and Phase 2 API-connection checks have been run.
+Phase 1, Phase 2, and Phase 3 checks have been run.
 
 The full testing strategy will grow incrementally.
 
@@ -60,6 +60,44 @@ For:
 - authentication
 - two-user simulation
 - complete game flow
+
+## Phase 3 verification
+
+### Backend and database
+
+- `npm.cmd run lint`: passed.
+- `npm.cmd test -- --runInBand`: 4 suites and 11 tests passed.
+- `npm.cmd run test:e2e -- --runInBand`: 1 suite and 2 tests passed against
+  the isolated Phase 3 database.
+- `npm.cmd run build`: passed.
+- `docker compose config`: passed.
+- MongoDB 7.0.39 became healthy and responded successfully to `ping`.
+- The Phase 3 MongoDB port was exposed only as `127.0.0.1:27018`.
+- With MongoDB connected, `GET /api/health` returned HTTP 200 and the approved
+  fixed JSON payload.
+- Stopping MongoDB changed the running API health response to HTTP 503.
+- Restarting MongoDB restored HTTP 200 without restarting the API.
+- Starting the API while MongoDB was unavailable made exactly three bounded
+  connection attempts, then exited with code 1.
+- Missing `MONGODB_URI` caused immediate startup validation failure with a
+  clear error.
+
+### Frontend regression
+
+- `npm.cmd run lint`: passed.
+- Configured `npm.cmd run build`: passed with Vite 8.1.5 and 19 transformed
+  modules.
+
+### Dependency and security checks
+
+- Backend production audit: 0 vulnerabilities.
+- Backend full audit: 0 vulnerabilities.
+- Frontend audit: 0 vulnerabilities.
+- Only `.env.example` files are tracked; no real `.env` file was found.
+- No private configuration name or MongoDB connection value was found in
+  frontend source or build output.
+- No credential-bearing MongoDB URI was added.
+- `git diff --check`: passed.
 
 ## Phase 2 verification
 

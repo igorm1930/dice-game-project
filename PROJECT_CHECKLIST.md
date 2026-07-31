@@ -84,13 +84,25 @@ Verification summary:
 
 ## Phase 3 — MongoDB connection
 
-- [ ] Add Mongoose
-- [ ] Add private MongoDB environment configuration
-- [ ] Add typed NestJS configuration validation
-- [ ] Add `.env.example`
-- [ ] Connect NestJS to MongoDB
-- [ ] Verify successful database connection
-- [ ] Verify understandable failure behavior
+Status: Completed, reviewed, committed, and pushed. Awaiting merge to `main`.
+
+Verification summary:
+
+- Typed configuration tests, database-health tests, and existing unit tests
+  passed: 4 suites and 11 tests.
+- Live-MongoDB end-to-end tests passed: 1 suite and 2 tests.
+- Connected, unavailable, startup-failure, and recovery behavior were verified.
+- Backend and frontend lint/build regression checks passed.
+- Dependency audits and configuration/security scans passed.
+- MongoDB is bound only to `127.0.0.1:27018`.
+
+- [x] Add Mongoose
+- [x] Add private MongoDB environment configuration
+- [x] Add typed NestJS configuration validation
+- [x] Add `.env.example`
+- [x] Connect NestJS to MongoDB
+- [x] Verify successful database connection
+- [x] Verify understandable failure behavior
 
 ## Phase 4 — Persistent user flow
 
