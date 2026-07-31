@@ -172,8 +172,9 @@ Verification summary:
 
 ## Phase 7 — Initial deployment flow
 
-Status: Local deployment configuration is implemented and verified. External
-resources, production verification, review, commit, and push remain pending.
+Status: Deployed and production flow verified. The build-command correction,
+verified-reality documentation, hosted CI, cold-start check, review, and merge
+remain pending.
 
 Local verification summary:
 
@@ -182,14 +183,17 @@ Local verification summary:
   tests, and both builds passed.
 - Production dependency audits, Compose validation, Blueprint formatting, and
   frontend private-configuration scans passed.
-- No external Render or Atlas resource has been created.
+- Render API/static services and the Atlas M0 cluster are live on free plans.
+- Production health, exact-origin CORS, browser user creation, Atlas document
+  storage, and reload persistence passed.
+- Full-history and uncommitted-diff Gitleaks scans found no leaks.
 
-- [ ] Deploy frontend
-- [ ] Deploy backend
-- [ ] Connect production MongoDB
-- [ ] Configure environment variables
-- [ ] Verify health endpoint
-- [ ] Verify persistent user flow in production
+- [x] Deploy frontend
+- [x] Deploy backend
+- [x] Connect production MongoDB
+- [x] Configure environment variables
+- [x] Verify health endpoint
+- [x] Verify persistent user flow in production
 - [ ] Confirm CI still passes
 
 ## Phase 8 — Authentication

@@ -5,7 +5,7 @@ services:
     plan: free
     region: frankfurt
     rootDir: api
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /api/health
     autoDeployTrigger: checksPass
@@ -23,7 +23,7 @@ services:
     runtime: static
     name: dice-game-web-igorm1930
     rootDir: web
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: dist
     autoDeployTrigger: checksPass
     envVars:

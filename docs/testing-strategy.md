@@ -3,8 +3,9 @@
 ## Status
 
 Phase 1 through Phase 7 checks have been run locally. Phase 6 has also passed
-GitHub-hosted verification. Phase 7 production checks remain pending because no
-external resources have been provisioned.
+GitHub-hosted verification. Phase 7 production health, CORS, frontend, Atlas,
+and persistence checks passed; hosted CI and a real idle cold-start check remain
+pending.
 
 The full testing strategy will grow incrementally.
 
@@ -84,14 +85,24 @@ For:
 - No MongoDB URI, `MONGODB_URI`, `FRONTEND_ORIGIN`, or planned database user
   name appeared in the browser bundle.
 
-### Production checks still required
+### Production verification
 
-- Render and Atlas resources have not been provisioned.
-- Provider-side Blueprint validation, hosted health, exact-origin CORS, Atlas
-  persistence, refresh persistence, cold-start recovery, provider-log review,
-  and hosted GitHub checks are not yet verified.
-- These checks must not be marked complete until external provisioning receives
-  separate approval and the commands are actually run.
+- Render deployed the API and static site at the planned public URLs.
+- API health returned HTTP 200 with the documented response.
+- The exact frontend origin received the expected CORS header; an unapproved
+  origin received none.
+- The hosted frontend connected to the API, created
+  `phase7-check-20260731-1507`, and still displayed it after reload.
+- Atlas Data Explorer confirmed one matching document in `dice_game.users`.
+- Atlas network access contains exactly the two active Render Frankfurt CIDRs.
+- Static headers and the SPA rewrite returned HTTP 200.
+- Provider-log inspection found no connection string, database user, password,
+  unhandled exception, or error marker.
+- Full-history Gitleaks scanned 22 commits with no findings; the uncommitted
+  diff scan also found no findings.
+- GitHub Actions did not run for the phase branch because the workflow triggers
+  only for pull requests and pushes to `main`.
+- Real idle cold-start recovery remains unverified.
 
 ## Phase 6 verification
 

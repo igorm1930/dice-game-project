@@ -6,9 +6,10 @@ Phase 7 - Initial deployment flow
 
 ## Status
 
-Local deployment configuration is implemented and verified. No Render service,
-MongoDB Atlas resource, production database user, or production data has been
-created. The branch has not been committed or pushed.
+The Phase 7 application is deployed and its production health, CORS, frontend,
+and Atlas persistence flow are verified. The initial deployment commit
+`532558b` is pushed. A two-line Render build-command correction and this
+verified-reality documentation remain uncommitted and unpushed.
 
 ## Goal
 
@@ -50,20 +51,37 @@ after separate approval to create external resources.
 - The built frontend contained the planned public API URL and no private
   backend configuration patterns.
 
+## Production verification record
+
+- Render created the free API and static-site services with the planned names.
+- Atlas created the free `dice-game-production` M0 cluster in Frankfurt.
+- `dice_game_app` has only the custom `readWrite` role for `dice_game` and
+  access to only the production cluster.
+- Atlas has exactly Render's two Frankfurt outbound ranges,
+  `74.220.51.0/24` and `74.220.59.0/24`; both are active.
+- The API build initially failed because production npm settings omitted the
+  Nest CLI. Using `npm ci --include=dev` fixed the API and static builds.
+- The API health endpoint returned HTTP 200 with the expected JSON.
+- The configured frontend origin received CORS permission; an unapproved origin
+  did not.
+- The hosted frontend connected, created demonstration user
+  `phase7-check-20260731-1507`, and retained it after reload.
+- Atlas Data Explorer confirmed that document in `dice_game.users`.
+- Static-site security headers and SPA fallback returned HTTP 200.
+- Provider logs contained no database URI, database username, password, or
+  unhandled/error marker.
+- Full local verification passed: 20 backend unit tests, 11 backend E2E tests,
+  5 frontend tests, lint, and both builds.
+- Gitleaks found no leaks in all 22 commits or the uncommitted diff.
+
 ## Remaining before Phase 7 completion
 
-- Review and approve creation of the external Render and MongoDB Atlas
-  resources.
-- Create the Atlas M0 cluster and least-privilege application user.
-- Restrict Atlas network access to Render's current Frankfurt outbound ranges;
-  do not use a wildcard address.
-- Enter the MongoDB connection string directly into Render as a secret.
-- Validate the Blueprint against the connected Render account.
-- Deploy both services and confirm the expected public URLs.
-- Run production health, exact-origin CORS, user creation, Atlas persistence,
-  refresh, and cold-start checks.
-- Confirm GitHub Actions passes for the Phase 7 branch.
-- Review, commit, push, and merge only after explicit approval.
+- Review and explicitly approve committing and pushing the build-command and
+  verified-reality documentation changes.
+- Open a pull request or push to `main` so the CI workflow is triggered, then
+  confirm both required jobs pass.
+- Verify the real Render free-tier cold-start delay after the API has idled.
+- Merge only after explicit approval and successful required checks.
 
 ## Out of scope
 
@@ -77,6 +95,6 @@ after separate approval to create external resources.
 
 ## Approval
 
-The developer approved the exact Phase 7 local execution proposal before
-implementation. External account changes require a separate approval after
-reviewing the local configuration.
+The developer approved the Phase 7 implementation and external Render, Atlas,
+GitHub App, secret-entry, and deployment actions. No new commit, push, pull
+request, or merge is authorized by this status update.

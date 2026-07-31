@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 14:11 (Israel time)_
+_Last updated: 2026-07-31 15:13 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -387,6 +387,8 @@ Approved implementation decisions:
   public `VITE_API_URL`.
 - Pin Node.js 22.22.0 and deploy automatically only after GitHub checks pass.
 - Disable preview services and do not use paid fallback resources.
+- Install locked development dependencies in Render's ephemeral build
+  environment because Nest CLI and Vite are build-time dependencies.
 - Require a separate approval before external provider resources are created.
 - Keep Phase 8 authentication and later game work out of scope.
 
@@ -576,7 +578,6 @@ Before editing, show the commands and files you propose to change.
 
 The following decisions are intentionally postponed until the relevant phase:
 
-- Exact production hosting providers.
 - Whether to introduce npm workspaces.
 - Whether to use TanStack Query immediately or after the first simple API calls.
 - Authentication and JWT policy is approved in
@@ -638,6 +639,7 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Review the verified local Phase 7 configuration. After separate approval,
-provision the exact free Render and Atlas resources, enter the secret directly
-in Render, and run production verification. Do not begin Phase 8.
+Review the verified Phase 7 production deployment and uncommitted
+build-command/documentation correction. After explicit approval, commit and
+push the correction, open a pull request to trigger hosted CI, verify the real
+idle cold start, and merge only after successful checks. Do not begin Phase 8.

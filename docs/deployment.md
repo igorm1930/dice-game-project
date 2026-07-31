@@ -2,9 +2,10 @@
 
 ## Current state
 
-Phase 7 is locally configured but not deployed. The repository contains the
-planned Render Blueprint and production validation. No Render service, Atlas
-cluster, production database user, or production data has been created.
+Phase 7 is deployed on the approved free Render and MongoDB Atlas resources.
+The hosted health, exact-origin CORS, frontend, Atlas storage, and reload
+persistence checks passed on 2026-07-31. Hosted CI and a real idle cold-start
+check remain pending.
 
 ## Planned topology
 
@@ -15,11 +16,11 @@ Browser
   -> MongoDB Atlas M0 / dice_game
 ```
 
-The planned Render region is Frankfurt. The API is a free Node web service; the
-frontend is a free static site. The planned Atlas project and cluster name is
-`dice-game-production`.
+The Render API is a free Frankfurt Node web service, and the frontend is a free
+static site. The Atlas project and M0 cluster are named
+`dice-game-production` and use AWS Frankfurt.
 
-These URLs are configuration targets, not evidence that the services are live.
+Both documented public URLs are live.
 
 ## Render Blueprint
 
@@ -36,34 +37,31 @@ These URLs are configuration targets, not evidence that the services are live.
 
 Environment values:
 
-| Service | Key | Classification | Source |
-| --- | --- | --- | --- |
-| API | `NODE_ENV` | Public operational value | Blueprint |
-| API | `NODE_VERSION` | Public operational value | Blueprint |
-| API | `FRONTEND_ORIGIN` | Public origin | Blueprint |
-| API | `MONGODB_URI` | Secret | Enter directly in Render |
-| Web | `NODE_VERSION` | Public operational value | Blueprint |
-| Web | `VITE_API_URL` | Public browser configuration | Blueprint |
+| Service | Key               | Classification               | Source                   |
+| ------- | ----------------- | ---------------------------- | ------------------------ |
+| API     | `NODE_ENV`        | Public operational value     | Blueprint                |
+| API     | `NODE_VERSION`    | Public operational value     | Blueprint                |
+| API     | `FRONTEND_ORIGIN` | Public origin                | Blueprint                |
+| API     | `MONGODB_URI`     | Secret                       | Enter directly in Render |
+| Web     | `NODE_VERSION`    | Public operational value     | Blueprint                |
+| Web     | `VITE_API_URL`    | Public browser configuration | Blueprint                |
 
 `VITE_API_URL` is intentionally public because Vite embeds it in the browser
 bundle. `MONGODB_URI` must never use a `VITE_` prefix or be stored in Git.
 
 ## MongoDB Atlas
 
-After separate approval to provision external resources:
+Provisioned configuration:
 
-1. Create the `dice-game-production` Atlas project.
-2. Create one M0 cluster named `dice-game-production` in a compatible nearby
-   AWS region.
-3. Create the `dice_game_app` database user with `readWrite` access only to
-   the `dice_game` database.
-4. Generate a unique password in the provider UI. Do not paste it into chat,
-   source, logs, screenshots, or shell history.
-5. Read the current outbound IP ranges from the Render API service's Connect
-   page and add only those ranges to the Atlas IP access list.
-6. Do not add `0.0.0.0/0`.
-7. Build the SRV connection string with the explicit `/dice_game` database
-   path and enter it directly as Render's `MONGODB_URI` secret.
+- Project and M0 cluster: `dice-game-production`
+- Cloud/region: AWS Frankfurt
+- Database: `dice_game`
+- Application user: `dice_game_app`
+- Authorization: custom role granting only `readWrite` on `dice_game`
+- Resource scope: only the production cluster
+- Active network ranges: `74.220.51.0/24` and `74.220.59.0/24`
+- Wildcard network access: not configured
+- Connection string: stored only as Render's `MONGODB_URI` secret
 
 The application rejects production MongoDB values that are not
 `mongodb+srv://` URLs or do not contain an explicit database name.
@@ -84,6 +82,13 @@ The application rejects production MongoDB values that are not
 
 No paid fallback is approved. Stop and report if the selected free resources
 are unavailable.
+
+The initial API deploy failed with `nest: not found` because `NODE_ENV` set
+npm's production omission while the Nest CLI is a build-time development
+dependency. Both Render build commands now use
+`npm ci --include=dev && npm run build`. This installs build tooling in the
+ephemeral build environment without adding it to production runtime
+dependencies.
 
 ## Production verification
 
