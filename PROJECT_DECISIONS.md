@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 22:30 (Israel time)_
+_Last updated: 2026-07-31 23:16 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -205,6 +205,29 @@ The acting player will eventually be derived from the authentication token.
   returns the UI to setup with a safe message.
 - Game persistence, optimistic concurrency, duplicate-action protection,
   lifetime wins, and UI polish remain deferred.
+
+### Phase 13 game-persistence decisions
+
+- Store one authoritative game per MongoDB document in the `games`
+  collection.
+- Preserve UUID v4 game IDs as string `_id` values so the public API contract
+  does not change.
+- Persist both players and scores, active-player index, round score, winning
+  score, last roll, status, winner, and timestamps.
+- Keep `GameRepository` as the application boundary and make its operations
+  asynchronous.
+- Use the Mongoose repository in the application and retain the in-memory
+  repository only for isolated service tests.
+- Validate stored IDs, exactly two distinct players, safe scores, dice, status,
+  and winner consistency.
+- Keep authorization and caller-specific permissions in `GameService`; the
+  persistence layer receives no access token or trusted client identity.
+- Preserve all endpoints and response bodies. An open browser can continue by
+  refetching its known game ID after an API restart.
+- Do not add game discovery or browser-storage persistence. A full page refresh
+  still clears both sessions and the current game reference.
+- Optimistic concurrency, duplicate-action protection, old-game retention, and
+  lifetime win updates remain deferred.
 
 ### Phase 8 authentication compatibility
 
@@ -652,7 +675,6 @@ The following decisions are intentionally postponed until the relevant phase:
 - Authentication and JWT policy is approved in
   `docs/authentication-jwt-policy.md`; implementation remains scheduled for
   Phases 8 and 9.
-- MongoDB game-repository schema and migration details.
 - Optimistic concurrency implementation details.
 - Final visual design.
 - AI opponent.
@@ -708,7 +730,7 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phase 11 is completed and merged into `main` as `28db4f1`. Phase 12 is
+Phase 12 is completed and merged into `main` as `badca27`. Phase 13 is
 implemented, locally verified, and developer-reviewed on
-`phase/12-playable-react-game`; commit and push are authorized. Do not merge,
-deploy, or begin Phase 13 without explicit approval.
+`phase/13-persistent-game-state`; commit and push are authorized. Do not merge,
+deploy, or begin Phase 14 without explicit approval.

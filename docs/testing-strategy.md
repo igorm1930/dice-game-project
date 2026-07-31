@@ -2,11 +2,56 @@
 
 ## Status
 
-Phase 1 through Phase 12 checks have been run locally. Phase 6 through Phase 10
+Phase 1 through Phase 13 checks have been run locally. Phase 6 through Phase 10
 have also passed GitHub-hosted verification. Phase 7 production health, CORS,
 frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
+
+## Phase 13 verification
+
+### MongoDB game persistence
+
+- Focused repository and service tests passed: 2 suites and 14 tests.
+- Repository coverage verifies UUID creation, complete state serialization,
+  rehydration, missing records, complete updates, and disappearing-record
+  failure.
+- Focused game HTTP coverage passed: 1 suite and 12 tests against real MongoDB.
+- The game E2E suite closes and recreates the Nest application after Roll,
+  Hold, double-six, victory, and Restart, then verifies the exact state and
+  caller-specific permissions.
+- Focused frontend App coverage passed: 1 file and 14 tests with the unchanged
+  game-client contract.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 75 backend unit tests, 42
+  backend E2E tests, 36 frontend tests, and both builds.
+- Vite transformed 24 modules.
+- Backend production and frontend dependency audits reported zero
+  vulnerabilities.
+- The unchanged backend development-tool audit reported the previously
+  documented 25 high findings through `brace-expansion` and `minimatch`;
+  the complete npm fix requires breaking forced upgrades and was not run.
+- Full-history Gitleaks scanned 33 commits with no leaks. Focused game-source
+  and documentation scans also found no leaks.
+- No dependency, environment variable, endpoint, access-token storage, or
+  client-side game authority was added.
+
+### Manual recovery
+
+- The built API and Vite frontend ran against an isolated local database.
+- Two temporary authenticated players created a target-20 game and rolled 2
+  and 4 for a round score of 6.
+- After stopping and replacing the API process, changing the acting seat
+  refetched the exact players, target, scores, round score, dice, turn, and
+  caller-specific permissions.
+- The recovered game continued with Hold and banked 6 points.
+- Restart reset the game; a second API-process restart recovered the exact
+  reset state.
+- Browser logs contained no application warnings or errors; warnings came from
+  an unrelated extension.
+- Temporary processes, database, and logs were removed after verification.
 
 ## Phase 12 verification
 

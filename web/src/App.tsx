@@ -157,7 +157,7 @@ function App() {
         ...current,
         data: null,
         busy: false,
-        error: 'This in-memory game is no longer available. Start a new game.',
+        error: 'This game is no longer available. Start a new game.',
       }))
       return
     }

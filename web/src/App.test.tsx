@@ -408,7 +408,7 @@ describe('App', () => {
     expect(screen.getByLabelText('Die 2: 3')).toBeInTheDocument()
   })
 
-  it('returns to setup when an in-memory game is no longer available', async () => {
+  it('returns to setup when a game is no longer available', async () => {
     const actor = userEvent.setup()
     mockCreateGame.mockResolvedValue(game)
     mockGetGame.mockRejectedValue(
@@ -422,7 +422,7 @@ describe('App', () => {
 
     expect(
       await screen.findByText(
-        'This in-memory game is no longer available. Start a new game.',
+        'This game is no longer available. Start a new game.',
       ),
     ).toBeInTheDocument()
     expect(

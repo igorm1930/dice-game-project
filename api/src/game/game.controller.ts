@@ -39,7 +39,7 @@ export class GameController {
   get(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param() params: GameIdParamDto,
-  ): GameResponseDto {
+  ): Promise<GameResponseDto> {
     return this.gameService.get(params.id, currentUser.id);
   }
 
@@ -49,7 +49,7 @@ export class GameController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param() params: GameIdParamDto,
     @Body() _body: EmptyGameActionDto,
-  ): GameResponseDto {
+  ): Promise<GameResponseDto> {
     void _body;
     return this.gameService.roll(params.id, currentUser.id);
   }
@@ -60,7 +60,7 @@ export class GameController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param() params: GameIdParamDto,
     @Body() _body: EmptyGameActionDto,
-  ): GameResponseDto {
+  ): Promise<GameResponseDto> {
     void _body;
     return this.gameService.hold(params.id, currentUser.id);
   }
@@ -71,7 +71,7 @@ export class GameController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param() params: GameIdParamDto,
     @Body() _body: EmptyGameActionDto,
-  ): GameResponseDto {
+  ): Promise<GameResponseDto> {
     void _body;
     return this.gameService.restart(params.id, currentUser.id);
   }
