@@ -2,8 +2,8 @@
 
 ## Status
 
-Phases 1 through 16 are merged and deployed. Phase 16 commit `ce100e4` was
-merged through pull request #17 as `81dd742`; required CI passed and both
+Phases 1 through 17 are merged and deployed. Phase 17 commit `0fe346a` was
+merged through pull request #19 as `f86e3f3`; required CI passed and both
 Render services are live on that merge commit.
 
 ## Current implemented architecture
@@ -181,9 +181,11 @@ The service hides records from nonparticipants, limits Roll and Hold to the
 active player, permits either participant to Restart, and maps domain state to
 caller-specific allowed actions. User lookup permits only credentialed
 opponents. Stale or duplicate actions map to a safe conflict. A winning
-transition records its game ID and increments the winner in one idempotent
-user-document update; later participant reads safely repair an interrupted
-counter update without double counting.
+transition records a private win-event UUID and increments the winner in one
+idempotent user-document update; later participant reads safely repair an
+interrupted counter update without double counting. Restart clears the event
+ID so a later winning transition in the same game increments again. Legacy won
+records without an event ID use their game ID only as a compatibility key.
 
 ### Security boundary
 
@@ -259,8 +261,8 @@ production CORS accepts only the configured HTTPS frontend origin.
 
 Atlas uses a database-scoped application user and only Render's current
 Frankfurt outbound IP ranges. No wildcard network rule, paid fallback, or
-preview environment is approved. Both Render services report Phase 16 merge
-commit `81dd742` live. Production health, liveness, readiness, OpenAPI,
+preview environment is approved. Both Render services report Phase 17 merge
+commit `f86e3f3` live. Production health, liveness, readiness, OpenAPI,
 exact-origin CORS, and frontend connectivity passed after deployment.
 
 ## Delivery evidence

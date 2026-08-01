@@ -2,9 +2,27 @@
 
 ## Status
 
-Phase 1 through Phase 16 checks have been run locally. Phase 16 was merged
-through pull request #17 as `81dd742`; pull-request and post-merge CI passed,
+Phase 1 through Phase 17 checks have been run locally. Phase 17 was merged
+through pull request #19 as `f86e3f3`; pull-request and post-merge CI passed,
 and both Render services are live on that commit.
+
+## Phase 17 win-counter verification
+
+- Focused backend service tests proved distinct win-event IDs across Restart,
+  retry idempotency, and legacy game-ID repair.
+- A dedicated MongoDB E2E test won twice with the same player in the same
+  restarted game, verified `1 -> 2` through users and `auth/me`, rejected
+  duplicate concurrent repairs, and retained the total across an API restart.
+- Focused frontend tests verified clear win rendering and user-list refresh
+  after direct and refetched won-game responses.
+- Complete root verification passed 109 backend unit tests, 51 MongoDB E2E
+  tests, 44 frontend tests, lint, and both production builds.
+- Three dependency audits found zero vulnerabilities. Full-history and
+  working-tree Gitleaks scans found no leaks.
+- An isolated two-user browser flow verified totals `0 -> 1 -> 2` across a
+  Restart, immediate updates in both cards, Saved Players, and the winner
+  banner, plus persistence after refresh and re-login. Temporary data was
+  removed and the browser contained no application errors.
 
 ## Phase 16 versioned-rules and turn-handoff verification
 

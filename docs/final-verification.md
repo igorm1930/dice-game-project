@@ -156,6 +156,17 @@ was created.
 - The deployed frontend connected to the API with no browser console errors.
 - No production user or game was created.
 
+## Phase 17 publication update
+
+- Commit `0fe346a` was merged through pull request #19 as `f86e3f3`.
+- Pull-request and post-merge Verify and Secret scan jobs passed.
+- Both Render services deployed `f86e3f3` successfully.
+- Health, liveness, readiness, OpenAPI, and the hosted frontend returned HTTP
+  200.
+- The hosted UI connected to the API, visibly rendered `Wins: N` in Saved
+  Players, and produced no application browser errors.
+- Production checks were read-only; no production user or game was created.
+
 ## Cleanup
 
 Final cleanup stopped only the identified fresh-clone Node processes. The

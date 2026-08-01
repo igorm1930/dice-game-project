@@ -379,3 +379,22 @@ deployed on both Render services.
 - [x] Run isolated two-user browser verification
 - [x] Pass pull-request and post-merge CI
 - [x] Deploy and verify API, web, CORS, health, and OpenAPI on `81dd742`
+
+## Phase 17 - Win counter visibility and restarted-game persistence
+
+Status: Completed, reviewed, merged through pull request #19 as `f86e3f3`, and
+deployed on both Render services.
+
+- [x] Reproduce the same-game Restart win-counter defect
+- [x] Add a private win-event ID for every winning transition
+- [x] Deduplicate retries without suppressing later legitimate wins
+- [x] Preserve legacy won-record compatibility
+- [x] Keep all win calculation and persistence in the backend
+- [x] Refresh users after direct and refetched won-game responses
+- [x] Show wins in both game cards, Saved Players, and the winner banner
+- [x] Verify two wins in the same restarted game
+- [x] Verify refresh, new-login, and API-process persistence
+- [x] Run focused tests and complete root verification
+- [x] Run lint, builds, dependency audits, and Gitleaks
+- [x] Pass pull-request and post-merge CI
+- [x] Deploy and verify both Render services on `f86e3f3`

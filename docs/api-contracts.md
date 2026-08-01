@@ -3,8 +3,9 @@
 ## Status
 
 The health, read-only user, authentication, and game endpoints are implemented
-and tested. Phase 16 additively exposes semantic game events while preserving
-the existing paths, authentication, authorization, ETag, and mutation bodies.
+and tested. Phase 17 changes only internal win-event idempotency and frontend
+presentation; the paths, public response shapes, authentication, authorization,
+ETag, and mutation bodies remain unchanged.
 
 Only document endpoints after they exist and have been tested.
 
@@ -96,8 +97,10 @@ Errors:
 - `400 Bad Request` when `id` is not a MongoDB ID
 - `404 Not Found` with `User not found` when a valid ID has no user
 
-MongoDB `_id`, password fields, and internal counted-game IDs are never
-returned. `wins` is incremented once per won game.
+MongoDB `_id`, password fields, and internal counted-win IDs are never
+returned. `wins` is incremented once per successful winning transition. A
+retry of the same transition is idempotent, while a later win after Restart is
+counted separately.
 
 ## Authentication endpoints
 
@@ -270,8 +273,9 @@ GAME_FINISHED. A stale or duplicate request returns 409 GAME_STATE_CONFLICT.
 POST /api/games/:id/hold requires the same empty body and `If-Match` header.
 Success is 200 with the updated game response. Only the active participant may
 Hold. The same NOT_YOUR_TURN, GAME_FINISHED, and GAME_STATE_CONFLICT responses
-apply as for Roll. The first successful winning transition increments the
-winner's lifetime counter exactly once.
+apply as for Roll. Each successful winning transition increments the winner's
+lifetime counter exactly once. Retries of that transition do not increment it
+again; a later winning transition after Restart does.
 
 ### Restart
 
