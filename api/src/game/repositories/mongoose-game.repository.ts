@@ -63,6 +63,7 @@ function toRecord(game: PersistedGameDocument): GameRecord {
   return {
     id: game._id,
     version: game.version ?? 0,
+    winEventId: game.winEventId ?? null,
     state: {
       players: [
         { id: firstPlayer.id, globalScore: firstPlayer.globalScore },
@@ -92,10 +93,16 @@ export class MongooseGameRepository implements GameRepository {
 
     await this.gameModel.create({
       _id: id,
+      winEventId: null,
       ...persistenceFields(state),
     });
 
-    return { id, version: 0, state: cloneState(state) };
+    return {
+      id,
+      version: 0,
+      winEventId: null,
+      state: cloneState(state),
+    };
   }
 
   async findById(id: string): Promise<GameRecord | undefined> {
@@ -114,6 +121,7 @@ export class MongooseGameRepository implements GameRepository {
     const candidate = this.gameModel.hydrate({
       _id: record.id,
       version: record.version,
+      winEventId: record.winEventId,
       ...persistenceFields(record.state),
     });
 
@@ -127,7 +135,10 @@ export class MongooseGameRepository implements GameRepository {
       .updateOne(
         { _id: record.id, ...versionFilter },
         {
-          $set: persistenceFields(record.state),
+          $set: {
+            ...persistenceFields(record.state),
+            winEventId: record.winEventId,
+          },
           $inc: { version: 1 },
         },
         { runValidators: true },
@@ -141,6 +152,7 @@ export class MongooseGameRepository implements GameRepository {
     return {
       id: record.id,
       version: record.version + 1,
+      winEventId: record.winEventId,
       state: cloneState(record.state),
     };
   }

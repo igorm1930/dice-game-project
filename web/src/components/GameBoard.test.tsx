@@ -79,7 +79,7 @@ describe("GameBoard", () => {
 
     expect(within(playerOne).getByText("12")).toBeInTheDocument();
     expect(within(playerOne).getByText("Current turn")).toBeInTheDocument();
-    expect(within(playerOne).getByText("Lifetime wins: 2")).toBeInTheDocument();
+    expect(within(playerOne).getByText("Wins: 2")).toBeInTheDocument();
     expect(within(playerTwo).getByText("7")).toBeInTheDocument();
     expect(within(playerTwo).getByText("Waiting")).toBeInTheDocument();
     expect(
@@ -141,7 +141,9 @@ describe("GameBoard", () => {
       screen.getByRole("heading", { name: "SeatAlpha wins" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/SeatAlpha reached the target/),
+      screen.getByText(
+        "SeatAlpha reached the target. Lifetime wins: 2. Start a new game to play again.",
+      ),
     ).toBeInTheDocument();
   });
 

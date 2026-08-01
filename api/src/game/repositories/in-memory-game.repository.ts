@@ -9,7 +9,12 @@ export class InMemoryGameRepository implements GameRepository {
   private readonly games = new Map<string, GameRecord>();
 
   create(state: GameState): Promise<GameRecord> {
-    const record: GameRecord = { id: randomUUID(), version: 0, state };
+    const record: GameRecord = {
+      id: randomUUID(),
+      version: 0,
+      winEventId: null,
+      state,
+    };
     this.games.set(record.id, record);
     return Promise.resolve(record);
   }

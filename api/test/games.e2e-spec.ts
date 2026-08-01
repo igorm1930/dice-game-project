@@ -460,9 +460,12 @@ describe('Game API (e2e)', () => {
       .findById(playerA.id)
       .select('+countedWinGameIds')
       .exec();
+    const wonGame = await gameModel.findById(game.id).exec();
 
     expect(winner?.wins).toBe(1);
-    expect(winner?.countedWinGameIds).toEqual([game.id]);
+    expect(wonGame?.winEventId).toEqual(expect.any(String));
+    expect(wonGame?.winEventId).not.toBe(game.id);
+    expect(winner?.countedWinGameIds).toEqual([wonGame?.winEventId]);
   });
 
   it('allows either participant to restart while preserving configuration', async () => {

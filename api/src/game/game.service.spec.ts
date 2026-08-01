@@ -198,7 +198,7 @@ describe('GameService', () => {
       winnerId: playerA,
       allowedActions: ['restart'],
     });
-    expect(recordGameWin).toHaveBeenCalledWith(playerA, game.id);
+    expect(recordGameWin).toHaveBeenCalledWith(playerA, expect.any(String));
     await expectHttpError(
       () => service.roll(game.id, playerA, won.version),
       GAME_FINISHED_RESPONSE,
@@ -207,6 +207,61 @@ describe('GameService', () => {
       () => service.hold(game.id, playerA, won.version),
       GAME_FINISHED_RESPONSE,
     );
+  });
+
+  it('uses a distinct idempotency key for each victory after restart', async () => {
+    const service = createService([4, 6], [4, 6]);
+    const game = await service.create(playerA, {
+      opponentId: playerB,
+      winningScore: 10,
+    });
+    const firstRoll = await service.roll(game.id, playerA, game.version);
+    const firstWin = await service.hold(game.id, playerA, firstRoll.version);
+    const restarted = await service.restart(game.id, playerA, firstWin.version);
+    const secondRoll = await service.roll(game.id, playerA, restarted.version);
+
+    await service.hold(game.id, playerA, secondRoll.version);
+
+    expect(recordGameWin).toHaveBeenCalledTimes(3);
+    const winCalls = recordGameWin.mock.calls as [string, string][];
+    const winIds = winCalls.map((call) => call[1]);
+    const firstWinId = winIds[0];
+    const secondWinId = winIds[2];
+    expect(firstWinId).not.toBe(game.id);
+    expect(winIds[1]).toBe(firstWinId);
+    expect(secondWinId).not.toBe(game.id);
+    expect(secondWinId).not.toBe(firstWinId);
+    expect(new Set(winIds).size).toBe(2);
+  });
+
+  it('uses the game ID only for a legacy won record without a win event ID', async () => {
+    const repository = new InMemoryGameRepository();
+    const service = new GameService(
+      repository,
+      new GameEngine(sequenceDiceRoller()),
+      usersService,
+      new GameRulesRegistry([doubleSixV1GameRules], DOUBLE_SIX_RULE_SET_ID),
+    );
+    const game = await service.create(playerA, { opponentId: playerB });
+    const record = await repository.findById(game.id);
+
+    await repository.save({
+      ...record!,
+      winEventId: null,
+      state: {
+        ...record!.state,
+        players: [
+          { id: playerA, globalScore: 100 },
+          { id: playerB, globalScore: 0 },
+        ],
+        status: 'won',
+        winnerId: playerA,
+      },
+    });
+
+    await service.get(game.id, playerA);
+
+    expect(recordGameWin).toHaveBeenCalledWith(playerA, game.id);
   });
 
   it('allows either participant to restart and restores Player 1 turn', async () => {

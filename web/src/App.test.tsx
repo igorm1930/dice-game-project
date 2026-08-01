@@ -186,11 +186,12 @@ describe("App", () => {
   });
 
   it("renders users returned by the public API", async () => {
-    mockListUsers.mockResolvedValue([seatAUser]);
+    mockListUsers.mockResolvedValue([{ ...seatAUser, wins: 3 }]);
 
     render(<App />);
 
     expect(await screen.findByText("SeatAlpha")).toBeInTheDocument();
+    expect(await screen.findByText("Wins: 3")).toBeInTheDocument();
   });
 
   it("shows health and player-list errors", async () => {
@@ -546,8 +547,40 @@ describe("App", () => {
     await actor.click(screen.getByRole("button", { name: "Hold score" }));
 
     expect(await screen.findByText("SeatAlpha wins")).toBeInTheDocument();
-    expect(await screen.findByText("Lifetime wins: 1")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "SeatAlpha reached the target. Lifetime wins: 1. Start a new game to play again.",
+      ),
+    ).toBeInTheDocument();
+    expect(await screen.findAllByText("Wins: 1")).toHaveLength(2);
     expect(mockHoldGame).toHaveBeenCalledWith("token-a", game.id, game.version);
+  });
+
+  it("refreshes lifetime wins when a won game is loaded", async () => {
+    const actor = userEvent.setup();
+    mockListUsers
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ ...seatAUser, wins: 4 }, seatBUser]);
+    mockCreateGame.mockResolvedValue(game);
+    mockGetGame.mockResolvedValue({
+      ...game,
+      version: 2,
+      status: "won",
+      winnerId: seatAUser.id,
+      allowedActions: ["restart"],
+    });
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    await actor.click(screen.getByRole("radio", { name: /Seat B/ }));
+
+    expect(
+      await screen.findByText(
+        "SeatAlpha reached the target. Lifetime wins: 4. Start a new game to play again.",
+      ),
+    ).toBeInTheDocument();
+    expect(mockListUsers).toHaveBeenCalledTimes(2);
   });
 
   it("returns to setup when a game is no longer available", async () => {

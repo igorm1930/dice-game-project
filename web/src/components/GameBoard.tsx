@@ -119,6 +119,9 @@ export function GameBoard({
   const winnerName = game.winnerId
     ? (playerNames[game.winnerId] ?? "Unknown player")
     : null;
+  const winnerWins = game.winnerId
+    ? (playerWins[game.winnerId] ?? 0)
+    : null;
   const isBust = game.lastEvent === "BUST";
 
   return (
@@ -150,7 +153,8 @@ export function GameBoard({
           role={"status"}
           aria-live={"assertive"}
         >
-          {winnerName} reached the target. Start a new game to play again.
+          {winnerName} reached the target. Lifetime wins: {winnerWins}. Start a
+          new game to play again.
         </p>
       )}
 
@@ -174,7 +178,7 @@ export function GameBoard({
                 {isCurrent ? "Current turn" : "Waiting"}
               </span>
               <span className={"lifetime-wins"}>
-                Lifetime wins: {playerWins[player.id] ?? 0}
+                Wins: {playerWins[player.id] ?? 0}
               </span>
             </article>
           );

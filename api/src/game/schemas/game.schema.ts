@@ -109,6 +109,9 @@ export class PersistedGame {
   @Prop({ type: String, default: null, match: objectIdPattern })
   winnerId!: string | null;
 
+  @Prop({ type: String, default: null, match: uuidV4Pattern })
+  winEventId?: string | null;
+
   version!: number;
   createdAt!: Date;
   updatedAt!: Date;
