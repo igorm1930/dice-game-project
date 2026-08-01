@@ -510,8 +510,10 @@ function App() {
         busy: false,
         notice: `${user.username} was registered. Sign in to start this seat's session.`,
       });
+      return true;
     } catch (error) {
       updateSeat(seatId, { busy: false, error: errorMessage(error) });
+      return false;
     }
   }
 
@@ -530,6 +532,20 @@ function App() {
       });
       setActiveSeat((current) => current ?? seatId);
       setIdentity({ status: "idle" });
+
+      if (
+        game.data &&
+        !game.data.players.some((player) => player.id === user.id)
+      ) {
+        clearBustCooldown(true);
+        setGame({
+          data: null,
+          playerNames: {},
+          busy: false,
+          error: "The signed-in players changed. Start a new game.",
+        });
+        return;
+      }
 
       if (shouldActivateSeat && game.data) {
         await refreshGameForSeat(
