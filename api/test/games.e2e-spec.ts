@@ -37,6 +37,7 @@ interface GameResponse {
   readonly roundScore: number;
   readonly winningScore: number;
   readonly lastRoll: readonly [number, number] | null;
+  readonly lastEvent: 'ROLL' | 'BUST' | 'HOLD' | 'RESTART' | null;
   readonly status: 'active' | 'won';
   readonly winnerId: string | null;
   readonly allowedActions: readonly string[];
@@ -57,6 +58,10 @@ describe('Game API (e2e)', () => {
     [6, 6],
     [4, 6],
     [1, 2],
+    [3, 4],
+    [2, 3],
+    [6, 6],
+    [2, 3],
     [3, 4],
   ];
   const diceRoller: DiceRoller = () => {
@@ -185,6 +190,7 @@ describe('Game API (e2e)', () => {
       roundScore: 0,
       winningScore: 10,
       lastRoll: null,
+      lastEvent: null,
       status: 'active',
       winnerId: null,
       allowedActions: ['roll', 'hold', 'restart'],
@@ -229,6 +235,16 @@ describe('Game API (e2e)', () => {
       message: 'Game not found.',
     });
     expect(missing.body).toEqual(hidden.body);
+
+    for (const action of ['roll', 'hold', 'restart']) {
+      await request(app.getHttpServer())
+        .post(`/api/games/${game.id}/${action}`)
+        .set('Authorization', `Bearer ${outsider.accessToken}`)
+        .set('If-Match', JSON.stringify(String(game.version)))
+        .send({})
+        .expect(404)
+        .expect(hidden.body);
+    }
   });
 
   it('rejects client-supplied identity and authoritative game fields', async () => {
@@ -239,8 +255,16 @@ describe('Game API (e2e)', () => {
       .send({
         actorId: playerB.id,
         dice: [1, 1],
+        players: [{ id: playerB.id, globalScore: 99 }],
+        globalScore: 99,
         roundScore: 99,
+        winningScore: 999,
+        activePlayerId: playerB.id,
+        status: 'won',
         winnerId: playerB.id,
+        ruleSetId: 'client-selected-v1',
+        lastEvent: 'BUST',
+        allowedActions: ['roll', 'hold', 'restart'],
       })
       .expect(400);
   });
@@ -273,6 +297,7 @@ describe('Game API (e2e)', () => {
           activePlayerId: playerA.id,
           roundScore: 5,
           lastRoll: [2, 3],
+          lastEvent: 'ROLL',
         });
       });
 
@@ -286,6 +311,7 @@ describe('Game API (e2e)', () => {
           activePlayerId: playerA.id,
           roundScore: 5,
           lastRoll: [2, 3],
+          lastEvent: 'ROLL',
         });
       });
 
@@ -305,6 +331,7 @@ describe('Game API (e2e)', () => {
           ],
           activePlayerId: playerB.id,
           roundScore: 0,
+          lastEvent: 'HOLD',
         });
       });
 
@@ -321,6 +348,7 @@ describe('Game API (e2e)', () => {
           ],
           activePlayerId: playerB.id,
           roundScore: 0,
+          lastEvent: 'HOLD',
           allowedActions: ['roll', 'hold', 'restart'],
         });
       });
@@ -340,6 +368,7 @@ describe('Game API (e2e)', () => {
           activePlayerId: playerA.id,
           roundScore: 0,
           lastRoll: [6, 6],
+          lastEvent: 'BUST',
         });
       });
 
@@ -353,6 +382,7 @@ describe('Game API (e2e)', () => {
           activePlayerId: playerA.id,
           roundScore: 0,
           lastRoll: [6, 6],
+          lastEvent: 'BUST',
         });
       });
   });
@@ -383,6 +413,7 @@ describe('Game API (e2e)', () => {
           version: 5,
           status: 'won',
           winnerId: playerA.id,
+          lastEvent: 'HOLD',
           allowedActions: ['restart'],
         });
       });
@@ -453,6 +484,7 @@ describe('Game API (e2e)', () => {
           roundScore: 0,
           winningScore: 10,
           lastRoll: null,
+          lastEvent: 'RESTART',
           status: 'active',
           winnerId: null,
           allowedActions: ['restart'],
@@ -474,11 +506,19 @@ describe('Game API (e2e)', () => {
           roundScore: 0,
           winningScore: 10,
           lastRoll: null,
+          lastEvent: 'RESTART',
           status: 'active',
           winnerId: null,
           allowedActions: ['roll', 'hold', 'restart'],
         });
       });
+
+    await expect(
+      gameModel.findById(game.id).lean().exec(),
+    ).resolves.toMatchObject({
+      ruleSetId: 'double-six-v1',
+      lastEvent: 'RESTART',
+    });
   });
 
   it('validates game identifiers before lookup', async () => {
@@ -545,6 +585,266 @@ describe('Game API (e2e)', () => {
       });
 
     await gameModel.deleteOne({ _id: duplicateGame.id }).exec();
+  });
+
+  it('continues the same persisted game with the next player after double six', async () => {
+    const gameCountBeforeCreate = await gameModel.countDocuments().exec();
+    const playerABefore = await userModel.findById(playerA.id).exec();
+    const playerBBefore = await userModel.findById(playerB.id).exec();
+    const created = await request(app.getHttpServer())
+      .post('/api/games')
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .send({ opponentId: playerB.id, winningScore: 100 })
+      .expect(201);
+    const continuationGame = created.body as GameResponse;
+    const continuationGameId = continuationGame.id;
+    const gameCountAfterCreate = await gameModel.countDocuments().exec();
+
+    expect(gameCountAfterCreate).toBe(gameCountBeforeCreate + 1);
+
+    const firstRoll = await request(app.getHttpServer())
+      .post(`/api/games/${continuationGameId}/roll`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .set('If-Match', JSON.stringify(String(continuationGame.version)))
+      .send({})
+      .expect(200);
+    const firstRollBody = firstRoll.body as GameResponse;
+    expect(firstRoll.headers.etag).toBe(JSON.stringify('1'));
+    expect(firstRoll.body).toMatchObject({
+      id: continuationGameId,
+      version: 1,
+      activePlayerId: playerA.id,
+      roundScore: 5,
+      lastRoll: [2, 3],
+      lastEvent: 'ROLL',
+      allowedActions: ['roll', 'hold', 'restart'],
+    });
+
+    const bust = await request(app.getHttpServer())
+      .post(`/api/games/${continuationGameId}/roll`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .set('If-Match', JSON.stringify(String(firstRollBody.version)))
+      .send({})
+      .expect(200);
+
+    expect(bust.headers.etag).toBe(JSON.stringify('2'));
+    expect(bust.body).toMatchObject({
+      id: continuationGameId,
+      version: 2,
+      players: [
+        { id: playerA.id, globalScore: 0 },
+        { id: playerB.id, globalScore: 0 },
+      ],
+      activePlayerId: playerB.id,
+      roundScore: 0,
+      winningScore: 100,
+      lastRoll: [6, 6],
+      lastEvent: 'BUST',
+      status: 'active',
+      winnerId: null,
+      allowedActions: ['restart'],
+    });
+
+    const storedBust = await gameModel
+      .findById(continuationGameId)
+      .lean()
+      .exec();
+    expect(storedBust).toMatchObject({
+      _id: continuationGameId,
+      version: 2,
+      players: [
+        { id: playerA.id, globalScore: 0 },
+        { id: playerB.id, globalScore: 0 },
+      ],
+      activePlayerIndex: 1,
+      roundScore: 0,
+      winningScore: 100,
+      ruleSetId: 'double-six-v1',
+      lastRoll: [6, 6],
+      lastEvent: 'BUST',
+      status: 'active',
+      winnerId: null,
+    });
+
+    const playerAView = await request(app.getHttpServer())
+      .get(`/api/games/${continuationGameId}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .expect(200);
+    const playerAViewBody = playerAView.body as GameResponse;
+    expect(playerAViewBody.allowedActions).toEqual(['restart']);
+
+    const playerBView = await request(app.getHttpServer())
+      .get(`/api/games/${continuationGameId}`)
+      .set('Authorization', `Bearer ${playerB.accessToken}`)
+      .expect(200);
+    expect(playerBView.body).toMatchObject({
+      id: continuationGameId,
+      version: 2,
+      activePlayerId: playerB.id,
+      roundScore: 0,
+      lastRoll: [6, 6],
+      lastEvent: 'BUST',
+      status: 'active',
+      winnerId: null,
+      allowedActions: ['roll', 'hold', 'restart'],
+    });
+
+    const nextRoll = await request(app.getHttpServer())
+      .post(`/api/games/${continuationGameId}/roll`)
+      .set('Authorization', `Bearer ${playerB.accessToken}`)
+      .set('If-Match', JSON.stringify('2'))
+      .send({})
+      .expect(200);
+    expect(nextRoll.headers.etag).toBe(JSON.stringify('3'));
+    expect(nextRoll.body).toMatchObject({
+      id: continuationGameId,
+      version: 3,
+      activePlayerId: playerB.id,
+      roundScore: 5,
+      lastRoll: [2, 3],
+      lastEvent: 'ROLL',
+      status: 'active',
+      winnerId: null,
+      allowedActions: ['roll', 'hold', 'restart'],
+    });
+
+    const nextHold = await request(app.getHttpServer())
+      .post(`/api/games/${continuationGameId}/hold`)
+      .set('Authorization', `Bearer ${playerB.accessToken}`)
+      .set('If-Match', JSON.stringify('3'))
+      .send({})
+      .expect(200);
+    expect(nextHold.headers.etag).toBe(JSON.stringify('4'));
+    expect(nextHold.body).toMatchObject({
+      id: continuationGameId,
+      version: 4,
+      players: [
+        { id: playerA.id, globalScore: 0 },
+        { id: playerB.id, globalScore: 5 },
+      ],
+      activePlayerId: playerA.id,
+      roundScore: 0,
+      lastRoll: [2, 3],
+      lastEvent: 'HOLD',
+      status: 'active',
+      winnerId: null,
+      allowedActions: ['restart'],
+    });
+
+    const [playerAAfter, playerBAfter, finalStoredGame, finalGameCount] =
+      await Promise.all([
+        userModel.findById(playerA.id).exec(),
+        userModel.findById(playerB.id).exec(),
+        gameModel.findById(continuationGameId).lean().exec(),
+        gameModel.countDocuments().exec(),
+      ]);
+
+    expect(playerAAfter?.wins).toBe(playerABefore?.wins);
+    expect(playerBAfter?.wins).toBe(playerBBefore?.wins);
+    expect(finalGameCount).toBe(gameCountAfterCreate);
+    expect(finalStoredGame).toMatchObject({
+      _id: continuationGameId,
+      version: 4,
+      players: [
+        { id: playerA.id, globalScore: 0 },
+        { id: playerB.id, globalScore: 5 },
+      ],
+      activePlayerIndex: 0,
+      roundScore: 0,
+      winningScore: 100,
+      ruleSetId: 'double-six-v1',
+      lastRoll: [2, 3],
+      lastEvent: 'HOLD',
+      status: 'active',
+      winnerId: null,
+    });
+  });
+
+  it('loads a legacy game as double-six-v1 and lazily persists compatibility fields', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/api/games')
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .send({ opponentId: playerB.id, winningScore: 40 })
+      .expect(201);
+    const legacyGame = created.body as GameResponse;
+
+    await gameModel.collection.updateOne(
+      { _id: legacyGame.id },
+      {
+        $unset: { ruleSetId: '', lastEvent: '' },
+        $set: { legacyMarker: 'preserved' },
+      },
+    );
+    await restartApplication();
+
+    const legacyView = await request(app.getHttpServer())
+      .get(`/api/games/${legacyGame.id}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .expect(200);
+    expect(legacyView.body).toMatchObject({
+      id: legacyGame.id,
+      version: 0,
+      lastRoll: null,
+      lastEvent: null,
+    });
+
+    const rolled = await request(app.getHttpServer())
+      .post(`/api/games/${legacyGame.id}/roll`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .set('If-Match', JSON.stringify('0'))
+      .send({})
+      .expect(200);
+    expect(rolled.body).toMatchObject({
+      id: legacyGame.id,
+      version: 1,
+      roundScore: 7,
+      lastRoll: [3, 4],
+      lastEvent: 'ROLL',
+    });
+
+    const stored = await gameModel.collection.findOne({ _id: legacyGame.id });
+    expect(stored).toMatchObject({
+      _id: legacyGame.id,
+      version: 1,
+      ruleSetId: 'double-six-v1',
+      lastEvent: 'ROLL',
+      legacyMarker: 'preserved',
+    });
+  });
+
+  it('fails safely without mutating a game with an unknown stored rule ID', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/api/games')
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .send({ opponentId: playerB.id })
+      .expect(201);
+    const unknownRulesGame = created.body as GameResponse;
+
+    await gameModel.collection.updateOne(
+      { _id: unknownRulesGame.id },
+      {
+        $set: { ruleSetId: 'unknown-v1' },
+      },
+    );
+
+    await request(app.getHttpServer())
+      .get(`/api/games/${unknownRulesGame.id}`)
+      .set('Authorization', `Bearer ${playerA.accessToken}`)
+      .expect(500)
+      .expect({
+        statusCode: 500,
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal server error.',
+      });
+
+    const stored = await gameModel.collection.findOne({
+      _id: unknownRulesGame.id,
+    });
+    expect(stored).toMatchObject({
+      version: 0,
+      ruleSetId: 'unknown-v1',
+      lastEvent: null,
+    });
   });
 
   afterAll(async () => {

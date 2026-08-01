@@ -578,14 +578,14 @@ input:focus-visible {
   line-height: 1;
 }
 
-.double-six .die {
+.bust .die {
   border-color: #dc2626;
   color: #991b1b;
   background: #fee2e2;
-  animation: double-six-shake 420ms ease-in-out both;
+  animation: bust-shake 420ms ease-in-out both;
 }
 
-.double-six-message {
+.bust-message {
   margin-top: 16px;
   padding: 12px 14px;
   border: 1px solid #fca5a5;
@@ -621,7 +621,7 @@ input:focus-visible {
   margin: 0;
 }
 
-@keyframes double-six-shake {
+@keyframes bust-shake {
   0%,
   100% {
     transform: translateX(0) rotate(0);
@@ -727,7 +727,7 @@ input:focus-visible {
   .primary-button,
   .secondary-button,
   .winner-celebration,
-  .double-six .die {
+  .bust .die {
     animation: none;
     transition: none;
   }

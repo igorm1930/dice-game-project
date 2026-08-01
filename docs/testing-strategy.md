@@ -2,10 +2,38 @@
 
 ## Status
 
-Phase 1 through Phase 15 checks have been run locally. GitHub-hosted CI is
-green on `main` commit `2ddf8df`. Production health, CORS, frontend, Atlas,
-persistence, Swagger/OpenAPI, provider state, and real idle cold-start checks
-have passed.
+Phase 1 through Phase 16 checks have been run locally. GitHub-hosted CI and
+both Render services are on merged `main` commit `ebda55c`; the verified Phase
+16 fix remains only on its review branch.
+
+## Phase 16 versioned-rules and turn-handoff verification
+
+- Focused rule-policy, engine, repository, and service suites passed 4 suites
+  and 57 tests. They cover the exact production pairs, normalized unordered
+  multi-combination policies, engine substitution, semantic transitions,
+  restart stability, legacy hydration, and unknown-ID failure.
+- Focused game API E2E passed 17 tests. It verifies persisted rule/event state,
+  double-six state, both callers' permissions, exactly one version increment,
+  unchanged wins, same-game Roll and Hold, no additional game creation,
+  restart and API-process persistence, explicit legacy fallback, and safe
+  unknown-ID behavior.
+- Focused frontend verification passed 3 files and 38 tests. Bust rendering is
+  driven by `lastEvent`, raw dice remain display-only, the active seat refetch
+  uses that seat's token, and action bodies contain no identity or rule data.
+- Complete root verification passed 13 backend unit suites with 107 tests, 4
+  MongoDB E2E suites with 50 tests, 4 frontend files with 43 tests, lint, and
+  both production builds. Vite transformed 24 modules.
+- Three dependency audits found zero vulnerabilities. Docker Compose config
+  passed. Gitleaks found no leaks across 37 commits, every modified directory,
+  or the complete tracked diff.
+- An isolated two-user browser game accumulated a nonzero round score and
+  reached a real random double six on roll 63. It selected Seat B, rendered
+  generic Bust feedback and enabled Roll/Hold/New Game. Seat B then rolled 5
+  and 4, held 9 in the same game, and returned control to Seat A. The browser
+  console contained no errors.
+- The 38-rule assignment and architecture audit is complete with no missing or
+  contradictory mandatory behavior; its evidence table is in the Phase 16
+  session log.
 
 ## Phase 15 final verification
 

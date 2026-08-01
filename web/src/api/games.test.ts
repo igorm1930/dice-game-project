@@ -23,6 +23,7 @@ const game: GameResponse = {
   roundScore: 0,
   winningScore: 100,
   lastRoll: null,
+  lastEvent: null,
   status: "active",
   winnerId: null,
   allowedActions: ["roll", "hold", "restart"],
@@ -140,6 +141,7 @@ describe("game API client", () => {
     { ...game, version: -1 },
     { ...game, activePlayerId: "unknown-player" },
     { ...game, lastRoll: [0, 7] },
+    { ...game, lastEvent: "UNKNOWN" },
     { ...game, status: "won", winnerId: null },
     { ...game, allowedActions: ["roll", "roll"] },
   ])("rejects a malformed successful response", async (malformedGame) => {

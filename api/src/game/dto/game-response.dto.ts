@@ -1,5 +1,5 @@
 import type { DieValue } from '../domain/dice-roller';
-import type { GameStatus } from '../domain/game.types';
+import type { GameEvent, GameStatus } from '../domain/game.types';
 import type { GameRecord } from '../repositories/game.repository';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -45,6 +45,13 @@ export class GameResponseDto {
   })
   readonly lastRoll: readonly [DieValue, DieValue] | null;
 
+  @ApiProperty({
+    enum: ['ROLL', 'BUST', 'HOLD', 'RESTART'],
+    nullable: true,
+    example: 'BUST',
+  })
+  readonly lastEvent: GameEvent | null;
+
   @ApiProperty({ enum: ['active', 'won'] })
   readonly status: GameStatus;
 
@@ -74,6 +81,7 @@ export class GameResponseDto {
     this.lastRoll = state.lastRoll
       ? [state.lastRoll[0], state.lastRoll[1]]
       : null;
+    this.lastEvent = state.lastEvent;
     this.status = state.status;
     this.winnerId = state.winnerId;
     this.allowedActions =

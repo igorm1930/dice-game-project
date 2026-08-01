@@ -119,7 +119,7 @@ export function GameBoard({
   const winnerName = game.winnerId
     ? (playerNames[game.winnerId] ?? "Unknown player")
     : null;
-  const isDoubleSix = game.lastRoll?.[0] === 6 && game.lastRoll[1] === 6;
+  const isBust = game.lastEvent === "BUST";
 
   return (
     <section
@@ -188,7 +188,7 @@ export function GameBoard({
         </div>
 
         <div
-          className={`dice ${isDoubleSix ? "double-six" : ""}`}
+          className={`dice ${isBust ? "bust" : ""}`}
           aria-label={"Last roll"}
         >
           <Die index={1} value={game.lastRoll?.[0] ?? null} />
@@ -231,9 +231,9 @@ export function GameBoard({
         </div>
       </div>
 
-      {isDoubleSix && (
-        <p className={"double-six-message"} role={"status"}>
-          Double six! The round score was lost and the turn passed.
+      {isBust && (
+        <p className={"bust-message"} role={"status"}>
+          Bust! The round score was lost and the turn passed.
         </p>
       )}
 

@@ -16,6 +16,7 @@ const game: GameResponse = {
   roundScore: 5,
   winningScore: 25,
   lastRoll: [2, 3],
+  lastEvent: "ROLL",
   status: "active",
   winnerId: null,
   allowedActions: ["roll", "hold", "restart"],
@@ -144,19 +145,31 @@ describe("GameBoard", () => {
     ).toBeInTheDocument();
   });
 
-  it("announces server-provided double-six feedback", () => {
+  it("announces semantic server-provided bust feedback without interpreting dice", () => {
     renderBoard({
       game: {
         ...game,
-        lastRoll: [6, 6],
+        lastRoll: [2, 5],
+        lastEvent: "BUST",
         roundScore: 0,
         activePlayerId: game.players[1].id,
       },
     });
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Double six! The round score was lost and the turn passed.",
+      "Bust! The round score was lost and the turn passed.",
     );
-    expect(screen.getByLabelText("Last roll")).toHaveClass("double-six");
+    expect(screen.getByLabelText("Last roll")).toHaveClass("bust");
+    expect(screen.getByLabelText("Die 1: 2")).toBeInTheDocument();
+    expect(screen.getByLabelText("Die 2: 5")).toBeInTheDocument();
+  });
+
+  it("does not infer a bust from raw dice", () => {
+    renderBoard({
+      game: { ...game, lastRoll: [6, 6], lastEvent: "ROLL" },
+    });
+
+    expect(screen.queryByText(/round score was lost/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Last roll")).not.toHaveClass("bust");
   });
 });

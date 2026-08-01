@@ -96,6 +96,7 @@ const game: GameResponse = {
   roundScore: 0,
   winningScore: 25,
   lastRoll: null,
+  lastEvent: null,
   status: "active",
   winnerId: null,
   allowedActions: ["roll", "hold", "restart"],
@@ -397,6 +398,7 @@ describe("App", () => {
       version: 1,
       roundScore: 5,
       lastRoll: [2, 3],
+      lastEvent: "ROLL",
     });
     render(<App />);
 
@@ -410,6 +412,89 @@ describe("App", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Die 1: 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Die 2: 3")).toBeInTheDocument();
+  });
+
+  it("hands control to the next authenticated seat after double six", async () => {
+    const actor = userEvent.setup();
+    const bustForPreviousPlayer: GameResponse = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      roundScore: 0,
+      lastRoll: [6, 6],
+      lastEvent: "BUST",
+      allowedActions: ["restart"],
+    };
+    const bustForActivePlayer: GameResponse = {
+      ...bustForPreviousPlayer,
+      allowedActions: ["roll", "hold", "restart"],
+    };
+    const nextPlayerRoll: GameResponse = {
+      ...bustForActivePlayer,
+      version: 2,
+      roundScore: 5,
+      lastRoll: [2, 3],
+      lastEvent: "ROLL",
+    };
+    const holdForPreviousPlayer: GameResponse = {
+      ...nextPlayerRoll,
+      version: 3,
+      players: [
+        { id: seatAUser.id, globalScore: 0 },
+        { id: seatBUser.id, globalScore: 5 },
+      ],
+      activePlayerId: seatAUser.id,
+      roundScore: 0,
+      lastEvent: "HOLD",
+      allowedActions: ["restart"],
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame
+      .mockResolvedValueOnce(bustForPreviousPlayer)
+      .mockResolvedValueOnce(nextPlayerRoll);
+    mockHoldGame.mockResolvedValue(holdForPreviousPlayer);
+    mockGetGame
+      .mockResolvedValueOnce(bustForActivePlayer)
+      .mockResolvedValueOnce({
+        ...holdForPreviousPlayer,
+        allowedActions: ["roll", "hold", "restart"],
+      });
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    await actor.click(screen.getByRole("button", { name: "Roll dice" }));
+
+    expect(mockRollGame).toHaveBeenCalledWith("token-a", game.id, game.version);
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledWith("token-b", game.id);
+      expect(screen.getByRole("radio", { name: /Seat B/ })).toBeChecked();
+    });
+    expect(
+      screen.getByText("SeatBravo", { selector: ".game-heading strong" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("0", { selector: ".round-score strong" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Bust! The round score was lost/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeEnabled();
+
+    await actor.click(screen.getByRole("button", { name: "Roll dice" }));
+    expect(mockRollGame).toHaveBeenNthCalledWith(2, "token-b", game.id, 1);
+    expect(
+      await screen.findByText("5", { selector: ".round-score strong" }),
+    ).toBeInTheDocument();
+
+    await actor.click(screen.getByRole("button", { name: "Hold score" }));
+    expect(mockHoldGame).toHaveBeenCalledWith("token-b", game.id, 2);
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledWith("token-a", game.id);
+      expect(screen.getByRole("radio", { name: /Seat A/ })).toBeChecked();
+    });
+    expect(mockCreateGame).toHaveBeenCalledTimes(1);
   });
 
   it("reloads the latest state after a version conflict", async () => {

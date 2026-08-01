@@ -3,8 +3,8 @@
 ## Status
 
 The health, read-only user, authentication, and game endpoints are implemented
-and tested. Phase 14 adds version-guarded game mutations, consistent errors,
-liveness/readiness routes, and generated OpenAPI documentation.
+and tested. Phase 16 additively exposes semantic game events while preserving
+the existing paths, authentication, authorization, ETag, and mutation bodies.
 
 Only document endpoints after they exist and have been tested.
 
@@ -206,6 +206,7 @@ a non-negative `version` and a matching strong `ETag`:
   "roundScore": 0,
   "winningScore": 100,
   "lastRoll": null,
+  "lastEvent": null,
   "status": "active",
   "winnerId": null,
   "allowedActions": ["roll", "hold", "restart"]
@@ -213,8 +214,16 @@ a non-negative `version` and a matching strong `ETag`:
 ```
 
 `status` is `active` or `won`; `lastRoll` is `null` or two integers from 1
-through 6. The active caller receives all three actions while another
-participant or either participant after victory receives only `restart`.
+through 6. `lastEvent` is `null`, `ROLL`, `BUST`, `HOLD`, or `RESTART` and lets
+clients render feedback without inferring rules from dice values. The active
+caller receives all three actions while another participant or either
+participant after victory receives only `restart`.
+
+Each persisted game also has an internal immutable `ruleSetId`. It is never
+accepted from a client and is not exposed in the public response. New and
+legacy games use the approved `double-six-v1` policy; an unknown stored ID
+fails with the safe generic unexpected-error contract instead of silently
+changing rules.
 
 ### Create game
 
@@ -232,7 +241,8 @@ Body:
 `opponentId` must be a MongoDB object ID for a distinct credentialed user.
 `winningScore` is optional, defaults to 100, and must be an integer from 1
 through `Number.MAX_SAFE_INTEGER`. Unknown fields are rejected. Success is
-`201 Created` with the game response and the caller as Player 1.
+`201 Created` with the game response and the caller as Player 1. The backend
+selects `double-six-v1`; the client cannot select a rule set.
 
 Errors include `400 INVALID_PLAYERS`, `404 OPPONENT_NOT_FOUND`, and standard
 validation errors. The not-found response does not distinguish an absent user
@@ -250,6 +260,8 @@ POST /api/games/:id/roll requires an empty body and an `If-Match` header
 containing the quoted version from the latest response. Success is 200 with
 the updated game response and incremented version. Dice come from backend
 cryptographic randomness.
+Only `[6, 6]` produces `lastEvent: BUST`, clears the round score, and passes the
+turn. Other pairs produce `lastEvent: ROLL` and add the dice sum.
 Wrong-turn callers receive 409 NOT_YOUR_TURN; Roll after a win returns 409
 GAME_FINISHED. A stale or duplicate request returns 409 GAME_STATE_CONFLICT.
 
@@ -266,11 +278,13 @@ winner's lifetime counter exactly once.
 POST /api/games/:id/restart requires an empty body and current `If-Match`
 header. Either participant may restart an active or won game. Success is 200;
 scores, round score, last roll, status, winner, and active turn reset while
-players and winning score remain unchanged.
+players, winning score, and the internal rule-set ID remain unchanged. A
+successful restart returns `lastEvent: RESTART`.
 
 For all action routes, authoritative client fields such as actor/player IDs,
 dice, scores, turns, winner state, or allowed actions are unknown fields and
-produce 400 Bad Request.
+produce 400 Bad Request. `ruleSetId` and `lastEvent` are also rejected when
+sent as authoritative request fields.
 Missing, weak, unquoted, negative, or unsafe `If-Match` values return
 400 INVALID_GAME_VERSION.
 

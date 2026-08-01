@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
 import type { DiceRoll } from '../domain/dice-roller';
-import type { GameStatus, PlayerIndex } from '../domain/game.types';
+import type { GameEvent, GameStatus, PlayerIndex } from '../domain/game.types';
+import { DOUBLE_SIX_RULE_SET_ID } from '../rules/game-rules.registry';
 
 const uuidV4Pattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -79,6 +80,13 @@ export class PersistedGame {
   winningScore!: number;
 
   @Prop({
+    type: String,
+    default: DOUBLE_SIX_RULE_SET_ID,
+    match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+  })
+  ruleSetId?: string;
+
+  @Prop({
     type: [Number],
     default: null,
     validate: {
@@ -87,6 +95,13 @@ export class PersistedGame {
     },
   })
   lastRoll!: DiceRoll | null;
+
+  @Prop({
+    type: String,
+    default: null,
+    enum: ['ROLL', 'BUST', 'HOLD', 'RESTART', null],
+  })
+  lastEvent?: GameEvent | null;
 
   @Prop({ type: String, required: true, enum: ['active', 'won'] })
   status!: GameStatus;
