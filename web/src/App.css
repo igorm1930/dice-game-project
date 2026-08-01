@@ -119,7 +119,7 @@
   font-size: 14px;
 }
 
-.auth-mode button[aria-pressed='true'] {
+.auth-mode button[aria-pressed="true"] {
   color: var(--text-h);
   background: var(--bg);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
@@ -164,6 +164,21 @@
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
+}
+
+.primary-button:not(:disabled):hover,
+.secondary-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 
 .primary-button {
@@ -461,6 +476,10 @@
   font-weight: 700;
 }
 
+.winner-celebration {
+  animation: winner-arrival 520ms ease-out both;
+}
+
 .scoreboard {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -512,6 +531,13 @@
   color: var(--accent);
 }
 
+.lifetime-wins {
+  grid-column: 1 / -1;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .turn-table {
   display: grid;
   grid-template-columns: minmax(150px, 0.5fr) auto minmax(220px, 1fr);
@@ -552,6 +578,24 @@
   line-height: 1;
 }
 
+.double-six .die {
+  border-color: #dc2626;
+  color: #991b1b;
+  background: #fee2e2;
+  animation: double-six-shake 420ms ease-in-out both;
+}
+
+.double-six-message {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  color: #991b1b;
+  background: #fee2e2;
+  font-weight: 700;
+  text-align: center;
+}
+
 .game-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -575,6 +619,30 @@
 
 .game-error {
   margin: 0;
+}
+
+@keyframes double-six-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(-6px) rotate(-4deg);
+  }
+  75% {
+    transform: translateX(6px) rotate(4deg);
+  }
+}
+
+@keyframes winner-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 800px) {
@@ -614,5 +682,58 @@
 
   .dice {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-page {
+    padding: 20px 12px;
+  }
+
+  .seat-card,
+  .acting-panel,
+  .game-panel,
+  .panel {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .auth-mode,
+  .seat-selector,
+  .game-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .game-actions .new-game-button {
+    grid-column: auto;
+  }
+
+  .matchup {
+    grid-template-columns: 1fr;
+  }
+
+  .global-score {
+    font-size: 36px;
+  }
+
+  .die {
+    width: 56px;
+    height: 56px;
+    font-size: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button,
+  .secondary-button,
+  .winner-celebration,
+  .double-six .die {
+    animation: none;
+    transition: none;
+  }
+
+  .primary-button:not(:disabled):hover,
+  .secondary-button:not(:disabled):hover {
+    transform: none;
   }
 }

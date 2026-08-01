@@ -9,6 +9,7 @@ import {
   type PersistedGameDocument,
 } from '../schemas/game.schema';
 import type { GameRecord, GameRepository } from './game.repository';
+import { GameVersionConflictError } from './game-repository.errors';
 
 function cloneState(state: GameState): GameState {
   return {
@@ -54,6 +55,7 @@ function toRecord(game: PersistedGameDocument): GameRecord {
 
   return {
     id: game._id,
+    version: game.version ?? 0,
     state: {
       players: [
         { id: firstPlayer.id, globalScore: firstPlayer.globalScore },
@@ -84,7 +86,7 @@ export class MongooseGameRepository implements GameRepository {
       ...persistenceFields(state),
     });
 
-    return { id, state: cloneState(state) };
+    return { id, version: 0, state: cloneState(state) };
   }
 
   async findById(id: string): Promise<GameRecord | undefined> {
@@ -102,23 +104,35 @@ export class MongooseGameRepository implements GameRepository {
   async save(record: GameRecord): Promise<GameRecord> {
     const candidate = this.gameModel.hydrate({
       _id: record.id,
+      version: record.version,
       ...persistenceFields(record.state),
     });
 
     await candidate.validate();
 
+    const versionFilter =
+      record.version === 0
+        ? { $or: [{ version: 0 }, { version: { $exists: false } }] }
+        : { version: record.version };
     const result = await this.gameModel
       .updateOne(
-        { _id: record.id },
-        { $set: persistenceFields(record.state) },
+        { _id: record.id, ...versionFilter },
+        {
+          $set: persistenceFields(record.state),
+          $inc: { version: 1 },
+        },
         { runValidators: true },
       )
       .exec();
 
     if (result.matchedCount !== 1) {
-      throw new Error('Game record disappeared before it could be saved.');
+      throw new GameVersionConflictError();
     }
 
-    return { id: record.id, state: cloneState(record.state) };
+    return {
+      id: record.id,
+      version: record.version + 1,
+      state: cloneState(record.state),
+    };
   }
 }

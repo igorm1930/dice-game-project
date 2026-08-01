@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
 
+const uuidV4Pattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true, versionKey: false })
@@ -16,6 +19,18 @@ export class User {
 
   @Prop({ required: true, default: 0, min: 0 })
   wins!: number;
+
+  @Prop({
+    type: [String],
+    default: [],
+    select: false,
+    validate: {
+      validator: (gameIds: string[]) =>
+        gameIds.every((gameId) => uuidV4Pattern.test(gameId)),
+      message: 'Counted win game IDs must be UUID v4 values.',
+    },
+  })
+  countedWinGameIds!: string[];
 
   createdAt!: Date;
   updatedAt!: Date;

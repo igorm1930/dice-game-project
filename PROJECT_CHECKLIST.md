@@ -284,9 +284,7 @@ Verification summary:
 
 ## Phase 13 — Persistent game state
 
-Status: Implemented, locally verified, and developer-reviewed on
-`phase/13-persistent-game-state`. Commit and push are authorized; items remain
-unchecked until publication is complete.
+Status: Completed and merged to `main` as `93e188b`.
 
 Verification summary:
 
@@ -299,25 +297,37 @@ Verification summary:
 - Production dependency and frontend audits found zero vulnerabilities; secret
   scans found no leaks.
 
-- [ ] Replace the in-memory repository with MongoDB
-- [ ] Preserve the repository interface
-- [ ] Persist rolls, Hold actions, winner, and restart
-- [ ] Resume an active game after backend restart
-- [ ] Verify frontend API contract remains stable
+- [x] Replace the in-memory repository with MongoDB
+- [x] Preserve the repository interface
+- [x] Persist rolls, Hold actions, winner, and restart
+- [x] Resume an active game after backend restart
+- [x] Verify frontend API contract remains stable
 
 ## Phase 14 — Hardening and polish
 
-- [ ] Add optimistic concurrency
-- [ ] Prevent duplicate actions
-- [ ] Add consistent API errors
-- [ ] Add Swagger
-- [ ] Add win counters
-- [ ] Improve responsive layout
-- [ ] Add accessibility
-- [ ] Add reduced-motion support
-- [ ] Add double-six feedback
-- [ ] Add winner feedback
-- [ ] Improve README and architecture documentation
+Status: Completed, locally verified, and developer-reviewed on
+`phase/14-hardening-and-polish`.
+
+Verification summary:
+
+- Focused backend tests passed: 7 suites and 44 tests.
+- Root verification passed 95 backend unit tests, 47 backend E2E tests, 40
+  frontend tests, lint, and both builds.
+- Browser verification passed registration, authenticated play, winner and
+  lifetime-win feedback, restart, 768px and 390px layouts, and Swagger UI.
+- All three dependency audits and full-history/focused secret scans passed.
+
+- [x] Add optimistic concurrency
+- [x] Prevent duplicate actions
+- [x] Add consistent API errors
+- [x] Add Swagger
+- [x] Add win counters
+- [x] Improve responsive layout
+- [x] Add accessibility
+- [x] Add reduced-motion support
+- [x] Add double-six feedback
+- [x] Add winner feedback
+- [x] Improve README and architecture documentation
 
 ## Phase 15 — Final delivery
 

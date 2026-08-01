@@ -40,7 +40,7 @@ const PersistedGamePlayerSchema =
 @Schema({
   collection: 'games',
   timestamps: true,
-  versionKey: false,
+  versionKey: 'version',
 })
 export class PersistedGame {
   @Prop({ required: true, match: uuidV4Pattern })
@@ -94,6 +94,7 @@ export class PersistedGame {
   @Prop({ type: String, default: null, match: objectIdPattern })
   winnerId!: string | null;
 
+  version!: number;
   createdAt!: Date;
   updatedAt!: Date;
 }

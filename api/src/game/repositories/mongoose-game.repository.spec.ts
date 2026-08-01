@@ -63,6 +63,7 @@ describe('MongooseGameRepository', () => {
     });
     expect(record.state).toEqual(state);
     expect(record.state).not.toBe(state);
+    expect(record.version).toBe(0);
   });
 
   it('rehydrates a stored document as a domain record', async () => {
@@ -76,6 +77,7 @@ describe('MongooseGameRepository', () => {
 
     await expect(repository.findById(gameId)).resolves.toEqual({
       id: gameId,
+      version: 0,
       state,
     });
     expect(findById).toHaveBeenCalledWith(gameId);
@@ -91,13 +93,17 @@ describe('MongooseGameRepository', () => {
   });
 
   it('persists and returns the complete replacement state', async () => {
-    const record: GameRecord = { id: gameId, state };
+    const record: GameRecord = { id: gameId, version: 3, state };
     const exec = jest.fn().mockResolvedValue({ matchedCount: 1 });
     updateOne.mockReturnValue({ exec });
 
-    await expect(repository.save(record)).resolves.toEqual(record);
+    await expect(repository.save(record)).resolves.toEqual({
+      ...record,
+      version: 4,
+    });
     expect(hydrate).toHaveBeenCalledWith({
       _id: gameId,
+      version: 3,
       players: [
         { id: playerA, globalScore: 5 },
         { id: playerB, globalScore: 0 },
@@ -111,7 +117,7 @@ describe('MongooseGameRepository', () => {
     });
     expect(validate).toHaveBeenCalledTimes(1);
     expect(updateOne).toHaveBeenCalledWith(
-      { _id: gameId },
+      { _id: gameId, version: 3 },
       {
         $set: {
           players: [
@@ -125,18 +131,37 @@ describe('MongooseGameRepository', () => {
           status: 'active',
           winnerId: null,
         },
+        $inc: { version: 1 },
       },
       { runValidators: true },
     );
   });
 
-  it('fails clearly if a game disappears before save', async () => {
+  it('accepts a legacy version-zero document without a stored version', async () => {
+    const record: GameRecord = { id: gameId, version: 0, state };
+    updateOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ matchedCount: 1 }),
+    });
+
+    await repository.save(record);
+
+    expect(updateOne).toHaveBeenCalledWith(
+      {
+        _id: gameId,
+        $or: [{ version: 0 }, { version: { $exists: false } }],
+      },
+      expect.any(Object),
+      { runValidators: true },
+    );
+  });
+
+  it('fails clearly when the expected game version is stale', async () => {
     updateOne.mockReturnValue({
       exec: jest.fn().mockResolvedValue({ matchedCount: 0 }),
     });
 
-    await expect(repository.save({ id: gameId, state })).rejects.toThrow(
-      'Game record disappeared before it could be saved.',
-    );
+    await expect(
+      repository.save({ id: gameId, version: 2, state }),
+    ).rejects.toThrow('The game was changed by another request.');
   });
 });

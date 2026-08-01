@@ -3,8 +3,8 @@
 ## Status
 
 The health, read-only user, authentication, and game endpoints are implemented
-and tested. Phase 13 moved game records to MongoDB without changing the HTTP
-contract.
+and tested. Phase 14 adds version-guarded game mutations, consistent errors,
+liveness/readiness routes, and generated OpenAPI documentation.
 
 Only document endpoints after they exist and have been tested.
 
@@ -32,10 +32,13 @@ Status: `200 OK`
 Both response fields are fixed strings. The endpoint accepts no user input.
 Success requires an active Mongoose connection.
 
+`GET /api/health/ready` provides the same MongoDB readiness contract.
+`GET /api/health/live` reports process liveness without depending on MongoDB.
+
 ### Errors
 
 If the API is running but MongoDB becomes disconnected, the endpoint returns
-`503 Service Unavailable` with Nest's standard error body and the message
+`503 Service Unavailable` with code `SERVICE_UNAVAILABLE` and message
 `Database connection is unavailable`.
 
 If MongoDB is unavailable during startup, the API makes three bounded
@@ -51,6 +54,18 @@ Invoke-RestMethod -Uri 'http://localhost:3000/api/health'
 
 The backend uses a global `/api` prefix, so the generated root greeting is
 available at `GET /api`, not `GET /`.
+
+## OpenAPI and error contracts
+
+- `GET /api/docs` serves Swagger UI.
+- `GET /api/openapi.json` serves the generated OpenAPI document.
+- Every error contains `statusCode`, `code`, and `message`.
+- Validation errors use `VALIDATION_ERROR`.
+- Unexpected errors use `INTERNAL_SERVER_ERROR` and the generic message
+  `Internal server error.`
+
+Swagger documents bearer authentication but does not persist authorization
+between page loads.
 
 ## User endpoints
 
@@ -81,7 +96,8 @@ Errors:
 - `400 Bad Request` when `id` is not a MongoDB ID
 - `404 Not Found` with `User not found` when a valid ID has no user
 
-MongoDB `_id`, version fields, and internal documents are never returned.
+MongoDB `_id`, password fields, and internal counted-game IDs are never
+returned. `wins` is incremented once per won game.
 
 ## Authentication endpoints
 
@@ -175,11 +191,13 @@ already know the game ID.
 
 ### Game response
 
-Every successful game operation returns the caller-specific state:
+Every successful game operation returns the caller-specific state. It includes
+a non-negative `version` and a matching strong `ETag`:
 
 ```json
 {
   "id": "d43acc2f-a715-49a1-bf4f-74b16592e553",
+  "version": 0,
   "players": [
     { "id": "66c10cb50d521a70d4d8d111", "globalScore": 0 },
     { "id": "66c10cb50d521a70d4d8d222", "globalScore": 0 }
@@ -228,27 +246,33 @@ An absent game and a game hidden from a nonparticipant both return the same
 
 ### Roll
 
-POST /api/games/:id/roll requires an empty body. Success is 200 with the
-updated game response. Dice come from backend cryptographic randomness.
+POST /api/games/:id/roll requires an empty body and an `If-Match` header
+containing the quoted version from the latest response. Success is 200 with
+the updated game response and incremented version. Dice come from backend
+cryptographic randomness.
 Wrong-turn callers receive 409 NOT_YOUR_TURN; Roll after a win returns 409
-GAME_FINISHED.
+GAME_FINISHED. A stale or duplicate request returns 409 GAME_STATE_CONFLICT.
 
 ### Hold
 
-POST /api/games/:id/hold requires an empty body. Success is 200 with the
-updated game response. Only the active participant may Hold. The same
-NOT_YOUR_TURN and GAME_FINISHED conflicts apply as for Roll.
+POST /api/games/:id/hold requires the same empty body and `If-Match` header.
+Success is 200 with the updated game response. Only the active participant may
+Hold. The same NOT_YOUR_TURN, GAME_FINISHED, and GAME_STATE_CONFLICT responses
+apply as for Roll. The first successful winning transition increments the
+winner's lifetime counter exactly once.
 
 ### Restart
 
-POST /api/games/:id/restart requires an empty body. Either participant may
-restart an active or won game. Success is 200; scores, round score, last roll,
-status, winner, and active turn reset while players and winning score remain
-unchanged.
+POST /api/games/:id/restart requires an empty body and current `If-Match`
+header. Either participant may restart an active or won game. Success is 200;
+scores, round score, last roll, status, winner, and active turn reset while
+players and winning score remain unchanged.
 
 For all action routes, authoritative client fields such as actor/player IDs,
 dice, scores, turns, winner state, or allowed actions are unknown fields and
 produce 400 Bad Request.
+Missing, weak, unquoted, negative, or unsafe `If-Match` values return
+400 INVALID_GAME_VERSION.
 
 ## Documentation rule
 

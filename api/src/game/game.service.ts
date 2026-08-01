@@ -14,6 +14,7 @@ import {
   GAME_FINISHED_RESPONSE,
   GAME_NOT_FOUND_RESPONSE,
   GAME_REPOSITORY,
+  GAME_STATE_CONFLICT_RESPONSE,
   INVALID_PLAYERS_RESPONSE,
   NOT_YOUR_TURN_RESPONSE,
   OPPONENT_NOT_FOUND_RESPONSE,
@@ -22,6 +23,7 @@ import type {
   GameRecord,
   GameRepository,
 } from './repositories/game.repository';
+import { GameVersionConflictError } from './repositories/game-repository.errors';
 
 @Injectable()
 export class GameService {
@@ -64,11 +66,16 @@ export class GameService {
     );
   }
 
-  async roll(gameId: string, actorId: string): Promise<GameResponseDto> {
+  async roll(
+    gameId: string,
+    actorId: string,
+    expectedVersion: number,
+  ): Promise<GameResponseDto> {
     const record = await this.findVisibleGame(gameId, actorId);
+    this.ensureCurrentVersion(record, expectedVersion);
     this.ensureActorsTurn(record.state, actorId);
 
-    const updated = await this.gameRepository.save({
+    const updated = await this.save({
       ...record,
       state: this.gameEngine.roll(record.state),
     });
@@ -76,21 +83,32 @@ export class GameService {
     return new GameResponseDto(updated, actorId);
   }
 
-  async hold(gameId: string, actorId: string): Promise<GameResponseDto> {
+  async hold(
+    gameId: string,
+    actorId: string,
+    expectedVersion: number,
+  ): Promise<GameResponseDto> {
     const record = await this.findVisibleGame(gameId, actorId);
+    this.ensureCurrentVersion(record, expectedVersion);
     this.ensureActorsTurn(record.state, actorId);
 
-    const updated = await this.gameRepository.save({
+    const updated = await this.save({
       ...record,
       state: this.gameEngine.hold(record.state),
     });
+    await this.ensureWinCounted(updated);
 
     return new GameResponseDto(updated, actorId);
   }
 
-  async restart(gameId: string, actorId: string): Promise<GameResponseDto> {
+  async restart(
+    gameId: string,
+    actorId: string,
+    expectedVersion: number,
+  ): Promise<GameResponseDto> {
     const record = await this.findVisibleGame(gameId, actorId);
-    const updated = await this.gameRepository.save({
+    this.ensureCurrentVersion(record, expectedVersion);
+    const updated = await this.save({
       ...record,
       state: this.gameEngine.restart(record.state),
     });
@@ -111,7 +129,35 @@ export class GameService {
       throw new NotFoundException(GAME_NOT_FOUND_RESPONSE);
     }
 
+    await this.ensureWinCounted(record);
     return record;
+  }
+
+  private ensureCurrentVersion(
+    record: GameRecord,
+    expectedVersion: number,
+  ): void {
+    if (record.version !== expectedVersion) {
+      throw new ConflictException(GAME_STATE_CONFLICT_RESPONSE);
+    }
+  }
+
+  private async save(record: GameRecord): Promise<GameRecord> {
+    try {
+      return await this.gameRepository.save(record);
+    } catch (error: unknown) {
+      if (error instanceof GameVersionConflictError) {
+        throw new ConflictException(GAME_STATE_CONFLICT_RESPONSE);
+      }
+
+      throw error;
+    }
+  }
+
+  private async ensureWinCounted(record: GameRecord): Promise<void> {
+    if (record.state.status === 'won' && record.state.winnerId) {
+      await this.usersService.recordGameWin(record.state.winnerId, record.id);
+    }
   }
 
   private ensureActorsTurn(state: GameState, actorId: string): void {

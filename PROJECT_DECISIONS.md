@@ -229,6 +229,28 @@ The acting player will eventually be derived from the authentication token.
 - Optimistic concurrency, duplicate-action protection, old-game retention, and
   lifetime win updates remain deferred.
 
+### Phase 14 hardening decisions
+
+- Expose a non-negative game `version` and matching strong `ETag`.
+- Require the latest strong `If-Match` value for Roll, Hold, and Restart.
+- Match MongoDB `_id` and version atomically, then increment the version.
+- Treat existing games without a version as version zero on their first
+  guarded update.
+- Return `GAME_STATE_CONFLICT` for stale or duplicate mutations and let React
+  refetch the latest authoritative state.
+- Increment lifetime wins with a hidden per-user game-ID set so each game is
+  counted at most once; participant reads repair an interrupted counter update.
+- Normalize every HTTP error to `statusCode`, `code`, and `message`; hide
+  unexpected exception details.
+- Log only method, route template, status, and duration.
+- Preserve `/api/health` as readiness, and add `/api/health/live` and
+  `/api/health/ready`.
+- Publish Swagger UI at `/api/docs` and OpenAPI JSON at `/api/openapi.json`
+  without persisted authorization.
+- Keep React free of game rules while adding server-state-driven lifetime wins,
+  double-six feedback, winner feedback, responsive layout, visible focus, and
+  reduced-motion behavior.
+
 ### Phase 8 authentication compatibility
 
 - New users are created only through `POST /api/auth/register` with a password.
@@ -730,7 +752,6 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phase 12 is completed and merged into `main` as `badca27`. Phase 13 is
-implemented, locally verified, and developer-reviewed on
-`phase/13-persistent-game-state`; commit and push are authorized. Do not merge,
-deploy, or begin Phase 14 without explicit approval.
+Phases 1 through 13 are merged into `main`. Phase 14 is implemented, locally
+verified, and developer-reviewed on `phase/14-hardening-and-polish`. Do not
+deploy, merge, or begin Phase 15 without explicit approval.

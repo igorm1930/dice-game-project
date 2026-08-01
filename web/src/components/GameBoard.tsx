@@ -1,43 +1,45 @@
-import { useState, type FormEvent } from 'react'
-import type { GameResponse } from '../api/games'
+import { useState, type FormEvent } from "react";
+import type { GameResponse } from "../api/games";
 
-const dieFaces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'] as const
+const dieFaces = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"] as const;
 
 interface GameBoardProps {
-  game: GameResponse | null
-  playerNames: Readonly<Record<string, string>>
-  creatorName: string | null
-  opponentName: string | null
-  actingUsername: string | null
-  busy: boolean
-  error: string | null
-  onCreate: (winningScore: number) => void
-  onRoll: () => void
-  onHold: () => void
-  onRestart: () => void
+  game: GameResponse | null;
+  playerNames: Readonly<Record<string, string>>;
+  playerWins: Readonly<Record<string, number>>;
+  creatorName: string | null;
+  opponentName: string | null;
+  actingUsername: string | null;
+  busy: boolean;
+  error: string | null;
+  onCreate: (winningScore: number) => void;
+  onRoll: () => void;
+  onHold: () => void;
+  onRestart: () => void;
 }
 
 interface DieProps {
-  index: number
-  value: number | null
+  index: number;
+  value: number | null;
 }
 
 function Die({ index, value }: DieProps) {
   return (
     <span
-      className={'die'}
+      className={"die"}
       aria-label={
         value === null ? `Die ${index}: not rolled` : `Die ${index}: ${value}`
       }
     >
-      <span aria-hidden={true}>{value === null ? '–' : dieFaces[value]}</span>
+      <span aria-hidden={true}>{value === null ? "–" : dieFaces[value]}</span>
     </span>
-  )
+  );
 }
 
 export function GameBoard({
   game,
   playerNames,
+  playerWins,
   creatorName,
   opponentName,
   actingUsername,
@@ -48,46 +50,46 @@ export function GameBoard({
   onHold,
   onRestart,
 }: GameBoardProps) {
-  const [winningScore, setWinningScore] = useState('100')
+  const [winningScore, setWinningScore] = useState("100");
 
   function handleCreate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const parsedScore = Number(winningScore)
+    event.preventDefault();
+    const parsedScore = Number(winningScore);
 
     if (!Number.isSafeInteger(parsedScore) || parsedScore < 1) {
-      return
+      return;
     }
 
-    onCreate(parsedScore)
+    onCreate(parsedScore);
   }
 
   if (!game) {
     return (
       <section
-        className={'game-panel setup-panel'}
-        aria-labelledby={'game-heading'}
+        className={"game-panel setup-panel"}
+        aria-labelledby={"game-heading"}
       >
         <div>
-          <p className={'step'}>Game setup</p>
-          <h2 id={'game-heading'}>Start a new game</h2>
-          <p className={'panel-copy'}>
+          <p className={"step"}>Game setup</p>
+          <h2 id={"game-heading"}>Start a new game</h2>
+          <p className={"panel-copy"}>
             Sign in both seats and choose the acting seat. That authenticated
             player becomes Player 1 and takes the first turn.
           </p>
         </div>
 
-        <form className={'game-setup-form'} onSubmit={handleCreate}>
-          <div className={'matchup'} aria-live={'polite'}>
-            <span>{creatorName ?? 'Choose an authenticated creator'}</span>
+        <form className={"game-setup-form"} onSubmit={handleCreate}>
+          <div className={"matchup"} aria-live={"polite"}>
+            <span>{creatorName ?? "Choose an authenticated creator"}</span>
             <strong aria-hidden={true}>vs</strong>
-            <span>{opponentName ?? 'Sign in the other seat'}</span>
+            <span>{opponentName ?? "Sign in the other seat"}</span>
           </div>
 
-          <label htmlFor={'winning-score'}>Winning score</label>
+          <label htmlFor={"winning-score"}>Winning score</label>
           <input
-            id={'winning-score'}
-            name={'winningScore'}
-            type={'number'}
+            id={"winning-score"}
+            name={"winningScore"}
+            type={"number"}
             min={1}
             max={Number.MAX_SAFE_INTEGER}
             step={1}
@@ -97,114 +99,130 @@ export function GameBoard({
           />
 
           <button
-            className={'primary-button'}
-            type={'submit'}
+            className={"primary-button"}
+            type={"submit"}
             disabled={!creatorName || !opponentName || busy}
           >
-            {busy ? 'Starting game...' : 'Start game'}
+            {busy ? "Starting game..." : "Start game"}
           </button>
         </form>
 
         {error && (
-          <p className={'form-error game-error'} role={'alert'}>
+          <p className={"form-error game-error"} role={"alert"}>
             {error}
           </p>
         )}
       </section>
-    )
+    );
   }
 
   const winnerName = game.winnerId
-    ? (playerNames[game.winnerId] ?? 'Unknown player')
-    : null
+    ? (playerNames[game.winnerId] ?? "Unknown player")
+    : null;
+  const isDoubleSix = game.lastRoll?.[0] === 6 && game.lastRoll[1] === 6;
 
   return (
-    <section className={'game-panel'} aria-labelledby={'game-heading'}>
-      <div className={'game-heading'}>
+    <section
+      className={"game-panel"}
+      aria-labelledby={"game-heading"}
+      aria-busy={busy}
+    >
+      <div className={"game-heading"}>
         <div>
-          <p className={'step'}>Live game</p>
-          <h2 id={'game-heading'}>
-            {game.status === 'won' ? `${winnerName} wins` : 'Game in progress'}
+          <p className={"step"}>Live game</p>
+          <h2 id={"game-heading"}>
+            {game.status === "won" ? `${winnerName} wins` : "Game in progress"}
           </h2>
-          <p className={'panel-copy'}>
-            Acting as{' '}
-            <strong>{actingUsername ?? 'no authenticated seat'}</strong>.
+          <p className={"panel-copy"}>
+            Acting as{" "}
+            <strong>{actingUsername ?? "no authenticated seat"}</strong>.
             Controls follow the permissions returned for that token.
           </p>
         </div>
         <span className={`game-status ${game.status}`}>
-          {game.status === 'won' ? 'Finished' : `First to ${game.winningScore}`}
+          {game.status === "won" ? "Finished" : `First to ${game.winningScore}`}
         </span>
       </div>
 
-      {game.status === 'won' && (
-        <p className={'winner-banner'} role={'status'}>
+      {game.status === "won" && (
+        <p
+          className={"winner-banner winner-celebration"}
+          role={"status"}
+          aria-live={"assertive"}
+        >
           {winnerName} reached the target. Start a new game to play again.
         </p>
       )}
 
-      <div className={'scoreboard'}>
+      <div className={"scoreboard"}>
         {game.players.map((player, index) => {
-          const isCurrent = player.id === game.activePlayerId
+          const isCurrent = player.id === game.activePlayerId;
 
           return (
             <article
-              className={`player-score ${isCurrent ? 'current' : ''}`}
+              className={`player-score ${isCurrent ? "current" : ""}`}
               key={player.id}
-              aria-label={`Player ${index + 1}: ${playerNames[player.id] ?? 'Unknown player'}`}
+              aria-current={isCurrent ? "true" : undefined}
+              aria-label={`Player ${index + 1}: ${playerNames[player.id] ?? "Unknown player"}`}
             >
               <div>
-                <span className={'player-number'}>Player {index + 1}</span>
-                <h3>{playerNames[player.id] ?? 'Unknown player'}</h3>
+                <span className={"player-number"}>Player {index + 1}</span>
+                <h3>{playerNames[player.id] ?? "Unknown player"}</h3>
               </div>
-              <strong className={'global-score'}>{player.globalScore}</strong>
-              <span className={'turn-marker'}>
-                {isCurrent ? 'Current turn' : 'Waiting'}
+              <strong className={"global-score"}>{player.globalScore}</strong>
+              <span className={"turn-marker"}>
+                {isCurrent ? "Current turn" : "Waiting"}
+              </span>
+              <span className={"lifetime-wins"}>
+                Lifetime wins: {playerWins[player.id] ?? 0}
               </span>
             </article>
-          )
+          );
         })}
       </div>
 
-      <div className={'turn-table'}>
-        <div className={'round-score'}>
+      <div className={"turn-table"}>
+        <div className={"round-score"}>
           <span>Round score</span>
           <strong>{game.roundScore}</strong>
         </div>
 
-        <div className={'dice'} aria-label={'Last roll'}>
+        <div
+          className={`dice ${isDoubleSix ? "double-six" : ""}`}
+          aria-label={"Last roll"}
+        >
           <Die index={1} value={game.lastRoll?.[0] ?? null} />
           <Die index={2} value={game.lastRoll?.[1] ?? null} />
         </div>
 
-        <div className={'game-actions'}>
+        <div className={"game-actions"}>
           <button
-            className={'primary-button roll-button'}
-            type={'button'}
+            className={"primary-button roll-button"}
+            type={"button"}
             disabled={
-              busy || !actingUsername || !game.allowedActions.includes('roll')
+              busy || !actingUsername || !game.allowedActions.includes("roll")
             }
             onClick={onRoll}
           >
-            {busy ? 'Updating...' : 'Roll dice'}
+            {busy ? "Updating..." : "Roll dice"}
           </button>
           <button
-            className={'secondary-button'}
-            type={'button'}
+            className={"secondary-button"}
+            type={"button"}
             disabled={
-              busy || !actingUsername || !game.allowedActions.includes('hold')
+              busy || !actingUsername || !game.allowedActions.includes("hold")
             }
             onClick={onHold}
           >
             Hold score
           </button>
           <button
-            className={'secondary-button new-game-button'}
-            type={'button'}
+            className={"secondary-button new-game-button"}
+            type={"button"}
             disabled={
               busy ||
               !actingUsername ||
-              !game.allowedActions.includes('restart')
+              !game.allowedActions.includes("restart")
             }
             onClick={onRestart}
           >
@@ -213,14 +231,20 @@ export function GameBoard({
         </div>
       </div>
 
-      <div className={'game-message'} aria-live={'polite'}>
+      {isDoubleSix && (
+        <p className={"double-six-message"} role={"status"}>
+          Double six! The round score was lost and the turn passed.
+        </p>
+      )}
+
+      <div className={"game-message"} aria-live={"polite"}>
         {busy && <p>Waiting for the server...</p>}
         {error && (
-          <p className={'form-error game-error'} role={'alert'}>
+          <p className={"form-error game-error"} role={"alert"}>
             {error}
           </p>
         )}
       </div>
     </section>
-  )
+  );
 }

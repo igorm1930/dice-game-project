@@ -2,87 +2,93 @@
 
 ## Phase
 
-Phase 13 - Persistent game state
+Phase 14 - Hardening and polish
 
 ## Status
 
-Phase 12 was merged into `main` through pull request #13 as `badca27`.
-Phase 13 is implemented, locally verified, and developer-reviewed on
-`phase/13-persistent-game-state`. Commit and push are authorized. It is not
-deployed or merged.
+Phases 1 through 13 are merged into `main`. Phase 14 is implemented, locally
+verified, and developer-reviewed on `phase/14-hardening-and-polish`. It has
+not been deployed or merged.
 
 ## Implemented scope
 
-- Added a validated MongoDB `games` schema with UUID IDs and the complete
-  authoritative game state.
-- Added a Mongoose repository behind the existing `GameRepository` interface.
-- Converted repository, service, and controller operations to asynchronous
-  persistence without changing endpoints or response bodies.
-- Kept the in-memory repository only for isolated service unit tests.
-- Persisted create, Roll, Hold, double-six, win, and Restart state.
-- Added repository unit coverage and real-MongoDB API-restart coverage.
-- Removed obsolete in-memory wording from the frontend missing-game message.
+- Added versioned game responses, strong ETags, required strong `If-Match`
+  mutation preconditions, atomic MongoDB version matching/incrementing, and
+  stale-action conflict recovery.
+- Added idempotent lifetime win counters backed by a hidden per-user set of
+  counted game IDs, including participant-read repair.
+- Normalized API errors to `statusCode`, `code`, and `message` while hiding
+  unexpected exception details.
+- Added request logging limited to method, route template, status, and
+  duration.
+- Preserved `/api/health` as readiness and added `/api/health/live` and
+  `/api/health/ready`.
+- Added Swagger UI at `/api/docs` and OpenAPI JSON at
+  `/api/openapi.json`.
+- Added server-state-driven lifetime wins, stale-state recovery feedback,
+  double-six and winner feedback, accessible live status, responsive layouts,
+  visible focus, touch targets, animation, and reduced-motion behavior.
+- Updated the README, architecture, API contracts, decisions, checklist,
+  testing strategy, and session log for Phase 14.
 
 ## Local verification
 
-- Focused repository and service tests passed: 2 suites and 14 tests.
-- Focused game API E2E tests passed: 1 suite and 12 tests.
-- Focused frontend App tests passed: 1 file and 14 tests.
-- Root verification passed backend and frontend lint.
-- Backend unit tests passed: 9 suites and 75 tests.
-- MongoDB E2E tests passed: 4 suites and 42 tests.
-- Frontend tests passed: 4 files and 36 tests.
-- Backend and frontend builds passed; Vite transformed 24 modules.
-- Backend production and frontend audits found zero vulnerabilities.
-- The unchanged backend development-tool audit reported the previously
-  documented 25 high findings through `brace-expansion` and `minimatch`;
-  npm's complete fix requires breaking forced upgrades.
-- Full-history Gitleaks scanned 33 commits with no leaks.
-- Focused game-source and documentation scans found no leaks.
+- Focused backend tests passed: 7 suites and 44 tests.
+- Backend unit tests passed: 12 suites and 95 tests.
+- MongoDB E2E tests passed: 4 suites and 47 tests.
+- Frontend tests passed: 4 files and 40 tests.
+- Backend and frontend lint passed.
+- Backend and configured frontend builds passed; Vite transformed 24 modules.
+- A frontend build without `VITE_API_URL` failed with the intended clear
+  configuration error.
+- Backend production, backend full, and frontend dependency audits found zero
+  vulnerabilities.
+- Full-history and focused Gitleaks scans found no leaks.
 
 ## Manual verification
 
-- Started the built API and Vite frontend against an isolated local database.
-- Registered and signed in two temporary players and created a target-20 game.
-- Rolled 2 and 4 for a round score of 6, then stopped and restarted the API.
-- Switched acting seats after restart and recovered the exact score, dice,
-  turn, target, players, and caller-specific permissions.
-- Continued the recovered game with Hold and confirmed Player 1's score became
-  6.
-- Restarted the game, restarted the API again, and recovered the fully reset
-  state.
-- Browser logs contained no application warnings or errors; observed warnings
-  came from an unrelated extension.
-- Dropped the isolated database, stopped temporary processes, and removed
-  temporary logs after checking them for sensitive values.
+- Ran the built API and Vite frontend against an isolated local database.
+- Registered and signed in two temporary authenticated users.
+- Created a target-1 game, rolled 1 and 4, held, and confirmed the winner
+  banner and lifetime-win refresh from zero to one.
+- Restarted the finished game and confirmed reset game state while preserving
+  the lifetime win.
+- Verified responsive layouts at 768px and 390px without visible clipping or
+  horizontal overflow.
+- Verified Swagger exposes authentication, users, games, health, schemas, and
+  authorization controls.
+- Browser logs contained no application errors or warnings; observed warnings
+  came from an unrelated installed extension.
+- Runtime logs contained route templates instead of game IDs and no request
+  bodies, authorization values, passwords, tokens, or secrets.
+- Dropped and confirmed removal of the isolated database, stopped temporary
+  processes, and removed temporary logs.
 
 ## Security boundary
 
-- No dependency, environment variable, endpoint, browser storage, cookie, or
-  client identity field was added.
-- Game documents contain only UUIDs, participant IDs, scores, dice, turn,
-  target, status, winner, and timestamps; never tokens or password data.
-- Existing strict JWT and participant authorization still execute before
-  repository access.
-- Schema validation constrains IDs, exactly two distinct players, safe scores,
-  dice, status, and winner consistency.
-- Missing and hidden games retain the same `GAME_NOT_FOUND` response.
-- Each action writes one MongoDB document; optimistic concurrency remains
-  intentionally deferred.
+- No new environment variable, secret, cookie, browser storage, raw HTML, or
+  client-side game rule was added.
+- `@nestjs/swagger` is the only new direct dependency. Its transitive
+  `js-yaml` is pinned to the patched `5.2.2` release through a narrow package
+  override.
+- Mutation versions are public concurrency metadata, not authorization; JWT
+  verification and participant checks remain required.
+- Win-counter game IDs are internal and excluded from user responses.
+- Unexpected exceptions return a generic message and their original details
+  are not logged.
+- Request logs omit bodies, headers, query strings, tokens, user IDs, and game
+  IDs.
 
 ## Out of scope
 
-- Backend endpoint, game engine, authentication, or authorization changes
-- Optimistic concurrency and duplicate-action protection
-- Game discovery or resume after a full browser refresh
-- Retention, archival, or deletion of old game documents
-- Lifetime win-counter updates
-- Swagger/OpenAPI generation
 - Production deployment or provider configuration
-- UI animation, reduced-motion polish, and Phase 14 refinements
-- Commit, push, pull request, merge, or Phase 14 implementation
+- Commit, push, pull request, or merge
+- Fresh-clone and production verification
+- Screenshots and interview walkthrough
+- Game discovery or browser-session persistence after a full refresh
+- Retention, archival, or deletion of historical games
+- Phase 15 implementation
 
 ## Next action
 
-Create and push the approved Phase 13 commit, then wait. Do not deploy, merge,
-or begin Phase 14 without explicit approval.
+Wait for explicit approval before deploying, merging, or beginning Phase 15.

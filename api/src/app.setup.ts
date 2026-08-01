@@ -1,5 +1,6 @@
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import type { CustomOrigin } from '@nestjs/common/interfaces/external/cors-options.interface';
+import { configureOpenApi } from './swagger';
 
 export function configureApplication(
   app: INestApplication,
@@ -21,4 +22,5 @@ export function configureApplication(
     origin: corsOrigin,
     credentials: false,
   });
+  configureOpenApi(app);
 }
