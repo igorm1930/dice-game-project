@@ -2,11 +2,57 @@
 
 ## Status
 
-Phase 1 through Phase 13 checks have been run locally. Phase 6 through Phase 10
+Phase 1 through Phase 14 checks have been run locally. Phase 6 through Phase 10
 have also passed GitHub-hosted verification. Phase 7 production health, CORS,
 frontend, Atlas, persistence, and real idle cold-start checks passed.
 
 The full testing strategy will grow incrementally.
+
+## Phase 14 verification
+
+### API hardening
+
+- Focused exception-filter, request-logging, version-header, game-service,
+  repository, user-service, and health tests passed: 7 suites and 44 tests.
+- Unit coverage verifies normalized errors, hidden unexpected details,
+  metadata-only logs, strong version parsing, atomic version conflicts, and
+  idempotent win counting.
+- MongoDB E2E coverage passed: 4 suites and 47 tests.
+- E2E coverage verifies health aliases, OpenAPI, versioned mutations,
+  missing/malformed preconditions, one-winner concurrent mutation behavior,
+  restart, persistence, normalized errors, and idempotent lifetime wins.
+
+### Frontend polish
+
+- Frontend coverage passed: 4 files and 40 tests.
+- Coverage verifies quoted `If-Match` headers, strict version parsing,
+  stale-state recovery, mutation gating, lifetime-win refresh, double-six and
+  winner status, accessible state, and new-game behavior.
+- Browser verification registered and signed in two isolated users, completed
+  a target-1 game, observed the winner and lifetime-win update, restarted the
+  game, and retained the lifetime win.
+- Desktop, 768px, and 390px layouts rendered without visible clipping or
+  horizontal overflow.
+- Swagger UI exposed the documented API tags, operations, schemas, and bearer
+  authorization control.
+
+### Regression and security
+
+- Root verification passed backend/frontend lint, 95 backend unit tests, 47
+  backend E2E tests, 40 frontend tests, and both builds.
+- Vite transformed 24 modules.
+- An unconfigured frontend build failed with the intended
+  `VITE_API_URL environment variable is required` error.
+- Backend production, backend full, and frontend audits reported zero
+  vulnerabilities.
+- Full-history Gitleaks scanned 34 commits with no leaks; focused backend,
+  frontend, and documentation scans also found no leaks.
+- Runtime logs used route templates and contained no request bodies,
+  credentials, tokens, user IDs, or game IDs.
+- Browser logs contained no application warnings or errors; warnings came from
+  an unrelated extension.
+- Temporary processes and logs were removed, and the isolated manual database
+  was dropped and confirmed absent.
 
 ## Phase 13 verification
 

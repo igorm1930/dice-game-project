@@ -63,6 +63,11 @@ full-history secret scanning. Phase 7 deploys the basic flow. Phase 8 adds
 Argon2id password hashing, rate-limited registration and login, HS256 bearer
 tokens, and a protected current-user endpoint. Phase 9 adds two independent
 memory-only frontend sessions and an explicit acting-seat selector.
+Phase 10 adds the pure game engine, Phase 11 exposes its authenticated API,
+Phase 12 adds the playable React interface, Phase 13 persists games in MongoDB,
+and Phase 14 adds concurrency protection, win counters, OpenAPI, consistent
+errors, health/logging hardening, accessibility, responsive design, and game
+feedback.
 
 Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
 
@@ -91,7 +96,9 @@ npm.cmd run start:dev
 The backend is available at `http://localhost:3000`. Its health endpoint is
 `http://localhost:3000/api/health`. User endpoints are available under
 `http://localhost:3000/api/users`. Authentication endpoints are under
-`http://localhost:3000/api/auth`.
+`http://localhost:3000/api/auth`. Swagger UI is available at
+`http://localhost:3000/api/docs`, and OpenAPI JSON at
+`http://localhost:3000/api/openapi.json`.
 
 ### Run the frontend
 
@@ -145,8 +152,6 @@ Atlas must allow only Render's current Frankfurt outbound IP ranges. See
 
 ## Current status
 
-Phases 1 through 8 are merged into `main`. Phase 9 is implemented, locally
-verified, developer-approved, committed, and pushed on
-`phase/09-two-authenticated-users`; it is awaiting pull-request review and has
-not been deployed or merged. The deployed frontend remains on the previous
-phase until a separately approved deployment.
+Phases 1 through 13 are merged into `main`. Phase 14 is implemented, locally
+verified, and developer-reviewed on `phase/14-hardening-and-polish`. It has not
+been deployed or merged. Phase 15 has not started.

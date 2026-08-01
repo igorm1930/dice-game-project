@@ -13,11 +13,14 @@ describe('UsersService', () => {
   const findOneExec = jest.fn();
   const select = jest.fn(() => ({ exec: findOneExec }));
   const findOne = jest.fn(() => ({ exec: findOneExec, select }));
+  const updateOneExec = jest.fn();
+  const updateOne = jest.fn(() => ({ exec: updateOneExec }));
   const userModel = {
     create,
     find,
     findById,
     findOne,
+    updateOne,
   } as unknown as Model<UserDocument>;
   const firstUser = {
     _id: new Types.ObjectId(),
@@ -41,7 +44,27 @@ describe('UsersService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    updateOneExec.mockResolvedValue({ matchedCount: 1, modifiedCount: 1 });
     service = new UsersService(userModel);
+  });
+
+  it('records each game win with one idempotent user update', async () => {
+    const gameId = 'd43acc2f-a715-49a1-bf4f-74b16592e553';
+
+    await service.recordGameWin(firstUser._id.toString(), gameId);
+
+    expect(updateOne).toHaveBeenCalledWith(
+      {
+        _id: firstUser._id.toString(),
+        countedWinGameIds: { $ne: gameId },
+      },
+      {
+        $inc: { wins: 1 },
+        $addToSet: { countedWinGameIds: gameId },
+      },
+      { runValidators: true },
+    );
+    expect(updateOneExec).toHaveBeenCalledTimes(1);
   });
 
   it('creates a user and returns the public response', async () => {

@@ -30,3 +30,15 @@ export const GAME_FINISHED_RESPONSE = {
   code: 'GAME_FINISHED',
   message: 'The game is finished. Restart before taking another action.',
 } as const;
+
+export const INVALID_GAME_VERSION_RESPONSE = {
+  statusCode: 400,
+  code: 'INVALID_GAME_VERSION',
+  message: 'If-Match must contain the current quoted game version.',
+} as const;
+
+export const GAME_STATE_CONFLICT_RESPONSE = {
+  statusCode: 409,
+  code: 'GAME_STATE_CONFLICT',
+  message: 'The game changed. Load the latest state before trying again.',
+} as const;

@@ -32,9 +32,29 @@ describe('HealthController', () => {
     });
   });
 
+  it('reports liveness without depending on MongoDB readiness', () => {
+    databaseHealth.isConnected.mockReturnValue(false);
+
+    expect(controller.getLiveness()).toEqual({
+      status: 'ok',
+      service: 'dice-game-api',
+    });
+    expect(databaseHealth.isConnected).not.toHaveBeenCalled();
+  });
+
+  it('reports readiness while MongoDB is connected', () => {
+    expect(controller.getReadiness()).toEqual({
+      status: 'ok',
+      service: 'dice-game-api',
+    });
+  });
+
   it('rejects the health request while MongoDB is disconnected', () => {
     databaseHealth.isConnected.mockReturnValue(false);
 
+    expect(() => controller.getReadiness()).toThrow(
+      ServiceUnavailableException,
+    );
     expect(() => controller.getHealth()).toThrow(ServiceUnavailableException);
   });
 });

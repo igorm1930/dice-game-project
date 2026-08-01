@@ -16,7 +16,11 @@ describe('GameService', () => {
   const playerB = 'player-b';
   const outsider = 'outsider';
   const findAuthenticatedById = jest.fn();
-  const usersService = { findAuthenticatedById } as unknown as UsersService;
+  const recordGameWin = jest.fn();
+  const usersService = {
+    findAuthenticatedById,
+    recordGameWin,
+  } as unknown as UsersService;
 
   function sequenceDiceRoller(...rolls: DiceRoll[]): DiceRoller {
     const queuedRolls = [...rolls];
@@ -58,6 +62,7 @@ describe('GameService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     findAuthenticatedById.mockResolvedValue({ id: playerB });
+    recordGameWin.mockResolvedValue(undefined);
   });
 
   it('creates a game with the authenticated caller as Player 1', async () => {
@@ -68,6 +73,7 @@ describe('GameService', () => {
     expect(findAuthenticatedById).toHaveBeenCalledWith(playerB);
     expect(game).toEqual({
       id: expect.any(String) as string,
+      version: 0,
       players: [
         { id: playerA, globalScore: 0 },
         { id: playerB, globalScore: 0 },
@@ -119,11 +125,13 @@ describe('GameService', () => {
     const game = await service.create(playerA, { opponentId: playerB });
 
     await expectHttpError(
-      () => service.roll(game.id, playerB),
+      () => service.roll(game.id, playerB, game.version),
       NOT_YOUR_TURN_RESPONSE,
     );
 
-    await expect(service.roll(game.id, playerA)).resolves.toMatchObject({
+    await expect(
+      service.roll(game.id, playerA, game.version),
+    ).resolves.toMatchObject({
       activePlayerId: playerA,
       roundScore: 5,
       lastRoll: [2, 3],
@@ -133,9 +141,9 @@ describe('GameService', () => {
   it('banks Hold and returns caller-specific allowed actions', async () => {
     const service = createService([3, 4]);
     const game = await service.create(playerA, { opponentId: playerB });
-    const rolled = await service.roll(game.id, playerA);
+    const rolled = await service.roll(game.id, playerA, game.version);
 
-    const held = await service.hold(rolled.id, playerA);
+    const held = await service.hold(rolled.id, playerA, rolled.version);
 
     expect(held).toMatchObject({
       players: [
@@ -155,7 +163,9 @@ describe('GameService', () => {
     const service = createService([6, 6]);
     const game = await service.create(playerA, { opponentId: playerB });
 
-    await expect(service.roll(game.id, playerA)).resolves.toMatchObject({
+    await expect(
+      service.roll(game.id, playerA, game.version),
+    ).resolves.toMatchObject({
       activePlayerId: playerB,
       roundScore: 0,
       lastRoll: [6, 6],
@@ -168,21 +178,22 @@ describe('GameService', () => {
       opponentId: playerB,
       winningScore: 10,
     });
-    await service.roll(game.id, playerA);
+    const rolled = await service.roll(game.id, playerA, game.version);
 
-    const won = await service.hold(game.id, playerA);
+    const won = await service.hold(game.id, playerA, rolled.version);
 
     expect(won).toMatchObject({
       status: 'won',
       winnerId: playerA,
       allowedActions: ['restart'],
     });
+    expect(recordGameWin).toHaveBeenCalledWith(playerA, game.id);
     await expectHttpError(
-      () => service.roll(game.id, playerA),
+      () => service.roll(game.id, playerA, won.version),
       GAME_FINISHED_RESPONSE,
     );
     await expectHttpError(
-      () => service.hold(game.id, playerA),
+      () => service.hold(game.id, playerA, won.version),
       GAME_FINISHED_RESPONSE,
     );
   });
@@ -193,9 +204,11 @@ describe('GameService', () => {
       opponentId: playerB,
       winningScore: 25,
     });
-    await service.roll(game.id, playerA);
+    const rolled = await service.roll(game.id, playerA, game.version);
 
-    await expect(service.restart(game.id, playerB)).resolves.toMatchObject({
+    await expect(
+      service.restart(game.id, playerB, rolled.version),
+    ).resolves.toMatchObject({
       players: [
         { id: playerA, globalScore: 0 },
         { id: playerB, globalScore: 0 },
@@ -207,6 +220,19 @@ describe('GameService', () => {
       status: 'active',
       winnerId: null,
       allowedActions: ['restart'],
+    });
+  });
+
+  it('rejects a stale duplicate action without rolling again', async () => {
+    const service = createService([2, 3], [4, 5]);
+    const game = await service.create(playerA, { opponentId: playerB });
+
+    await service.roll(game.id, playerA, game.version);
+
+    await expectHttpError(() => service.roll(game.id, playerA, game.version), {
+      statusCode: 409,
+      code: 'GAME_STATE_CONFLICT',
+      message: 'The game changed. Load the latest state before trying again.',
     });
   });
 });

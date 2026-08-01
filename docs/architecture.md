@@ -2,9 +2,9 @@
 
 ## Status
 
-Phase 12 is merged into `main`. Phase 13's MongoDB-backed game persistence is
-implemented and locally verified on its phase branch. The deployed application
-remains on the previous backend version.
+Phase 13 is merged into `main` as `93e188b`. Phase 14 hardening and polish are
+implemented on `phase/14-hardening-and-polish`. The deployed application
+remains on the previous version pending separate approval.
 
 ## Current implemented architecture
 
@@ -38,6 +38,11 @@ permissions.
    totals, and timestamps. Unique indexes protect username races.
 9. API responses expose only `id`, `username`, `wins`, `createdAt`, and
    `updatedAt`.
+10. A global exception filter emits stable error shapes and hides unexpected
+    exception details.
+11. A request interceptor logs only method, route template, status, and
+    duration.
+12. Swagger UI and OpenAPI JSON are generated from controllers and DTOs.
 
 ### Registration and login flow
 
@@ -90,13 +95,15 @@ two in-memory authenticated seats
 The selected seat creates a game against the other signed-in seat. Changing
 the selected seat refetches the game with that seat's bearer token so the
 backend can return its `allowedActions`. Roll, Hold, and Restart send empty
-action bodies. `GameBoard` displays player scores, round score, dice, turn,
+action bodies plus the latest version through `If-Match`. `GameBoard` displays
+player scores, lifetime wins, round score, dice, turn, double-six feedback,
 winner, and action availability without reproducing game rules.
 
 The current game reference and access tokens remain only in React memory, while
 the authoritative game record is stored in MongoDB. An open page can refetch
 its known game after an API restart. A game-request 401 clears only the
-rejected seat; a missing game returns the screen to game setup.
+rejected seat; a missing game returns the screen to game setup. A version
+conflict refetches and renders the latest authoritative state.
 
 ### Pure game engine
 
@@ -134,12 +141,14 @@ verified JWT subject
   -> caller-specific GameResponseDto
 ```
 
-The asynchronous repository interface still stores records with UUID v4 IDs.
+The asynchronous repository interface stores UUID v4 IDs and numeric versions.
 Production uses the UUID as the MongoDB string `_id` and persists both players
 and scores, active-player index, round score, winning score, last roll, status,
 winner, and timestamps in one `games` document. Each action updates that
 single document after the service authorizes the caller and runs the pure
-engine transition.
+engine transition. Updates atomically match both `_id` and `version`, then
+increment the version. Existing documents without a version are treated as
+version zero for their first guarded update.
 
 The previous `Map` repository remains only for isolated service tests.
 `SecureDiceRoller` implements the domain dice interface with Node
@@ -148,8 +157,10 @@ The previous `Map` repository remains only for isolated service tests.
 The service hides records from nonparticipants, limits Roll and Hold to the
 active player, permits either participant to Restart, and maps domain state to
 caller-specific allowed actions. User lookup permits only credentialed
-opponents. The API contract and frontend game client are unchanged, and no
-frontend game rule exists.
+opponents. Stale or duplicate actions map to a safe conflict. A winning
+transition records its game ID and increments the winner in one idempotent
+user-document update; later participant reads safely repair an interrupted
+counter update without double counting.
 
 ### Security boundary
 
@@ -164,9 +175,13 @@ identity fields for authentication.
 Game documents contain participant IDs and authoritative state but no access
 tokens, password data, or client-provided actor identity. Schema validators
 constrain UUID and player IDs, exactly two distinct players, safe scores, dice,
-status, and winner consistency. Optimistic concurrency is deferred, so Phase
-13 provides durable single-document writes without duplicate-action
-protection.
+status, winner, and version consistency. Mutations require a validated strong
+`If-Match` value and use optimistic concurrency to prevent duplicate state
+transitions.
+
+Unexpected HTTP errors return a generic response. Request logs exclude bodies,
+headers, tokens, passwords, query strings, and concrete user/game IDs.
+Swagger exposes the public API surface but stores no credentials.
 
 `POST /api/users` is removed so callers cannot create passwordless accounts.
 The public list and ID routes remain read-only. Existing Phase 4-7 records can
@@ -177,6 +192,9 @@ their case-insensitive usernames remain reserved.
 
 MongoDB 7.0.39 remains bound only to `127.0.0.1:27018` with a named volume and
 healthcheck.
+
+`/api/health/live` checks the process, `/api/health/ready` checks MongoDB, and
+the existing `/api/health` remains the Render-compatible readiness route.
 
 ### Continuous-integration path
 
@@ -221,5 +239,5 @@ the external resources and production flow are separately verified.
 
 ## Future sections
 
-When implemented, document the persistent game repository, concurrency model,
-and frontend game rendering path.
+Phase 15 will document final deployment, fresh-clone verification, screenshots,
+known limitations, and the interview walkthrough.

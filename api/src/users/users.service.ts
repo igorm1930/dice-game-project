@@ -58,6 +58,22 @@ export class UsersService {
       .exec();
   }
 
+  async recordGameWin(userId: string, gameId: string): Promise<void> {
+    await this.userModel
+      .updateOne(
+        {
+          _id: userId,
+          countedWinGameIds: { $ne: gameId },
+        },
+        {
+          $inc: { wins: 1 },
+          $addToSet: { countedWinGameIds: gameId },
+        },
+        { runValidators: true },
+      )
+      .exec();
+  }
+
   async findAuthenticatedById(id: string): Promise<UserResponseDto | null> {
     const user = await this.userModel
       .findOne({ _id: id, passwordHash: { $exists: true } })

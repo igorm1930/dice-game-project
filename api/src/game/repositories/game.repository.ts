@@ -2,6 +2,7 @@ import type { GameState } from '../domain/game.types';
 
 export interface GameRecord {
   readonly id: string;
+  readonly version: number;
   readonly state: GameState;
 }
 

@@ -1,23 +1,64 @@
 import type { DieValue } from '../domain/dice-roller';
 import type { GameStatus } from '../domain/game.types';
 import type { GameRecord } from '../repositories/game.repository';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type AllowedGameAction = 'roll' | 'hold' | 'restart';
 
-export interface GamePlayerResponse {
-  readonly id: string;
-  readonly globalScore: number;
+export class GamePlayerResponseDto {
+  @ApiProperty({ example: '507f1f77bcf86cd799439011' })
+  readonly id!: string;
+
+  @ApiProperty({ example: 12, minimum: 0 })
+  readonly globalScore!: number;
 }
 
 export class GameResponseDto {
+  @ApiProperty({ format: 'uuid' })
   readonly id: string;
-  readonly players: readonly [GamePlayerResponse, GamePlayerResponse];
+
+  @ApiProperty({ example: 4, minimum: 0 })
+  readonly version: number;
+
+  @ApiProperty({
+    type: [GamePlayerResponseDto],
+    minItems: 2,
+    maxItems: 2,
+  })
+  readonly players: readonly [GamePlayerResponseDto, GamePlayerResponseDto];
+
+  @ApiProperty({ example: '507f1f77bcf86cd799439011' })
   readonly activePlayerId: string;
+
+  @ApiProperty({ example: 7, minimum: 0 })
   readonly roundScore: number;
+
+  @ApiProperty({ example: 100, minimum: 1 })
   readonly winningScore: number;
+
+  @ApiProperty({
+    type: [Number],
+    minItems: 2,
+    maxItems: 2,
+    nullable: true,
+    example: [3, 4],
+  })
   readonly lastRoll: readonly [DieValue, DieValue] | null;
+
+  @ApiProperty({ enum: ['active', 'won'] })
   readonly status: GameStatus;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: '507f1f77bcf86cd799439011',
+  })
   readonly winnerId: string | null;
+
+  @ApiProperty({
+    enum: ['roll', 'hold', 'restart'],
+    isArray: true,
+  })
   readonly allowedActions: readonly AllowedGameAction[];
 
   constructor(record: GameRecord, actorId: string) {
@@ -25,6 +66,7 @@ export class GameResponseDto {
     const isActorsTurn = state.players[state.activePlayerIndex].id === actorId;
 
     this.id = record.id;
+    this.version = record.version;
     this.players = [{ ...state.players[0] }, { ...state.players[1] }];
     this.activePlayerId = state.players[state.activePlayerIndex].id;
     this.roundScore = state.roundScore;
