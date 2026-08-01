@@ -788,8 +788,9 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phases 1 through 15 are merged and deployed. Phase 16 is implemented and
-verified on `phase/16-turn-handoff-fix` from `main` commit `ebda55c`.
+Phases 1 through 16 are completed, merged, and deployed. Phase 16 commit
+`ce100e4` was merged through pull request #17 as `81dd742`; pull-request and
+post-merge CI passed, and both Render services are live on that merge commit.
 
 Phase 16 keeps every game rule and permission in the backend. When a successful
 action changes `activePlayerId`, React selects the signed-in seat for that
@@ -803,5 +804,5 @@ map explicitly to `double-six-v1`; unknown stored IDs never fall back. Restart
 preserves the ID. The public response exposes semantic `lastEvent` values but
 does not expose or accept rule selection.
 
-Wait for review; do not commit, push, merge, or deploy without explicit
-approval.
+No Phase 17 scope is approved. Wait for an explicit proposal or maintenance
+request before changing application behavior.

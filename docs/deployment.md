@@ -2,13 +2,13 @@
 
 ## Current state
 
-Phase 14 is deployed on the approved free Render and MongoDB Atlas resources.
-Pull request #15 was merged into `main` as `1a7407d` on 2026-08-01 after
-Verify and Secret scan passed. Post-merge Verify and Secret scan also passed,
-and both Render services report `1a7407d` live.
+Phase 16 is deployed on the approved free Render and MongoDB Atlas resources.
+Commit `ce100e4` was merged through pull request #17 as `81dd742` on
+2026-08-01. Pull-request and post-merge Verify and Secret scan jobs passed,
+and both Render services report `81dd742` live.
 
-Production liveness, readiness, Swagger/OpenAPI, frontend connectivity,
-Phase 14 frontend assets, exact-origin CORS, rejected-origin CORS, and provider
+Production health, liveness, readiness, OpenAPI, frontend connectivity,
+Phase 16 frontend assets, exact-origin CORS, security headers, and provider
 logs were verified. No production demonstration user or game was created.
 Earlier Atlas storage, reload persistence, and real idle cold-start checks
 remain documented from Phase 7.

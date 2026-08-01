@@ -2,9 +2,9 @@
 
 ## Status
 
-Phases 1 through 15 are merged. The API and web services are live on Phase 15
-merge commit `ebda55c`. Phase 16 is implemented and locally verified on its
-review branch; it is not committed, merged, or deployed.
+Phases 1 through 16 are merged and deployed. Phase 16 commit `ce100e4` was
+merged through pull request #17 as `81dd742`; required CI passed and both
+Render services are live on that merge commit.
 
 ## Current implemented architecture
 
@@ -259,9 +259,9 @@ production CORS accepts only the configured HTTPS frontend origin.
 
 Atlas uses a database-scoped application user and only Render's current
 Frankfurt outbound IP ranges. No wildcard network rule, paid fallback, or
-preview environment is approved. Both Render services report merged Phase 15
-commit `ebda55c` live. Phase 16 remains local and has not been committed,
-merged, or deployed.
+preview environment is approved. Both Render services report Phase 16 merge
+commit `81dd742` live. Production health, liveness, readiness, OpenAPI,
+exact-origin CORS, and frontend connectivity passed after deployment.
 
 ## Delivery evidence
 

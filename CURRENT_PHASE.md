@@ -6,9 +6,9 @@ Phase 16 - Versioned game rules and turn handoff fix
 
 ## Status
 
-Implemented and locally verified on `phase/16-turn-handoff-fix` from merged
-`main` commit `ebda55c`. The fix is awaiting review and has not been committed,
-pushed, merged, or deployed.
+Completed, reviewed, and published. Commit `ce100e4` was merged through pull
+request #17 as `81dd742`. Post-merge CI passed, and both Render services are
+live on the Phase 16 merge commit.
 
 ## Implemented scope
 
@@ -43,6 +43,9 @@ pushed, merged, or deployed.
 - Docker Compose configuration resolved successfully.
 - Gitleaks scanned 37 commits, all modified directories, and the complete
   tracked diff with no leaks.
+- Pull-request and post-merge Verify and Secret scan jobs passed.
+- Production health, liveness, readiness, OpenAPI, exact-origin CORS, and the
+  hosted frontend returned HTTP 200 on `81dd742`.
 
 ## Manual verification
 
@@ -76,10 +79,9 @@ pushed, merged, or deployed.
   dynamic plugins
 - Unrelated authentication, deployment, UI, dependency, or configuration work
 - Production data creation or provider configuration changes
-- Commit, push, pull request, merge, or deployment
+- A new phase or unrelated feature work without separate approval
 
 ## Next action
 
-Report the exact diff, verification results, remaining unverified items, and
-Git status, then wait for review. Do not commit or push without explicit
-approval.
+Phase 16 is closed. No Phase 17 scope is approved. Keep `main` clean and wait
+for an explicitly proposed next phase or maintenance task.
