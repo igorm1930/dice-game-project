@@ -359,8 +359,8 @@ Verification summary:
 
 ## Phase 16 - Versioned game rules and turn handoff fix
 
-Status: Implemented and verified on `phase/16-turn-handoff-fix`; awaiting
-review. It has not been committed, pushed, merged, or deployed.
+Status: Completed, reviewed, merged through pull request #17 as `81dd742`, and
+deployed on both Render services.
 
 - [x] Reproduce the merged-main double-six UI defect
 - [x] Add semantic `GameRules` and `RollOutcome` domain boundaries
@@ -377,3 +377,5 @@ review. It has not been committed, pushed, merged, or deployed.
 - [x] Run focused tests and complete root verification
 - [x] Run lint, builds, dependency audits, and Gitleaks
 - [x] Run isolated two-user browser verification
+- [x] Pass pull-request and post-merge CI
+- [x] Deploy and verify API, web, CORS, health, and OpenAPI on `81dd742`

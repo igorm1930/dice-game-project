@@ -146,6 +146,16 @@ The hosted UI connected to the API, and Swagger exposed authentication, users,
 games, health, schemas, and bearer authorization. No production user or game
 was created.
 
+## Phase 16 publication update
+
+- Commit `ce100e4` was merged through pull request #17 as `81dd742`.
+- Pull-request and post-merge Verify and Secret scan jobs passed.
+- Both Render services deployed `81dd742` successfully.
+- Health, liveness, readiness, OpenAPI, exact-origin CORS, security headers,
+  and the hosted frontend returned HTTP 200.
+- The deployed frontend connected to the API with no browser console errors.
+- No production user or game was created.
+
 ## Cleanup
 
 Final cleanup stopped only the identified fresh-clone Node processes. The
@@ -157,7 +167,6 @@ finalized.
 
 ## Remaining unverified
 
-- Phase 15 has not yet been reviewed, committed, pushed, merged, or deployed.
 - No destructive production cleanup, production account/game flow, paid-tier
   behavior, load test, penetration test, or long-duration soak test was run.
 - Provider secrets were intentionally not opened or inspected.

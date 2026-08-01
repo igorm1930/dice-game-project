@@ -132,6 +132,7 @@ game, and returned control to Seat A. The browser console had no errors. The
 verified local processes and dedicated `dice_game_rules_manual` database were
 removed.
 
-There are no uncovered mandatory rules. Production deployment, remote CI, and
-post-deployment compatibility remain unverified because commit, push, pull
-request, merge, and deployment are pending review and separate approval.
+There are no uncovered mandatory rules. Commit `ce100e4` was merged through
+pull request #17 as `81dd742`. Pull-request and post-merge CI passed; both
+Render services deployed the merge commit, production health and frontend
+smoke checks passed, and no production data was created.

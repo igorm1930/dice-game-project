@@ -2,9 +2,9 @@
 
 ## Status
 
-Phase 1 through Phase 16 checks have been run locally. GitHub-hosted CI and
-both Render services are on merged `main` commit `ebda55c`; the verified Phase
-16 fix remains only on its review branch.
+Phase 1 through Phase 16 checks have been run locally. Phase 16 was merged
+through pull request #17 as `81dd742`; pull-request and post-merge CI passed,
+and both Render services are live on that commit.
 
 ## Phase 16 versioned-rules and turn-handoff verification
 

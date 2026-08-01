@@ -131,8 +131,8 @@ npm.cmd run verify
 Remove-Item Env:VITE_API_URL
 ```
 
-The root command runs backend and frontend lint, 95 backend unit tests, 40
-frontend tests, 47 MongoDB E2E tests, and both production builds. CI repeats
+The root command runs backend and frontend lint, 107 backend unit tests, 43
+frontend tests, 50 MongoDB E2E tests, and both production builds. CI repeats
 locked installs, dependency audits, verification on Node.js 22, and a separate
 full-history Gitleaks scan with read-only permissions.
 
@@ -147,5 +147,6 @@ local-browser, GitHub, production, and security evidence.
 - [Deployment](docs/deployment.md)
 - [Security policy](docs/security-policy.md)
 
-Phases 1 through 14 are merged and deployed. Phase 15 final-delivery artifacts
-are implemented and verified on `phase/15-final-delivery`, awaiting review.
+Phases 1 through 16 are merged and deployed. Phase 16 was merged through pull
+request #17 as `81dd742`; required CI passed and both Render services are live
+on that merge commit.
