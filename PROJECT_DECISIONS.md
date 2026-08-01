@@ -1,6 +1,6 @@
 # Dice Game Interview Project — Decisions Log
 
-_Last updated: 2026-07-31 23:16 (Israel time)_
+_Last updated: 2026-08-01 14:55 (Israel time)_
 
 This file records the decisions we have made so far. It should be updated whenever we approve a new architectural, technical, or gameplay decision.
 
@@ -265,6 +265,18 @@ The acting player will eventually be derived from the authentication token.
 - Document observed limits honestly rather than expanding the assignment.
 - Treat final-delivery artifacts as awaiting review until separately approved
   for commit and push.
+
+### Phase 17 win-counter decisions
+
+- Treat every successful winning Hold as a distinct win event, including wins
+  after Restart reuses the same game ID.
+- Generate and persist a backend-owned UUID `winEventId` for each winning
+  transition; clear it on Restart and never accept it from React.
+- Deduplicate lifetime-win increments by win-event ID. Legacy won records that
+  predate the field use their game ID only as a compatibility fallback.
+- Keep win calculation, persistence, repair, and idempotency in the backend.
+- Refresh the public user list whenever React receives a won game response,
+  and display the returned total without calculating or incrementing it.
 
 ### Phase 8 authentication compatibility
 
@@ -788,21 +800,15 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phases 1 through 16 are completed, merged, and deployed. Phase 16 commit
-`ce100e4` was merged through pull request #17 as `81dd742`; pull-request and
+Phases 1 through 17 are completed, merged, and deployed. Phase 17 commit
+`0fe346a` was merged through pull request #19 as `f86e3f3`; pull-request and
 post-merge CI passed, and both Render services are live on that merge commit.
 
-Phase 16 keeps every game rule and permission in the backend. When a successful
-action changes `activePlayerId`, React selects the signed-in seat for that
-server-provided player and refetches the same game with that seat's bearer
-token. React does not infer turns, double-six behavior, or allowed actions.
+Phase 17 corrects win idempotency for restarted games. Every winning Hold now
+stores a private win-event UUID, so retries remain safe while a later win after
+Restart increments the persisted lifetime total. Legacy won records retain an
+explicit game-ID compatibility fallback. React refreshes and displays the
+backend-returned totals but never calculates or increments wins.
 
-The pure engine now consumes semantic outcomes from a `GameRules` policy.
-Production resolves only `double-six-v1`, which contains one normalized bust
-combination. Every game stores that immutable rule-set ID. Missing legacy IDs
-map explicitly to `double-six-v1`; unknown stored IDs never fall back. Restart
-preserves the ID. The public response exposes semantic `lastEvent` values but
-does not expose or accept rule selection.
-
-No Phase 17 scope is approved. Wait for an explicit proposal or maintenance
-request before changing application behavior.
+No Phase 18 scope is approved. Keep `main` clean and wait for an explicitly
+proposed maintenance task or new phase.

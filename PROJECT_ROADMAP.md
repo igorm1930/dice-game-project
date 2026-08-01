@@ -188,3 +188,14 @@ Do not skip phases without documenting the reason.
 - Add complete deterministic API and rendered-UI regression coverage
 - Complete the assignment-rule traceability audit
 - Run full verification, security scans, and two-user browser validation
+
+## Phase 17 - Win counter visibility and restarted-game persistence
+
+- Reproduce the same-game Restart win-counter defect
+- Persist a unique backend-owned ID for each winning transition
+- Deduplicate retries without suppressing later legitimate wins
+- Preserve explicit compatibility for legacy won records
+- Refresh users after any won game response
+- Display wins clearly in game cards, Saved Players, and the winner banner
+- Verify two wins after Restart, API-process persistence, refresh, and re-login
+- Run full verification, security scans, CI, and production deployment checks

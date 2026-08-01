@@ -147,6 +147,6 @@ local-browser, GitHub, production, and security evidence.
 - [Deployment](docs/deployment.md)
 - [Security policy](docs/security-policy.md)
 
-Phases 1 through 16 are merged and deployed. Phase 16 was merged through pull
-request #17 as `81dd742`; required CI passed and both Render services are live
+Phases 1 through 17 are merged and deployed. Phase 17 was merged through pull
+request #19 as `f86e3f3`; required CI passed and both Render services are live
 on that merge commit.
