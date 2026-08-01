@@ -2,11 +2,39 @@
 
 ## Status
 
-Phase 1 through Phase 14 checks have been run locally. Phase 6 through Phase 10
-have also passed GitHub-hosted verification. Phase 7 production health, CORS,
-frontend, Atlas, persistence, and real idle cold-start checks passed.
+Phase 1 through Phase 15 checks have been run locally. GitHub-hosted CI is
+green on `main` commit `2ddf8df`. Production health, CORS, frontend, Atlas,
+persistence, Swagger/OpenAPI, provider state, and real idle cold-start checks
+have passed.
 
-The full testing strategy will grow incrementally.
+## Phase 15 final verification
+
+- A new single-branch clone of `main` installed both lockfiles with `npm ci`.
+- Root verification passed backend and frontend lint, 12 backend unit suites
+  with 95 tests, 4 frontend files with 40 tests, 4 MongoDB E2E suites with 47
+  tests, and both builds.
+- Vite transformed 24 modules. Compose configuration passed.
+- Missing `VITE_API_URL` and `FRONTEND_ORIGIN` produced their intended clear
+  errors.
+- Backend production, backend full, and frontend audits found zero
+  vulnerabilities.
+- Gitleaks scanned 36 commits plus focused API source, web source, and docs
+  directories with no leaks.
+- An isolated local browser flow registered and signed in two users, verified
+  token-derived identity, created a target-1 game, rolled, held, won, and
+  updated lifetime wins.
+- Desktop, 768px, and live 390px layouts were verified. Controls were activated
+  by keyboard. Browser logs had no application error; warnings came from an
+  unrelated extension.
+- Three reviewed PNGs record desktop setup, desktop play, and the mobile winner.
+- Production health, liveness, readiness, Swagger, OpenAPI, and frontend
+  returned HTTP 200. Exact-origin CORS passed and the unapproved origin received
+  no permission.
+- GitHub `main`, the latest successful CI, merged PR #15, and both live Render
+  services were verified read-only. No production user or game was created.
+
+The host had unrelated listeners on ports 3000 and 3001, so the isolated
+fresh-clone API used port 3015 without changing any other process.
 
 ## Phase 14 verification
 
