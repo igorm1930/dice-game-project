@@ -58,3 +58,14 @@ Build a two-player dice game where all game logic lives in a backend API and a R
 ## Documented interpretation
 
 Approved rule interpretations are stored in `PROJECT_DECISIONS.md`.
+
+For Phase 16 traceability, an ordinary roll means every roll except the
+approved double-six bust. A single six has no special behavior. Only `[6, 6]`
+loses the current round score, preserves both global scores, keeps the game
+active, and passes the same game to the other player.
+
+The versioned `double-six-v1` backend policy records that interpretation for
+each game. This is an architecture guarantee added by the approved Phase 16
+scope, not a new user-selectable assignment rule. The complete rule-to-code
+and rule-to-test audit is recorded in
+`docs/session-log/016-turn-handoff-fix.md`.

@@ -1,5 +1,6 @@
 import type { DiceRoll, DiceRoller } from './dice-roller';
 import { GameRuleError } from './game-errors';
+import type { GameRules } from './game-rules';
 import {
   DEFAULT_WINNING_SCORE,
   type GamePlayers,
@@ -12,6 +13,7 @@ export class GameEngine {
 
   createGame(
     playerIds: readonly [string, string],
+    gameRules: GameRules,
     winningScore = DEFAULT_WINNING_SCORE,
   ): GameState {
     this.validatePlayerIds(playerIds);
@@ -25,33 +27,38 @@ export class GameEngine {
       activePlayerIndex: 0,
       roundScore: 0,
       winningScore,
+      ruleSetId: gameRules.id,
       lastRoll: null,
+      lastEvent: null,
       status: 'active',
       winnerId: null,
     };
   }
 
-  roll(state: GameState): GameState {
+  roll(state: GameState, gameRules: GameRules): GameState {
     this.ensureActive(state);
 
     const dice = this.diceRoller();
     this.validateDiceRoll(dice);
+    const outcome = gameRules.evaluateRoll(dice);
 
-    if (dice[0] === 6 && dice[1] === 6) {
+    if (outcome.type === 'BUST') {
       return {
         ...state,
         players: this.copyPlayers(state.players),
         activePlayerIndex: this.otherPlayer(state.activePlayerIndex),
         roundScore: 0,
         lastRoll: dice,
+        lastEvent: 'BUST',
       };
     }
 
     return {
       ...state,
       players: this.copyPlayers(state.players),
-      roundScore: state.roundScore + dice[0] + dice[1],
+      roundScore: state.roundScore + outcome.points,
       lastRoll: dice,
+      lastEvent: 'ROLL',
     };
   }
 
@@ -72,6 +79,7 @@ export class GameEngine {
         ...state,
         players,
         roundScore: 0,
+        lastEvent: 'HOLD',
         status: 'won',
         winnerId: players[activePlayerIndex].id,
       };
@@ -82,14 +90,25 @@ export class GameEngine {
       players,
       activePlayerIndex: this.otherPlayer(activePlayerIndex),
       roundScore: 0,
+      lastEvent: 'HOLD',
     };
   }
 
   restart(state: GameState): GameState {
-    return this.createGame(
-      [state.players[0].id, state.players[1].id],
-      state.winningScore,
-    );
+    return {
+      players: [
+        { id: state.players[0].id, globalScore: 0 },
+        { id: state.players[1].id, globalScore: 0 },
+      ],
+      activePlayerIndex: 0,
+      roundScore: 0,
+      winningScore: state.winningScore,
+      ruleSetId: state.ruleSetId,
+      lastRoll: null,
+      lastEvent: 'RESTART',
+      status: 'active',
+      winnerId: null,
+    };
   }
 
   private ensureActive(state: GameState): void {

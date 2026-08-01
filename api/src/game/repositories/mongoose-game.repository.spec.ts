@@ -16,7 +16,9 @@ describe('MongooseGameRepository', () => {
     activePlayerIndex: 1,
     roundScore: 0,
     winningScore: 25,
+    ruleSetId: 'double-six-v1',
     lastRoll: [2, 3],
+    lastEvent: 'HOLD',
     status: 'active',
     winnerId: null,
   };
@@ -57,7 +59,9 @@ describe('MongooseGameRepository', () => {
       activePlayerIndex: 1,
       roundScore: 0,
       winningScore: 25,
+      ruleSetId: 'double-six-v1',
       lastRoll: [2, 3],
+      lastEvent: 'HOLD',
       status: 'active',
       winnerId: null,
     });
@@ -111,7 +115,9 @@ describe('MongooseGameRepository', () => {
       activePlayerIndex: 1,
       roundScore: 0,
       winningScore: 25,
+      ruleSetId: 'double-six-v1',
       lastRoll: [2, 3],
+      lastEvent: 'HOLD',
       status: 'active',
       winnerId: null,
     });
@@ -127,7 +133,9 @@ describe('MongooseGameRepository', () => {
           activePlayerIndex: 1,
           roundScore: 0,
           winningScore: 25,
+          ruleSetId: 'double-six-v1',
           lastRoll: [2, 3],
+          lastEvent: 'HOLD',
           status: 'active',
           winnerId: null,
         },
@@ -153,6 +161,30 @@ describe('MongooseGameRepository', () => {
       expect.any(Object),
       { runValidators: true },
     );
+  });
+
+  it('explicitly defaults legacy rule and event fields without rewriting the record', async () => {
+    const documentValidate = jest.fn().mockResolvedValue(undefined);
+    const legacyState: Partial<GameState> = { ...state };
+    delete legacyState.ruleSetId;
+    delete legacyState.lastEvent;
+    const exec = jest.fn().mockResolvedValue({
+      _id: gameId,
+      ...legacyState,
+      validate: documentValidate,
+    });
+    findById.mockReturnValue({ exec });
+
+    await expect(repository.findById(gameId)).resolves.toEqual({
+      id: gameId,
+      version: 0,
+      state: {
+        ...legacyState,
+        ruleSetId: 'double-six-v1',
+        lastEvent: null,
+      },
+    });
+    expect(updateOne).not.toHaveBeenCalled();
   });
 
   it('fails clearly when the expected game version is stale', async () => {

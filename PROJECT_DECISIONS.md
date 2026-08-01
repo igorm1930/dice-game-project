@@ -788,6 +788,20 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phases 1 through 14 are merged and deployed. Phase 15 is implemented and
-verified on `phase/15-final-delivery` from `main` commit `2ddf8df`. Wait for
-review; do not commit, push, merge, or deploy without explicit approval.
+Phases 1 through 15 are merged and deployed. Phase 16 is implemented and
+verified on `phase/16-turn-handoff-fix` from `main` commit `ebda55c`.
+
+Phase 16 keeps every game rule and permission in the backend. When a successful
+action changes `activePlayerId`, React selects the signed-in seat for that
+server-provided player and refetches the same game with that seat's bearer
+token. React does not infer turns, double-six behavior, or allowed actions.
+
+The pure engine now consumes semantic outcomes from a `GameRules` policy.
+Production resolves only `double-six-v1`, which contains one normalized bust
+combination. Every game stores that immutable rule-set ID. Missing legacy IDs
+map explicitly to `double-six-v1`; unknown stored IDs never fall back. Restart
+preserves the ID. The public response exposes semantic `lastEvent` values but
+does not expose or accept rule selection.
+
+Wait for review; do not commit, push, merge, or deploy without explicit
+approval.

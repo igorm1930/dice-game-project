@@ -6,6 +6,8 @@ export type PlayerIndex = 0 | 1;
 
 export type GameStatus = 'active' | 'won';
 
+export type GameEvent = 'ROLL' | 'BUST' | 'HOLD' | 'RESTART';
+
 export interface GamePlayer {
   readonly id: string;
   readonly globalScore: number;
@@ -18,7 +20,9 @@ export interface GameState {
   readonly activePlayerIndex: PlayerIndex;
   readonly roundScore: number;
   readonly winningScore: number;
+  readonly ruleSetId: string;
   readonly lastRoll: DiceRoll | null;
+  readonly lastEvent: GameEvent | null;
   readonly status: GameStatus;
   readonly winnerId: string | null;
 }

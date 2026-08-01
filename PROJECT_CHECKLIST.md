@@ -331,8 +331,8 @@ Verification summary:
 
 ## Phase 15 — Final delivery
 
-Status: Implemented and verified on `phase/15-final-delivery`; awaiting review,
-commit, and push.
+Status: Completed, reviewed, merged through pull request #16 as `ebda55c`, and
+deployed on Render.
 
 Verification summary:
 
@@ -356,3 +356,24 @@ Verification summary:
 - [x] Complete README
 - [x] Document known limitations
 - [x] Prepare interview walkthrough
+
+## Phase 16 - Versioned game rules and turn handoff fix
+
+Status: Implemented and verified on `phase/16-turn-handoff-fix`; awaiting
+review. It has not been committed, pushed, merged, or deployed.
+
+- [x] Reproduce the merged-main double-six UI defect
+- [x] Add semantic `GameRules` and `RollOutcome` domain boundaries
+- [x] Keep only `[6, 6]` as the production bust combination
+- [x] Support normalized test-only multi-combination policies
+- [x] Persist stable `ruleSetId` values and explicit legacy compatibility
+- [x] Fail safely for unknown stored rule-set IDs
+- [x] Expose semantic `lastEvent` without exposing rule selection
+- [x] Remove frontend raw-dice rule inference
+- [x] Select and refetch with the new active authenticated seat
+- [x] Verify the next player can Roll and Hold the same game
+- [x] Verify persistence, versioning, wins, and no extra game creation
+- [x] Complete all 38 mandatory-rule traceability checks
+- [x] Run focused tests and complete root verification
+- [x] Run lint, builds, dependency audits, and Gitleaks
+- [x] Run isolated two-user browser verification

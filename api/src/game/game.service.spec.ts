@@ -10,6 +10,12 @@ import {
 } from './game.constants';
 import { GameService } from './game.service';
 import { InMemoryGameRepository } from './repositories/in-memory-game.repository';
+import {
+  DOUBLE_SIX_RULE_SET_ID,
+  GameRulesRegistry,
+  UnknownGameRulesError,
+  doubleSixV1GameRules,
+} from './rules/game-rules.registry';
 
 describe('GameService', () => {
   const playerA = 'player-a';
@@ -41,6 +47,7 @@ describe('GameService', () => {
       new InMemoryGameRepository(),
       new GameEngine(sequenceDiceRoller(...rolls)),
       usersService,
+      new GameRulesRegistry([doubleSixV1GameRules], DOUBLE_SIX_RULE_SET_ID),
     );
   }
 
@@ -82,6 +89,7 @@ describe('GameService', () => {
       roundScore: 0,
       winningScore: 100,
       lastRoll: null,
+      lastEvent: null,
       status: 'active',
       winnerId: null,
       allowedActions: ['roll', 'hold', 'restart'],
@@ -135,6 +143,7 @@ describe('GameService', () => {
       activePlayerId: playerA,
       roundScore: 5,
       lastRoll: [2, 3],
+      lastEvent: 'ROLL',
     });
   });
 
@@ -153,6 +162,7 @@ describe('GameService', () => {
       activePlayerId: playerB,
       roundScore: 0,
       allowedActions: ['restart'],
+      lastEvent: 'HOLD',
     });
     await expect(service.get(game.id, playerB)).resolves.toMatchObject({
       allowedActions: ['roll', 'hold', 'restart'],
@@ -169,6 +179,7 @@ describe('GameService', () => {
       activePlayerId: playerB,
       roundScore: 0,
       lastRoll: [6, 6],
+      lastEvent: 'BUST',
     });
   });
 
@@ -217,6 +228,7 @@ describe('GameService', () => {
       roundScore: 0,
       winningScore: 25,
       lastRoll: null,
+      lastEvent: 'RESTART',
       status: 'active',
       winnerId: null,
       allowedActions: ['restart'],
@@ -234,5 +246,31 @@ describe('GameService', () => {
       code: 'GAME_STATE_CONFLICT',
       message: 'The game changed. Load the latest state before trying again.',
     });
+  });
+
+  it('fails safely when a stored game references unknown rules', async () => {
+    const repository = new InMemoryGameRepository();
+    const registry = new GameRulesRegistry(
+      [doubleSixV1GameRules],
+      DOUBLE_SIX_RULE_SET_ID,
+    );
+    const service = new GameService(
+      repository,
+      new GameEngine(sequenceDiceRoller()),
+      usersService,
+      registry,
+    );
+    const game = await service.create(playerA, { opponentId: playerB });
+    const record = await repository.findById(game.id);
+
+    expect(record).toBeDefined();
+    await repository.save({
+      ...record!,
+      state: { ...record!.state, ruleSetId: 'unknown-v1' },
+    });
+
+    await expect(service.get(game.id, playerA)).rejects.toBeInstanceOf(
+      UnknownGameRulesError,
+    );
   });
 });

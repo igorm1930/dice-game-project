@@ -4,6 +4,7 @@ import type { Model } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import type { DiceRoll } from '../domain/dice-roller';
 import type { GameState } from '../domain/game.types';
+import { DOUBLE_SIX_RULE_SET_ID } from '../rules/game-rules.registry';
 import {
   PersistedGame,
   type PersistedGameDocument,
@@ -17,7 +18,9 @@ function cloneState(state: GameState): GameState {
     activePlayerIndex: state.activePlayerIndex,
     roundScore: state.roundScore,
     winningScore: state.winningScore,
+    ruleSetId: state.ruleSetId,
     lastRoll: state.lastRoll ? [...state.lastRoll] : null,
+    lastEvent: state.lastEvent,
     status: state.status,
     winnerId: state.winnerId,
   };
@@ -28,7 +31,9 @@ interface PersistedStateFields {
   readonly activePlayerIndex: GameState['activePlayerIndex'];
   readonly roundScore: number;
   readonly winningScore: number;
+  readonly ruleSetId: string;
   readonly lastRoll: DiceRoll | null;
+  readonly lastEvent: GameState['lastEvent'];
   readonly status: GameState['status'];
   readonly winnerId: string | null;
 }
@@ -39,7 +44,9 @@ function persistenceFields(state: GameState): PersistedStateFields {
     activePlayerIndex: state.activePlayerIndex,
     roundScore: state.roundScore,
     winningScore: state.winningScore,
+    ruleSetId: state.ruleSetId,
     lastRoll: state.lastRoll ? [state.lastRoll[0], state.lastRoll[1]] : null,
+    lastEvent: state.lastEvent,
     status: state.status,
     winnerId: state.winnerId,
   };
@@ -64,7 +71,9 @@ function toRecord(game: PersistedGameDocument): GameRecord {
       activePlayerIndex: game.activePlayerIndex,
       roundScore: game.roundScore,
       winningScore: game.winningScore,
+      ruleSetId: game.ruleSetId ?? DOUBLE_SIX_RULE_SET_ID,
       lastRoll: game.lastRoll ? [...game.lastRoll] : null,
+      lastEvent: game.lastEvent ?? null,
       status: game.status,
       winnerId: game.winnerId,
     },

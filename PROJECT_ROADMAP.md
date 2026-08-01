@@ -174,3 +174,17 @@ Do not skip phases without documenting the reason.
 - Complete README
 - Document known limitations
 - Prepare interview walkthrough
+
+## Phase 16 - Versioned game rules and turn handoff fix
+
+- Reproduce the double-six UI handoff defect against merged `main`
+- Introduce a backend `GameRules` policy with semantic roll outcomes
+- Keep only `double-six-v1` active in production
+- Persist each game's stable rule-set ID with explicit legacy handling
+- Expose semantic game events and remove React dice-rule inference
+- Preserve backend ownership of caller permissions
+- Select the authenticated seat matching the server's new active player
+- Refetch the same game with the new active player's bearer token
+- Add complete deterministic API and rendered-UI regression coverage
+- Complete the assignment-rule traceability audit
+- Run full verification, security scans, and two-user browser validation

@@ -2,9 +2,9 @@
 
 ## Status
 
-Phases 1 through 14 are merged. The API and web services are live on Phase 14
-merge commit `1a7407d`, and `main` is `2ddf8df` after the deployment record.
-Phase 15 adds final delivery evidence without changing this architecture.
+Phases 1 through 15 are merged. The API and web services are live on Phase 15
+merge commit `ebda55c`. Phase 16 is implemented and locally verified on its
+review branch; it is not committed, merged, or deployed.
 
 ## Current implemented architecture
 
@@ -94,10 +94,13 @@ two in-memory authenticated seats
 
 The selected seat creates a game against the other signed-in seat. Changing
 the selected seat refetches the game with that seat's bearer token so the
-backend can return its `allowedActions`. Roll, Hold, and Restart send empty
-action bodies plus the latest version through `If-Match`. `GameBoard` displays
-player scores, lifetime wins, round score, dice, turn, double-six feedback,
-winner, and action availability without reproducing game rules.
+backend can return its `allowedActions`. When a successful action changes the
+server-provided `activePlayerId`, React selects the matching authenticated seat
+and performs the same caller-specific refetch for the same game. Roll, Hold,
+and Restart send empty action bodies plus the latest version through
+`If-Match`. `GameBoard` displays player scores, lifetime wins, round score,
+dice, turn, semantic Bust feedback, winner, and action availability without
+reproducing game rules or interpreting dice combinations.
 
 The current game reference and access tokens remain only in React memory, while
 the authoritative game record is stored in MongoDB. An open page can refetch
@@ -113,15 +116,26 @@ the immutable game state and the `createGame`, `roll`, `hold`, and
 
 ```text
 injected DiceRoller
-  -> GameEngine.roll(readonly GameState)
+  -> GameRules.evaluateRoll(DiceRoll)
+  -> SCORE(points) or BUST
+  -> GameEngine.roll(readonly GameState, GameRules)
   -> validated two-die result
   -> new GameState
 ```
 
 The state contains exactly two player IDs and global scores, the active-player
-index, round score, winning score, most recent dice, status, and winner ID.
-Only double six busts. Hold is the only transition that banks points and checks
-for `globalScore >= winningScore`.
+index, round score, winning score, immutable rule-set ID, most recent dice,
+semantic last event, status, and winner ID. Hold is the only transition that
+banks points and checks for `globalScore >= winningScore`.
+
+`GameEngine` reacts only to semantic `SCORE` and `BUST` outcomes. It does not
+know which dice combinations produce either outcome. The production
+`double-six-v1` policy uses an immutable normalized set containing only `6-6`;
+normalization makes `[5, 6]` and `[6, 5]` one logical combination for future
+or test-only policies. An explicit registry resolves approved backend policy
+IDs and rejects duplicates and unknown IDs. No rule is selected by a client,
+stored as executable data, parsed from arbitrary expressions, or evaluated
+dynamically.
 
 The engine throws explicit `GameRuleError` codes for invalid players, invalid
 winning scores, invalid injected dice, and actions after victory. It imports no
@@ -135,6 +149,7 @@ NestJS, HTTP, Mongoose, MongoDB, authentication, or React code.
 verified JWT subject
   -> GameController
   -> GameService authorization
+  -> stored ruleSetId resolution
   -> GameEngine transition
   -> MongooseGameRepository
   -> MongoDB games document
@@ -144,11 +159,19 @@ verified JWT subject
 The asynchronous repository interface stores UUID v4 IDs and numeric versions.
 Production uses the UUID as the MongoDB string `_id` and persists both players
 and scores, active-player index, round score, winning score, last roll, status,
-winner, and timestamps in one `games` document. Each action updates that
+winner, rule-set ID, semantic last event, and timestamps in one `games`
+document. Each action updates that
 single document after the service authorizes the caller and runs the pure
 engine transition. Updates atomically match both `_id` and `version`, then
 increment the version. Existing documents without a version are treated as
 version zero for their first guarded update.
+
+New games store `double-six-v1`, and restart preserves the stored ID. Existing
+documents without `ruleSetId` are explicitly interpreted as `double-six-v1`
+without an eager rewrite; their next successful mutation persists the field.
+Missing legacy `lastEvent` values map to `null`. An unknown stored rule-set ID
+fails safely before a transition and never silently falls back or mutates the
+record. The internal ID is not part of the public response or mutation DTOs.
 
 The previous `Map` repository remains only for isolated service tests.
 `SecureDiceRoller` implements the domain dice interface with Node
@@ -175,9 +198,11 @@ identity fields for authentication.
 Game documents contain participant IDs and authoritative state but no access
 tokens, password data, or client-provided actor identity. Schema validators
 constrain UUID and player IDs, exactly two distinct players, safe scores, dice,
-status, winner, and version consistency. Mutations require a validated strong
-`If-Match` value and use optimistic concurrency to prevent duplicate state
-transitions.
+semantic events, approved-shape rule IDs, status, winner, and version
+consistency. Mutations require a validated strong `If-Match` value and use
+optimistic concurrency to prevent duplicate state transitions. Rule IDs are
+resolved only by the backend registry, and client-supplied authority fields
+remain rejected.
 
 Unexpected HTTP errors return a generic response. Request logs exclude bodies,
 headers, tokens, passwords, query strings, and concrete user/game IDs.
@@ -234,9 +259,9 @@ production CORS accepts only the configured HTTPS frontend origin.
 
 Atlas uses a database-scoped application user and only Render's current
 Frankfurt outbound IP ranges. No wildcard network rule, paid fallback, or
-preview environment is approved. Both Render services report Phase 14 commit
-`1a7407d` live; production health, CORS, Swagger/OpenAPI, and frontend
-connectivity have been verified.
+preview environment is approved. Both Render services report merged Phase 15
+commit `ebda55c` live. Phase 16 remains local and has not been committed,
+merged, or deployed.
 
 ## Delivery evidence
 

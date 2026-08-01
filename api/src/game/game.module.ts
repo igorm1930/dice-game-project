@@ -10,6 +10,10 @@ import { GameService } from './game.service';
 import { secureDiceRoller } from './infrastructure/secure-dice-roller';
 import { MongooseGameRepository } from './repositories/mongoose-game.repository';
 import { PersistedGame, PersistedGameSchema } from './schemas/game.schema';
+import {
+  GameRulesRegistry,
+  productionGameRulesRegistry,
+} from './rules/game-rules.registry';
 
 @Module({
   imports: [
@@ -24,6 +28,7 @@ import { PersistedGame, PersistedGameSchema } from './schemas/game.schema';
     GameService,
     MongooseGameRepository,
     { provide: DICE_ROLLER, useValue: secureDiceRoller },
+    { provide: GameRulesRegistry, useValue: productionGameRulesRegistry },
     {
       provide: GameEngine,
       inject: [DICE_ROLLER],

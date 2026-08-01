@@ -24,6 +24,7 @@ import type {
   GameRepository,
 } from './repositories/game.repository';
 import { GameVersionConflictError } from './repositories/game-repository.errors';
+import { GameRulesRegistry } from './rules/game-rules.registry';
 
 @Injectable()
 export class GameService {
@@ -32,6 +33,7 @@ export class GameService {
     private readonly gameRepository: GameRepository,
     private readonly gameEngine: GameEngine,
     private readonly usersService: UsersService,
+    private readonly gameRulesRegistry: GameRulesRegistry,
   ) {}
 
   async create(
@@ -52,6 +54,7 @@ export class GameService {
 
     const state = this.gameEngine.createGame(
       [actorId, opponent.id],
+      this.gameRulesRegistry.defaultRules,
       createGameDto.winningScore,
     );
     const record = await this.gameRepository.create(state);
@@ -74,10 +77,11 @@ export class GameService {
     const record = await this.findVisibleGame(gameId, actorId);
     this.ensureCurrentVersion(record, expectedVersion);
     this.ensureActorsTurn(record.state, actorId);
+    const gameRules = this.gameRulesRegistry.resolve(record.state.ruleSetId);
 
     const updated = await this.save({
       ...record,
-      state: this.gameEngine.roll(record.state),
+      state: this.gameEngine.roll(record.state, gameRules),
     });
 
     return new GameResponseDto(updated, actorId);
@@ -129,6 +133,7 @@ export class GameService {
       throw new NotFoundException(GAME_NOT_FOUND_RESPONSE);
     }
 
+    this.gameRulesRegistry.resolve(record.state.ruleSetId);
     await this.ensureWinCounted(record);
     return record;
   }

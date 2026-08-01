@@ -71,6 +71,17 @@ function otherSeat(seatId: SeatId): SeatId {
   return seatId === "a" ? "b" : "a";
 }
 
+function seatForPlayer(
+  seats: Readonly<Record<SeatId, SeatState>>,
+  playerId: string,
+): SeatId | null {
+  return (
+    (["a", "b"] as const).find(
+      (seatId) => seats[seatId].session?.user.id === playerId,
+    ) ?? null
+  );
+}
+
 function App() {
   const [health, setHealth] = useState<HealthState>({ status: "loading" });
   const [users, setUsers] = useState<UsersState>({ status: "loading" });
@@ -255,6 +266,17 @@ function App() {
         busy: false,
         error: null,
       }));
+
+      const nextSeat = seatForPlayer(seats, data.activePlayerId);
+      if (data.status === "active" && nextSeat && nextSeat !== activeSeat) {
+        const nextSession = seats[nextSeat].session;
+
+        if (nextSession) {
+          setActiveSeat(nextSeat);
+          setIdentity({ status: "idle" });
+          await refreshGameForSeat(nextSeat, nextSession, data.id);
+        }
+      }
 
       if (data.status === "won") {
         listUsers()

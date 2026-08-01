@@ -2,6 +2,7 @@ import { config } from "../config";
 
 export type AllowedGameAction = "roll" | "hold" | "restart";
 export type GameStatus = "active" | "won";
+export type GameEvent = "ROLL" | "BUST" | "HOLD" | "RESTART";
 
 export interface GamePlayerResponse {
   id: string;
@@ -16,6 +17,7 @@ export interface GameResponse {
   roundScore: number;
   winningScore: number;
   lastRoll: [number, number] | null;
+  lastEvent: GameEvent | null;
   status: GameStatus;
   winnerId: string | null;
   allowedActions: AllowedGameAction[];
@@ -78,6 +80,16 @@ function isAllowedAction(value: unknown): value is AllowedGameAction {
   return value === "roll" || value === "hold" || value === "restart";
 }
 
+function isGameEvent(value: unknown): value is GameEvent | null {
+  return (
+    value === null ||
+    value === "ROLL" ||
+    value === "BUST" ||
+    value === "HOLD" ||
+    value === "RESTART"
+  );
+}
+
 function isGameResponse(value: unknown): value is GameResponse {
   if (!isRecord(value) || !Array.isArray(value.players)) {
     return false;
@@ -111,6 +123,7 @@ function isGameResponse(value: unknown): value is GameResponse {
     Number.isSafeInteger(value.winningScore) &&
     value.winningScore > 0 &&
     isLastRoll(value.lastRoll) &&
+    isGameEvent(value.lastEvent) &&
     (value.status === "active" || value.status === "won") &&
     winnerIsValid &&
     Array.isArray(allowedActions) &&
