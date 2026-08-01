@@ -1,6 +1,13 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { AuthApiError, getCurrentUser, login, register } from "./api/auth";
 import {
@@ -147,6 +154,18 @@ async function signInBoth(actor: ReturnType<typeof userEvent.setup>) {
   await signIn(actor, "Seat B", "SeatBravo");
 }
 
+async function advanceCooldown(milliseconds: number) {
+  let remaining = milliseconds;
+
+  while (remaining > 0) {
+    const step = Math.min(1_000, remaining);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(step);
+    });
+    remaining -= step;
+  }
+}
+
 describe("App", () => {
   beforeEach(() => {
     mockGetHealth.mockResolvedValue({
@@ -162,6 +181,10 @@ describe("App", () => {
     mockRollGame.mockReset();
     mockHoldGame.mockReset();
     mockRestartGame.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("shows health and player loading states", () => {
@@ -413,6 +436,7 @@ describe("App", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Die 1: 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Die 2: 3")).toBeInTheDocument();
+    expect(screen.queryByText(/turn begins in/i)).not.toBeInTheDocument();
   });
 
   it("hands control to the next authenticated seat after double six", async () => {
@@ -422,7 +446,7 @@ describe("App", () => {
       version: 1,
       activePlayerId: seatBUser.id,
       roundScore: 0,
-      lastRoll: [6, 6],
+      lastRoll: [2, 5],
       lastEvent: "BUST",
       allowedActions: ["restart"],
     };
@@ -456,21 +480,28 @@ describe("App", () => {
     mockHoldGame.mockResolvedValue(holdForPreviousPlayer);
     mockGetGame
       .mockResolvedValueOnce(bustForActivePlayer)
+      .mockResolvedValueOnce(bustForPreviousPlayer)
+      .mockResolvedValueOnce(bustForActivePlayer)
       .mockResolvedValueOnce({
         ...holdForPreviousPlayer,
         allowedActions: ["roll", "hold", "restart"],
       });
-    render(<App />);
+    const { rerender } = render(<App />);
 
     await signInBoth(actor);
     await actor.click(screen.getByRole("button", { name: "Start game" }));
-    await actor.click(screen.getByRole("button", { name: "Roll dice" }));
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
 
     expect(mockRollGame).toHaveBeenCalledWith("token-a", game.id, game.version);
-    await waitFor(() => {
-      expect(mockGetGame).toHaveBeenCalledWith("token-b", game.id);
-      expect(screen.getByRole("radio", { name: /Seat B/ })).toBeChecked();
+    await act(async () => {
+      await Promise.resolve();
     });
+    expect(mockGetGame).toHaveBeenCalledWith("token-b", game.id);
+    expect(screen.getByRole("radio", { name: /Seat B/ })).toBeChecked();
     expect(
       screen.getByText("SeatBravo", { selector: ".game-heading strong" }),
     ).toBeInTheDocument();
@@ -478,11 +509,60 @@ describe("App", () => {
       screen.getByText("0", { selector: ".round-score strong" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Bust! The round score was lost/),
-    ).toBeInTheDocument();
+      screen.getByRole("status"),
+    ).toHaveTextContent(
+      "Bust! The round score was lost and the turn passed.",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatBravo.*turn begins in 3/,
+    );
+    expect(mockGetGame).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeDisabled();
+
+    await advanceCooldown(1_000);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatBravo.*turn begins in 2/,
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+
+    rerender(<App />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatBravo.*turn begins in 2/,
+    );
+    expect(mockGetGame).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("radio", { name: /Seat A/ }));
+      await Promise.resolve();
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("radio", { name: /Seat B/ }));
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatBravo.*turn begins in 2/,
+    );
+    expect(mockGetGame).toHaveBeenCalledTimes(3);
+
+    await advanceCooldown(1_000);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatBravo.*turn begins in 1/,
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeDisabled();
+
+    await advanceCooldown(1_000);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "SeatBravo, your turn!",
+    );
     expect(screen.getByRole("button", { name: "Roll dice" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Hold score" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeEnabled();
 
+    vi.useRealTimers();
     await actor.click(screen.getByRole("button", { name: "Roll dice" }));
     expect(mockRollGame).toHaveBeenNthCalledWith(2, "token-b", game.id, 1);
     expect(
@@ -492,10 +572,303 @@ describe("App", () => {
     await actor.click(screen.getByRole("button", { name: "Hold score" }));
     expect(mockHoldGame).toHaveBeenCalledWith("token-b", game.id, 2);
     await waitFor(() => {
-      expect(mockGetGame).toHaveBeenCalledWith("token-a", game.id);
+      expect(mockGetGame).toHaveBeenNthCalledWith(4, "token-a", game.id);
       expect(screen.getByRole("radio", { name: /Seat A/ })).toBeChecked();
     });
     expect(mockCreateGame).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts a fresh countdown for a later BUST version", async () => {
+    const actor = userEvent.setup();
+    const firstBust = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastRoll: [2, 5] as [number, number],
+      lastEvent: "BUST" as const,
+      allowedActions: ["restart"] as GameResponse["allowedActions"],
+    };
+    const secondBust = {
+      ...firstBust,
+      version: 2,
+      activePlayerId: seatAUser.id,
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame
+      .mockResolvedValueOnce(firstBust)
+      .mockResolvedValueOnce(secondBust);
+    mockGetGame
+      .mockResolvedValueOnce({
+        ...firstBust,
+        allowedActions: ["roll", "hold", "restart"],
+      })
+      .mockResolvedValueOnce({
+        ...secondBust,
+        allowedActions: ["roll", "hold", "restart"],
+      });
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
+    await advanceCooldown(3_000);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "SeatBravo, your turn!",
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
+
+    expect(mockRollGame).toHaveBeenNthCalledWith(2, "token-b", game.id, 1);
+    expect(mockGetGame).toHaveBeenNthCalledWith(2, "token-a", game.id);
+    expect(screen.getByRole("radio", { name: /Seat A/ })).toBeChecked();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatAlpha.*turn begins in 3/,
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+  });
+
+  it("keeps the same game locked when the next-player refetch fails", async () => {
+    const actor = userEvent.setup();
+    const bust = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastRoll: [2, 5] as [number, number],
+      lastEvent: "BUST" as const,
+      allowedActions: ["restart"] as GameResponse["allowedActions"],
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame.mockResolvedValue(bust);
+    mockGetGame.mockRejectedValue(
+      new GameApiError("The game could not be refreshed.", 503, "UNAVAILABLE"),
+    );
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
+    await advanceCooldown(3_000);
+
+    expect(
+      screen.getByRole("heading", { name: "Game in progress" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("The game could not be refreshed."))
+      .toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /waiting for a successful server refresh/i,
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeDisabled();
+  });
+
+  it("waits for a pending next-player refetch after the timer finishes", async () => {
+    const actor = userEvent.setup();
+    const bust: GameResponse = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastEvent: "BUST",
+      allowedActions: ["restart"],
+    };
+    const activePlayerView: GameResponse = {
+      ...bust,
+      allowedActions: ["roll", "hold", "restart"],
+    };
+    let resolveRefetch!: (value: GameResponse) => void;
+    const pendingRefetch = new Promise<GameResponse>((resolve) => {
+      resolveRefetch = resolve;
+    });
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame.mockResolvedValue(bust);
+    mockGetGame.mockReturnValue(pendingRefetch);
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
+    await advanceCooldown(3_000);
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /waiting for a successful server refresh/i,
+    );
+    expect(screen.getByRole("button", { name: "Updating..." })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeDisabled();
+
+    await act(async () => {
+      resolveRefetch(activePlayerView);
+      await pendingRefetch;
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "SeatBravo, your turn!",
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeEnabled();
+  });
+
+  it("keeps actions locked when the next player's session is unavailable", async () => {
+    const actor = userEvent.setup();
+    const bust: GameResponse = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastRoll: [2, 5],
+      lastEvent: "BUST",
+      allowedActions: ["restart"],
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame.mockResolvedValue(bust);
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    await actor.click(
+      seatRegion("Seat B").getByRole("button", { name: "Log out Seat B" }),
+    );
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
+    await advanceCooldown(3_000);
+
+    expect(mockGetGame).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        "SeatBravo must sign in before the turn can continue.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /waiting for a successful server refresh/i,
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeDisabled();
+  });
+
+  it("does not start a BUST cooldown for Hold or Restart", async () => {
+    const actor = userEvent.setup();
+    const held: GameResponse = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastEvent: "HOLD",
+      allowedActions: ["restart"],
+    };
+    const restarted: GameResponse = {
+      ...held,
+      version: 2,
+      activePlayerId: seatAUser.id,
+      lastEvent: "RESTART",
+      allowedActions: ["restart"],
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockHoldGame.mockResolvedValue(held);
+    mockGetGame
+      .mockResolvedValueOnce({
+        ...held,
+        allowedActions: ["roll", "hold", "restart"],
+      })
+      .mockResolvedValueOnce({
+        ...restarted,
+        allowedActions: ["roll", "hold", "restart"],
+      });
+    mockRestartGame.mockResolvedValue(restarted);
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    await actor.click(screen.getByRole("button", { name: "Hold score" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: /Seat B/ })).toBeChecked();
+    });
+    expect(screen.queryByText(/turn begins in/i)).not.toBeInTheDocument();
+
+    await actor.click(screen.getByRole("button", { name: "New game" }));
+    expect(mockRestartGame).toHaveBeenCalledWith("token-b", game.id, 1);
+    expect(screen.queryByText(/turn begins in/i)).not.toBeInTheDocument();
+  });
+
+  it("cleans the active countdown timer when App unmounts", async () => {
+    const actor = userEvent.setup();
+    const bust: GameResponse = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastEvent: "BUST",
+      allowedActions: ["restart"],
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame.mockResolvedValue(bust);
+    mockGetGame.mockResolvedValue({
+      ...bust,
+      allowedActions: ["roll", "hold", "restart"],
+    });
+    const { unmount } = render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+    });
+
+    expect(vi.getTimerCount()).toBe(1);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("clears the timer when a different game replaces the BUST game", async () => {
+    const actor = userEvent.setup();
+    const bust: GameResponse = {
+      ...game,
+      version: 1,
+      activePlayerId: seatBUser.id,
+      lastEvent: "BUST",
+      allowedActions: ["restart"],
+    };
+    const replacement: GameResponse = {
+      ...bust,
+      id: "a7ff5607-b06a-4448-b22e-bf0b93841a31",
+      allowedActions: ["roll", "hold", "restart"],
+    };
+    mockCreateGame.mockResolvedValue(game);
+    mockRollGame.mockResolvedValue(bust);
+    mockGetGame.mockResolvedValue(replacement);
+    render(<App />);
+
+    await signInBoth(actor);
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.queryByText(/turn begins in/i)).not.toBeInTheDocument();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeEnabled();
   });
 
   it("reloads the latest state after a version conflict", async () => {

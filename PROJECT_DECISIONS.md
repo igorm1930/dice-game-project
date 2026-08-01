@@ -278,6 +278,21 @@ The acting player will eventually be derived from the authentication token.
 - Refresh the public user list whenever React receives a won game response,
   and display the returned total without calculating or incrementing it.
 
+### Phase 18 BUST feedback cooldown decisions
+
+- Trigger presentation feedback only from a successful backend response whose
+  semantic `lastEvent` is `BUST`; never infer it from displayed dice.
+- Key one cooldown to the authoritative game ID and version so refetches and
+  rerenders cannot restart the same event.
+- Switch immediately to the server-provided active player and refetch the same
+  game with that seat's in-memory token.
+- Lock Roll, Hold, and Restart for three seconds and keep them locked until the
+  next player's caller-specific refetch succeeds.
+- Preserve the last safe game state and show recoverable feedback when the
+  refetch fails or the required authenticated seat is missing.
+- Use accessible live status, responsive presentation, and reduced-motion
+  styling without adding a dependency or changing backend behavior.
+
 ### Phase 8 authentication compatibility
 
 - New users are created only through `POST /api/auth/register` with a password.

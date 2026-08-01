@@ -601,6 +601,72 @@ input:focus-visible {
   text-align: center;
 }
 
+.bust-message p {
+  margin: 0;
+}
+
+.bust-message p + p {
+  margin-top: 5px;
+  color: var(--text-h);
+}
+
+.bust-feedback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 10px;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  background: #fff7f7;
+}
+
+.bust-feedback .bust-message {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.bust-countdown {
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+}
+
+.bust-countdown strong {
+  color: #991b1b;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.bust-progress {
+  width: 88px;
+  height: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #fecaca;
+}
+
+.bust-progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: #fecaca;
+}
+
+.bust-progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: #dc2626;
+  transition: width 1s linear;
+}
+
+.bust-progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: #dc2626;
+  transition: width 1s linear;
+}
+
 .game-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -713,6 +779,14 @@ input:focus-visible {
     grid-column: auto;
   }
 
+  .bust-feedback {
+    grid-template-columns: 1fr;
+  }
+
+  .bust-feedback .bust-message {
+    text-align: center;
+  }
+
   .matchup {
     grid-template-columns: 1fr;
   }
@@ -734,6 +808,14 @@ input:focus-visible {
   .winner-celebration,
   .bust .die {
     animation: none;
+    transition: none;
+  }
+
+  .bust-progress::-webkit-progress-value {
+    transition: none;
+  }
+
+  .bust-progress::-moz-progress-bar {
     transition: none;
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AuthApiError,
   getCurrentUser,
@@ -13,6 +13,7 @@ import {
   holdGame,
   restartGame,
   rollGame,
+  type AllowedGameAction,
   type GameResponse,
 } from "./api/games";
 import { getHealth, type HealthResponse } from "./api/health";
@@ -53,6 +54,26 @@ interface GameState {
   playerNames: Record<string, string>;
   busy: boolean;
   error: string | null;
+}
+
+type BustRefreshStatus =
+  | "pending"
+  | "succeeded"
+  | "failed"
+  | "missing-session";
+
+interface BustCooldownState {
+  gameId: string;
+  version: number;
+  nextPlayerId: string;
+  secondsRemaining: number;
+  refreshStatus: BustRefreshStatus;
+}
+
+const BUST_COOLDOWN_SECONDS = 3;
+
+function bustCooldownKey(gameId: string, version: number): string {
+  return `${gameId}:${version}`;
 }
 
 function emptySeat(): SeatState {
@@ -97,6 +118,19 @@ function App() {
     busy: false,
     error: null,
   });
+  const [bustCooldown, setBustCooldown] =
+    useState<BustCooldownState | null>(null);
+  const processedBustKeyRef = useRef<string | null>(null);
+  const activeBustKeyRef = useRef<string | null>(null);
+
+  const bustGameId = bustCooldown?.gameId ?? null;
+  const bustVersion = bustCooldown?.version ?? null;
+  const bustSecondsRemaining = bustCooldown?.secondsRemaining ?? 0;
+  const bustActionsLocked =
+    bustCooldown !== null &&
+    (bustCooldown.secondsRemaining > 0 ||
+      bustCooldown.refreshStatus !== "succeeded");
+  const actionsLocked = game.busy || bustActionsLocked;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -110,6 +144,95 @@ function App() {
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (
+      bustGameId === null ||
+      bustVersion === null ||
+      bustSecondsRemaining <= 0
+    ) {
+      return;
+    }
+
+    const expectedKey = bustCooldownKey(bustGameId, bustVersion);
+    const timeoutId = window.setTimeout(() => {
+      if (activeBustKeyRef.current !== expectedKey) return;
+
+      setBustCooldown((current) => {
+        if (
+          !current ||
+          bustCooldownKey(current.gameId, current.version) !== expectedKey
+        ) {
+          return current;
+        }
+
+        return {
+          ...current,
+          secondsRemaining: Math.max(0, current.secondsRemaining - 1),
+        };
+      });
+    }, 1_000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [bustGameId, bustVersion, bustSecondsRemaining]);
+
+  useEffect(() => {
+    if (
+      !bustCooldown ||
+      (game.data && game.data.id === bustCooldown.gameId)
+    ) {
+      return;
+    }
+
+    activeBustKeyRef.current = null;
+    processedBustKeyRef.current = null;
+    setBustCooldown(null);
+  }, [bustCooldown, game.data]);
+
+  function clearBustCooldown(resetProcessed = false) {
+    activeBustKeyRef.current = null;
+    setBustCooldown(null);
+
+    if (resetProcessed) {
+      processedBustKeyRef.current = null;
+    }
+  }
+
+  function startBustCooldown(data: GameResponse): string | null {
+    const key = bustCooldownKey(data.id, data.version);
+
+    if (processedBustKeyRef.current === key) return null;
+
+    processedBustKeyRef.current = key;
+    activeBustKeyRef.current = key;
+    setBustCooldown({
+      gameId: data.id,
+      version: data.version,
+      nextPlayerId: data.activePlayerId,
+      secondsRemaining: BUST_COOLDOWN_SECONDS,
+      refreshStatus: "pending",
+    });
+
+    return key;
+  }
+
+  function updateBustRefreshStatus(
+    key: string,
+    refreshStatus: BustRefreshStatus,
+  ) {
+    if (activeBustKeyRef.current !== key) return;
+
+    setBustCooldown((current) => {
+      if (
+        !current ||
+        bustCooldownKey(current.gameId, current.version) !== key
+      ) {
+        return current;
+      }
+
+      return { ...current, refreshStatus };
+    });
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -163,7 +286,11 @@ function App() {
     }
   }
 
-  function handleGameError(error: unknown, seatId: SeatId) {
+  function handleGameError(
+    error: unknown,
+    seatId: SeatId,
+    preserveGame = false,
+  ) {
     if (error instanceof GameApiError && error.status === 401) {
       expireSeat(seatId);
     }
@@ -171,7 +298,8 @@ function App() {
     if (
       error instanceof GameApiError &&
       error.status === 404 &&
-      error.code === "GAME_NOT_FOUND"
+      error.code === "GAME_NOT_FOUND" &&
+      !preserveGame
     ) {
       setGame((current) => ({
         ...current,
@@ -193,7 +321,8 @@ function App() {
     seatId: SeatId,
     session: AuthSession,
     gameId: string,
-  ) {
+    preserveGameOnError = false,
+  ): Promise<GameResponse | null> {
     setGame((current) => ({ ...current, busy: true, error: null }));
 
     try {
@@ -208,8 +337,10 @@ function App() {
       if (data.status === "won") {
         void refreshUsers();
       }
+      return data;
     } catch (error) {
-      handleGameError(error, seatId);
+      handleGameError(error, seatId, preserveGameOnError);
+      return null;
     }
   }
 
@@ -221,7 +352,19 @@ function App() {
     setIdentity({ status: "idle" });
 
     if (game.data) {
-      await refreshGameForSeat(seatId, session, game.data.id);
+      const refreshed = await refreshGameForSeat(
+        seatId,
+        session,
+        game.data.id,
+        bustCooldown !== null,
+      );
+
+      if (bustCooldown && session.user.id === bustCooldown.nextPlayerId) {
+        updateBustRefreshStatus(
+          bustCooldownKey(bustCooldown.gameId, bustCooldown.version),
+          refreshed ? "succeeded" : "failed",
+        );
+      }
     }
   }
 
@@ -232,6 +375,7 @@ function App() {
     const opponent = seats[otherSeat(activeSeat)].session;
     if (!creator || !opponent) return;
 
+    clearBustCooldown(true);
     setGame((current) => ({ ...current, busy: true, error: null }));
 
     try {
@@ -254,17 +398,19 @@ function App() {
   }
 
   async function handleGameAction(
+    action: AllowedGameAction,
     request: (
       accessToken: string,
       gameId: string,
       expectedVersion: number,
     ) => Promise<GameResponse>,
   ) {
-    if (!activeSeat || !game.data || game.busy) return;
+    if (!activeSeat || !game.data || actionsLocked) return;
 
     const session = seats[activeSeat].session;
     if (!session) return;
 
+    clearBustCooldown();
     setGame((current) => ({ ...current, busy: true, error: null }));
 
     try {
@@ -280,15 +426,48 @@ function App() {
         error: null,
       }));
 
+      const bustKey =
+        action === "roll" && data.lastEvent === "BUST"
+          ? startBustCooldown(data)
+          : null;
+
       const nextSeat = seatForPlayer(seats, data.activePlayerId);
-      if (data.status === "active" && nextSeat && nextSeat !== activeSeat) {
+      if (
+        data.status === "active" &&
+        nextSeat &&
+        (nextSeat !== activeSeat || bustKey)
+      ) {
         const nextSession = seats[nextSeat].session;
 
         if (nextSession) {
-          setActiveSeat(nextSeat);
-          setIdentity({ status: "idle" });
-          await refreshGameForSeat(nextSeat, nextSession, data.id);
+          if (nextSeat !== activeSeat) {
+            setActiveSeat(nextSeat);
+            setIdentity({ status: "idle" });
+          }
+
+          const refreshed = await refreshGameForSeat(
+            nextSeat,
+            nextSession,
+            data.id,
+            Boolean(bustKey),
+          );
+
+          if (bustKey) {
+            updateBustRefreshStatus(
+              bustKey,
+              refreshed ? "succeeded" : "failed",
+            );
+          }
         }
+      } else if (bustKey) {
+        const nextPlayerName =
+          game.playerNames[data.activePlayerId] ?? "The next player";
+        updateBustRefreshStatus(bustKey, "missing-session");
+        setGame((current) => ({
+          ...current,
+          busy: false,
+          error: `${nextPlayerName} must sign in before the turn can continue.`,
+        }));
       }
 
       if (data.status === "won") {
@@ -526,11 +705,23 @@ function App() {
         opponentName={opponentSession?.user.username ?? null}
         actingUsername={creatorSession?.user.username ?? null}
         busy={game.busy}
+        actionsLocked={actionsLocked}
+        bustFeedback={
+          bustCooldown
+            ? {
+                secondsRemaining: bustCooldown.secondsRemaining,
+                nextPlayerName:
+                  game.playerNames[bustCooldown.nextPlayerId] ??
+                  "The next player",
+                refreshStatus: bustCooldown.refreshStatus,
+              }
+            : null
+        }
         error={game.error}
         onCreate={(winningScore) => void handleCreateGame(winningScore)}
-        onRoll={() => void handleGameAction(rollGame)}
-        onHold={() => void handleGameAction(holdGame)}
-        onRestart={() => void handleGameAction(restartGame)}
+        onRoll={() => void handleGameAction("roll", rollGame)}
+        onHold={() => void handleGameAction("hold", holdGame)}
+        onRestart={() => void handleGameAction("restart", restartGame)}
       />
 
       <section

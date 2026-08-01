@@ -2,9 +2,38 @@
 
 ## Status
 
-Phase 1 through Phase 17 checks have been run locally. Phase 17 was merged
-through pull request #19 as `f86e3f3`; pull-request and post-merge CI passed,
-and both Render services are live on that commit.
+Phase 1 through Phase 18 checks have been run locally. Phase 18 is awaiting
+review and is not committed or deployed. Phase 17 was merged through pull
+request #19 as `f86e3f3`; both Render services remain live on that commit.
+
+## Phase 18 BUST cooldown verification
+
+- Focused frontend verification passed 49 tests across App, GameBoard, and the
+  game API client. Coverage includes 3 -> 2 -> 1, action locking, immediate
+  seat handoff, successful/pending/failed refetches, missing sessions,
+  same-event deduplication, newer events, unmount cleanup, different-game
+  cleanup, normal Roll/Hold/Restart, and presentation-only GameBoard behavior.
+- Focused backend domain and game-service verification passed 43 tests; no
+  backend source changed.
+- Focused game API E2E passed 17 tests against MongoDB. The first invocation
+  was rejected by configuration because its test token lifetime was below the
+  existing 30-minute minimum; the corrected approved environment passed.
+- Complete root verification passed 109 backend unit tests, 51 MongoDB E2E
+  tests, 54 frontend tests, lint, and both builds.
+- Separate production builds passed. Vite transformed 24 modules and emitted
+  about 213 kB of JavaScript before compression.
+- Backend production, backend complete, and frontend audits each reported zero
+  vulnerabilities. Compose configuration passed.
+- Gitleaks 8.30.1 scanned the full 41-commit history plus focused frontend and
+  documentation paths with no leaks before the final documentation update;
+  the documentation path is rescanned after this entry.
+- A real random two-user BUST verified immediate seat selection, round-score
+  reset by the backend, unchanged global scores, 3 -> 2 -> 1 action locking,
+  ready-state unlock, and same-game Roll and Hold by the next player. Desktop,
+  768px, and 390px layouts showed no visible clipping.
+- The reduced-motion source path and behavior are automated. The connected
+  browser did not expose media-preference emulation, so an OS-level live
+  reduced-motion check remains for manual review.
 
 ## Phase 17 win-counter verification
 

@@ -2,9 +2,11 @@
 
 ## Status
 
-Phases 1 through 17 are merged and deployed. Phase 17 commit `0fe346a` was
-merged through pull request #19 as `f86e3f3`; required CI passed and both
-Render services are live on that merge commit.
+Phases 1 through 17 are merged and deployed. Phase 18 is implemented and
+locally verified on `phase/18-bust-feedback-cooldown`, awaiting review, and
+is not committed or deployed. Phase 17 commit `0fe346a` was merged through
+pull request #19 as `f86e3f3`; both Render services remain live on that merge
+commit.
 
 ## Current implemented architecture
 
@@ -101,6 +103,16 @@ and Restart send empty action bodies plus the latest version through
 `If-Match`. `GameBoard` displays player scores, lifetime wins, round score,
 dice, turn, semantic Bust feedback, winner, and action availability without
 reproducing game rules or interpreting dice combinations.
+
+After a successful action response reports `lastEvent: "BUST"`, React keys a
+presentation-only cooldown by the authoritative game ID and version. It
+selects the backend-provided `activePlayerId` immediately, refetches the same
+game with that seat's token, and renders 3 -> 2 -> 1. Game actions remain
+disabled until both the three seconds and the caller-specific refetch
+complete. A failed refetch or missing seat session preserves the last safe
+game state and keeps actions locked for explicit recovery. Timer cleanup and
+event-key deduplication prevent stale callbacks and repeated refetches from
+restarting the same cooldown.
 
 The current game reference and access tokens remain only in React memory, while
 the authoritative game record is stored in MongoDB. An open page can refetch

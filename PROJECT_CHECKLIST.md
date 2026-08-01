@@ -398,3 +398,24 @@ deployed on both Render services.
 - [x] Run lint, builds, dependency audits, and Gitleaks
 - [x] Pass pull-request and post-merge CI
 - [x] Deploy and verify both Render services on `f86e3f3`
+
+## Phase 18 - BUST feedback cooldown
+
+Status: Implemented and locally verified on
+`phase/18-bust-feedback-cooldown`; awaiting review. Not committed, pushed,
+merged, or deployed.
+
+- [x] Trigger feedback only from backend semantic BUST responses
+- [x] Switch immediately to the backend-selected active seat
+- [x] Refetch the same game with the next authenticated player's token
+- [x] Show an accessible three-second countdown and ready state
+- [x] Lock all game actions during the countdown and pending refetch
+- [x] Keep actions locked after refetch failure or a missing session
+- [x] Deduplicate BUST events and clean up timers
+- [x] Cover normal actions, retries, rerenders, failures, and game replacement
+- [x] Run focused tests and complete root verification
+- [x] Run lint, both builds, dependency audits, Compose validation, and Gitleaks
+- [x] Verify a real two-user BUST flow at desktop, tablet, and mobile widths
+- [ ] Complete a live OS-level reduced-motion preference check
+- [ ] Review and approve the uncommitted diff
+- [ ] Commit, push, merge, and deploy

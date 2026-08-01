@@ -199,3 +199,14 @@ Do not skip phases without documenting the reason.
 - Display wins clearly in game cards, Saved Players, and the winner banner
 - Verify two wins after Restart, API-process persistence, refresh, and re-login
 - Run full verification, security scans, CI, and production deployment checks
+
+## Phase 18 - BUST feedback cooldown
+
+- Consume the backend semantic BUST event without interpreting dice in React
+- Switch immediately to the backend-selected next authenticated seat
+- Show a three-second accessible 3 -> 2 -> 1 cooldown
+- Disable game actions during the cooldown and pending seat refetch
+- Keep actions safely locked after refetch failure or a missing session
+- Deduplicate event handling by game ID and version and clean up timers
+- Verify normal Roll, Hold, Restart, repeated refetch, and same-game recovery
+- Verify desktop, tablet, mobile, reduced-motion, security, and full regression
