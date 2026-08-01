@@ -41,6 +41,8 @@ function renderBoard(
     opponentName: "SeatBravo",
     actingUsername: "SeatAlpha",
     busy: false,
+    actionsLocked: false,
+    bustFeedback: null,
     error: null,
     onCreate: vi.fn(),
     onRoll: vi.fn(),
@@ -164,6 +166,85 @@ describe("GameBoard", () => {
     expect(screen.getByLabelText("Last roll")).toHaveClass("bust");
     expect(screen.getByLabelText("Die 1: 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Die 2: 5")).toBeInTheDocument();
+  });
+
+  it("renders accessible countdown feedback and locks every game action", () => {
+    renderBoard({
+      game: {
+        ...game,
+        lastRoll: [2, 5],
+        lastEvent: "BUST",
+        roundScore: 0,
+        activePlayerId: game.players[1].id,
+      },
+      actingUsername: "SeatBravo",
+      actionsLocked: true,
+      bustFeedback: {
+        secondsRemaining: 3,
+        nextPlayerName: "SeatBravo",
+        refreshStatus: "succeeded",
+      },
+    });
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveAttribute("aria-atomic", "true");
+    expect(status).toHaveTextContent(
+      "Bust! The round score was lost and the turn passed.",
+    );
+    expect(status).toHaveTextContent(/SeatBravo.*turn begins in 3/);
+    expect(screen.getByText("3", { selector: ".bust-countdown strong" }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeDisabled();
+  });
+
+  it("shows ready feedback but still follows backend allowed actions", () => {
+    renderBoard({
+      game: {
+        ...game,
+        lastEvent: "BUST",
+        allowedActions: ["restart"],
+      },
+      actingUsername: "SeatBravo",
+      bustFeedback: {
+        secondsRemaining: 0,
+        nextPlayerName: "SeatBravo",
+        refreshStatus: "succeeded",
+      },
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "SeatBravo, your turn!",
+    );
+    expect(screen.getByRole("button", { name: "Roll dice" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Hold score" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "New game" })).toBeEnabled();
+  });
+
+  it("keeps meaningful countdown text when reduced motion is preferred", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockReturnValue({ matches: true, media: "(prefers-reduced-motion: reduce)" }),
+    );
+
+    renderBoard({
+      game: { ...game, lastEvent: "BUST" },
+      actionsLocked: true,
+      bustFeedback: {
+        secondsRemaining: 2,
+        nextPlayerName: "SeatBravo",
+        refreshStatus: "pending",
+      },
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /SeatBravo.*turn begins in 2/,
+    );
+    expect(screen.getByText("2", { selector: ".bust-countdown strong" }))
+      .toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 
   it("does not infer a bust from raw dice", () => {

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import type { GameResponse } from "../api/games";
 
+const BUST_COOLDOWN_SECONDS = 3;
+
 const dieFaces = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"] as const;
 
 interface GameBoardProps {
@@ -11,6 +13,12 @@ interface GameBoardProps {
   opponentName: string | null;
   actingUsername: string | null;
   busy: boolean;
+  actionsLocked: boolean;
+  bustFeedback: {
+    secondsRemaining: number;
+    nextPlayerName: string;
+    refreshStatus: "pending" | "succeeded" | "failed" | "missing-session";
+  } | null;
   error: string | null;
   onCreate: (winningScore: number) => void;
   onRoll: () => void;
@@ -44,6 +52,8 @@ export function GameBoard({
   opponentName,
   actingUsername,
   busy,
+  actionsLocked,
+  bustFeedback,
   error,
   onCreate,
   onRoll,
@@ -204,7 +214,9 @@ export function GameBoard({
             className={"primary-button roll-button"}
             type={"button"}
             disabled={
-              busy || !actingUsername || !game.allowedActions.includes("roll")
+              actionsLocked ||
+              !actingUsername ||
+              !game.allowedActions.includes("roll")
             }
             onClick={onRoll}
           >
@@ -214,7 +226,9 @@ export function GameBoard({
             className={"secondary-button"}
             type={"button"}
             disabled={
-              busy || !actingUsername || !game.allowedActions.includes("hold")
+              actionsLocked ||
+              !actingUsername ||
+              !game.allowedActions.includes("hold")
             }
             onClick={onHold}
           >
@@ -224,7 +238,7 @@ export function GameBoard({
             className={"secondary-button new-game-button"}
             type={"button"}
             disabled={
-              busy ||
+              actionsLocked ||
               !actingUsername ||
               !game.allowedActions.includes("restart")
             }
@@ -235,7 +249,46 @@ export function GameBoard({
         </div>
       </div>
 
-      {isBust && (
+      {isBust && bustFeedback && (
+        <div className={"bust-feedback"}>
+          <div
+            className={"bust-message"}
+            role={"status"}
+            aria-live={"polite"}
+            aria-atomic={true}
+          >
+            <p>Bust! The round score was lost and the turn passed.</p>
+            {bustFeedback.secondsRemaining > 0 ? (
+              <p>
+                {bustFeedback.nextPlayerName}&rsquo;s turn begins in{" "}
+                {bustFeedback.secondsRemaining}
+              </p>
+            ) : bustFeedback.refreshStatus === "succeeded" ? (
+              <p>{bustFeedback.nextPlayerName}, your turn!</p>
+            ) : (
+              <p>
+                {bustFeedback.nextPlayerName}&rsquo;s turn is waiting for a
+                successful server refresh.
+              </p>
+            )}
+          </div>
+
+          <div className={"bust-countdown"} aria-hidden={true}>
+            <strong>
+              {bustFeedback.secondsRemaining > 0
+                ? bustFeedback.secondsRemaining
+                : "Ready"}
+            </strong>
+            <progress
+              className={"bust-progress"}
+              max={BUST_COOLDOWN_SECONDS}
+              value={BUST_COOLDOWN_SECONDS - bustFeedback.secondsRemaining}
+            />
+          </div>
+        </div>
+      )}
+
+      {isBust && !bustFeedback && (
         <p className={"bust-message"} role={"status"}>
           Bust! The round score was lost and the turn passed.
         </p>

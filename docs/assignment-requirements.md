@@ -55,6 +55,13 @@ Build a two-player dice game where all game logic lives in a backend API and a R
 - Add sound effects or background music.
 - Add other creative improvements.
 
+Phase 18 implements the optional double-six feedback requirement as a
+frontend-only presentation cooldown. It starts only from the backend's
+semantic `BUST` response, switches to the backend-selected active player,
+shows 3 -> 2 -> 1, and locks actions until both the countdown and the
+caller-specific refetch complete. React does not inspect dice, calculate a
+bust, change scores, or choose the next turn.
+
 ## Documented interpretation
 
 Approved rule interpretations are stored in `PROJECT_DECISIONS.md`.
