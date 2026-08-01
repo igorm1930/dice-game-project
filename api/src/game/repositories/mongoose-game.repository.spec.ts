@@ -52,6 +52,7 @@ describe('MongooseGameRepository', () => {
     );
     expect(create).toHaveBeenCalledWith({
       _id: record.id,
+      winEventId: null,
       players: [
         { id: playerA, globalScore: 5 },
         { id: playerB, globalScore: 0 },
@@ -68,6 +69,7 @@ describe('MongooseGameRepository', () => {
     expect(record.state).toEqual(state);
     expect(record.state).not.toBe(state);
     expect(record.version).toBe(0);
+    expect(record.winEventId).toBeNull();
   });
 
   it('rehydrates a stored document as a domain record', async () => {
@@ -82,6 +84,7 @@ describe('MongooseGameRepository', () => {
     await expect(repository.findById(gameId)).resolves.toEqual({
       id: gameId,
       version: 0,
+      winEventId: null,
       state,
     });
     expect(findById).toHaveBeenCalledWith(gameId);
@@ -97,7 +100,12 @@ describe('MongooseGameRepository', () => {
   });
 
   it('persists and returns the complete replacement state', async () => {
-    const record: GameRecord = { id: gameId, version: 3, state };
+    const record: GameRecord = {
+      id: gameId,
+      version: 3,
+      winEventId: null,
+      state,
+    };
     const exec = jest.fn().mockResolvedValue({ matchedCount: 1 });
     updateOne.mockReturnValue({ exec });
 
@@ -108,6 +116,7 @@ describe('MongooseGameRepository', () => {
     expect(hydrate).toHaveBeenCalledWith({
       _id: gameId,
       version: 3,
+      winEventId: null,
       players: [
         { id: playerA, globalScore: 5 },
         { id: playerB, globalScore: 0 },
@@ -138,6 +147,7 @@ describe('MongooseGameRepository', () => {
           lastEvent: 'HOLD',
           status: 'active',
           winnerId: null,
+          winEventId: null,
         },
         $inc: { version: 1 },
       },
@@ -146,7 +156,12 @@ describe('MongooseGameRepository', () => {
   });
 
   it('accepts a legacy version-zero document without a stored version', async () => {
-    const record: GameRecord = { id: gameId, version: 0, state };
+    const record: GameRecord = {
+      id: gameId,
+      version: 0,
+      winEventId: null,
+      state,
+    };
     updateOne.mockReturnValue({
       exec: jest.fn().mockResolvedValue({ matchedCount: 1 }),
     });
@@ -178,6 +193,7 @@ describe('MongooseGameRepository', () => {
     await expect(repository.findById(gameId)).resolves.toEqual({
       id: gameId,
       version: 0,
+      winEventId: null,
       state: {
         ...legacyState,
         ruleSetId: 'double-six-v1',
@@ -193,7 +209,12 @@ describe('MongooseGameRepository', () => {
     });
 
     await expect(
-      repository.save({ id: gameId, version: 2, state }),
+      repository.save({
+        id: gameId,
+        version: 2,
+        winEventId: null,
+        state,
+      }),
     ).rejects.toThrow('The game was changed by another request.');
   });
 });

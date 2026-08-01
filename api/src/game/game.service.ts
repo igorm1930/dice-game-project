@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { UsersService } from '../users/users.service';
 import { GameEngine } from './domain/game-engine';
 import type { GameState } from './domain/game.types';
@@ -96,9 +97,11 @@ export class GameService {
     this.ensureCurrentVersion(record, expectedVersion);
     this.ensureActorsTurn(record.state, actorId);
 
+    const nextState = this.gameEngine.hold(record.state);
     const updated = await this.save({
       ...record,
-      state: this.gameEngine.hold(record.state),
+      winEventId: nextState.status === 'won' ? randomUUID() : null,
+      state: nextState,
     });
     await this.ensureWinCounted(updated);
 
@@ -114,6 +117,7 @@ export class GameService {
     this.ensureCurrentVersion(record, expectedVersion);
     const updated = await this.save({
       ...record,
+      winEventId: null,
       state: this.gameEngine.restart(record.state),
     });
 
@@ -161,7 +165,10 @@ export class GameService {
 
   private async ensureWinCounted(record: GameRecord): Promise<void> {
     if (record.state.status === 'won' && record.state.winnerId) {
-      await this.usersService.recordGameWin(record.state.winnerId, record.id);
+      await this.usersService.recordGameWin(
+        record.state.winnerId,
+        record.winEventId ?? record.id,
+      );
     }
   }
 

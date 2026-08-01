@@ -131,6 +131,15 @@ function App() {
     }));
   }
 
+  async function refreshUsers() {
+    try {
+      const latestUsers = await listUsers();
+      setUsers({ status: "success", data: latestUsers });
+    } catch (error) {
+      setUsers({ status: "error", message: errorMessage(error) });
+    }
+  }
+
   function expireSeat(seatId: SeatId) {
     const fallbackSeat = otherSeat(seatId);
     const fallbackSession = seats[fallbackSeat].session;
@@ -195,6 +204,10 @@ function App() {
         busy: false,
         error: null,
       }));
+
+      if (data.status === "won") {
+        void refreshUsers();
+      }
     } catch (error) {
       handleGameError(error, seatId);
     }
@@ -279,13 +292,7 @@ function App() {
       }
 
       if (data.status === "won") {
-        listUsers()
-          .then((latestUsers) =>
-            setUsers({ status: "success", data: latestUsers }),
-          )
-          .catch((error: unknown) =>
-            setUsers({ status: "error", message: errorMessage(error) }),
-          );
+        void refreshUsers();
       }
     } catch (error) {
       if (
@@ -301,6 +308,9 @@ function App() {
             busy: false,
             error: "Game changed in another request. Latest state loaded.",
           }));
+          if (data.status === "won") {
+            void refreshUsers();
+          }
           return;
         } catch (refreshError) {
           handleGameError(refreshError, activeSeat);
@@ -553,6 +563,9 @@ function App() {
                   </span>
                   <span>
                     <strong>{user.username}</strong>
+                    <small className={"saved-player-wins"}>
+                      Wins: {user.wins}
+                    </small>
                     <small>
                       Saved {new Date(user.createdAt).toLocaleString()}
                     </small>

@@ -58,16 +58,16 @@ export class UsersService {
       .exec();
   }
 
-  async recordGameWin(userId: string, gameId: string): Promise<void> {
+  async recordGameWin(userId: string, winEventId: string): Promise<void> {
     await this.userModel
       .updateOne(
         {
           _id: userId,
-          countedWinGameIds: { $ne: gameId },
+          countedWinGameIds: { $ne: winEventId },
         },
         {
           $inc: { wins: 1 },
-          $addToSet: { countedWinGameIds: gameId },
+          $addToSet: { countedWinGameIds: winEventId },
         },
         { runValidators: true },
       )
