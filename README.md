@@ -1,81 +1,93 @@
 # Dice Game Interview Project
 
-A full-stack two-player dice game created as an interview assignment.
+A deployed full-stack, two-player dice game built incrementally as an interview
+assignment. The NestJS API owns authentication, authorization, game rules,
+concurrency, and persistence; React renders caller-specific server state.
 
-## Planned stack
+## Live application
 
-### Backend
+- Web: https://dice-game-web-igorm1930.onrender.com
+- API health: https://dice-game-api-igorm1930.onrender.com/api/health
+- Swagger UI: https://dice-game-api-igorm1930.onrender.com/api/docs
+- OpenAPI JSON: https://dice-game-api-igorm1930.onrender.com/api/openapi.json
 
-- NestJS
-- TypeScript
-- MongoDB
-- Mongoose
-- JWT authentication
+The Render API uses a free instance and may need 50 seconds or more to wake
+after inactivity.
 
-### Frontend
+## Features
 
-- React
-- TypeScript
-- Vite
+- Two independent authenticated player sessions on one page
+- Argon2id password hashing and validated HS256 JWT authentication
+- Backend-derived identity, participant authorization, and turn enforcement
+- Server-owned Roll, Hold, double-six, winner, and Restart rules
+- MongoDB-persisted users, games, lifetime wins, and resumable game state
+- Strong ETags and required `If-Match` versions for mutation concurrency
+- Stable API error codes, metadata-only request logging, health endpoints,
+  Swagger, and OpenAPI
+- Accessible live feedback, keyboard controls, responsive layouts, visible
+  focus, touch targets, and reduced-motion support
+- Read-only GitHub Actions verification and full-history secret scanning
 
-## Development approach
+## Screenshots
 
-The project is built incrementally.
+### Game setup
 
-Each phase must be:
+![Two authenticated players ready to start](docs/screenshots/01-game-setup-desktop.png)
 
-1. Planned
-2. Approved
-3. Implemented
-4. Tested
-5. Reviewed
-6. Committed
+### Game in progress
 
-The application is not built in one large AI-generated step.
+![Desktop game after a dice roll](docs/screenshots/02-game-in-progress-desktop.png)
 
-## Project documentation
+### Mobile winner
 
-- `AGENTS.md` — instructions for AI coding agents
-- `CLAUDE.md` — Claude Code entry instructions
-- `PROJECT_DECISIONS.md` — approved technical and product decisions
-- `PROJECT_ROADMAP.md` — ordered implementation phases
-- `CURRENT_PHASE.md` — the only phase currently allowed
-- `docs/assignment-requirements.md` — assignment requirements
-- `docs/architecture.md` — implemented architecture
-- `docs/api-contracts.md` — implemented API contracts
-- `docs/testing-strategy.md` — actual testing strategy
-- `docs/session-log/` — completed-session records
+![Winner state at a 390 pixel mobile viewport](docs/screenshots/03-winner-mobile.png)
 
-## Applications
+## Architecture
 
-The repository contains two applications:
+```text
+React + Vite
+  -> public HTTPS API URL
+NestJS API
+  -> validation -> JWT identity -> participant/turn authorization
+  -> pure deterministic game engine
+  -> optimistic-concurrency repository
+MongoDB Atlas
+```
 
-- `api/` — NestJS and TypeScript backend
-- `web/` — React, TypeScript, and Vite frontend
+The browser keeps both access tokens and the current game reference only in
+React memory. It sends the selected seat's bearer token, never a trusted user
+ID. The pure game engine imports no HTTP, database, authentication, or React
+code. See [docs/architecture.md](docs/architecture.md) for the complete design
+and [docs/api-contracts.md](docs/api-contracts.md) for the API contract.
 
-Phase 2 connects React to the backend through `GET /api/health`. Phase 3 adds
-validated MongoDB configuration and requires a live database connection before
-the health endpoint reports success. Phase 4 adds validated persistent users,
-user API endpoints, and the React creation/list flow. Phase 5 adds backend test
-structure, database safety, frontend component tests, and root verification
-commands. Phase 6 adds read-only, SHA-pinned GitHub Actions verification and
-full-history secret scanning. Phase 7 deploys the basic flow. Phase 8 adds
-Argon2id password hashing, rate-limited registration and login, HS256 bearer
-tokens, and a protected current-user endpoint. Phase 9 adds two independent
-memory-only frontend sessions and an explicit acting-seat selector.
-Phase 10 adds the pure game engine, Phase 11 exposes its authenticated API,
-Phase 12 adds the playable React interface, Phase 13 persists games in MongoDB,
-and Phase 14 adds concurrency protection, win counters, OpenAPI, consistent
-errors, health/logging hardening, accessibility, responsive design, and game
-feedback.
+## Repository
 
-Use Node.js `20.19.x` or `22.12+`. The committed lockfiles use npm.
+- `api/` - NestJS, TypeScript, Mongoose, JWT, Swagger, and the game domain
+- `web/` - React, TypeScript, and Vite
+- `.github/workflows/` - CI verification and Gitleaks
+- `compose.yaml` - local MongoDB 7.0.39 on `127.0.0.1:27018`
+- `render.yaml` - deployed Render API and static site
+- `docs/` - architecture, testing, deployment, security, and delivery evidence
 
-### Run the backend
+## Requirements
+
+- Node.js `20.19.x` or `22.12+`
+- npm from the Node.js installation
+- Docker for local MongoDB
+
+The committed lockfiles use npm.
+
+## Local setup
+
+Start MongoDB:
 
 ```powershell
 docker compose up -d mongodb
+```
 
+Start the API in one PowerShell window:
+
+```powershell
 Set-Location api
 npm.cmd ci
 $env:NODE_ENV='development'
@@ -93,14 +105,7 @@ $env:JWT_AUDIENCE='dice-game-web'
 npm.cmd run start:dev
 ```
 
-The backend is available at `http://localhost:3000`. Its health endpoint is
-`http://localhost:3000/api/health`. User endpoints are available under
-`http://localhost:3000/api/users`. Authentication endpoints are under
-`http://localhost:3000/api/auth`. Swagger UI is available at
-`http://localhost:3000/api/docs`, and OpenAPI JSON at
-`http://localhost:3000/api/openapi.json`.
-
-### Run the frontend
+Start the web app in another PowerShell window:
 
 ```powershell
 Set-Location web
@@ -109,50 +114,38 @@ $env:VITE_API_URL='http://localhost:3000'
 npm.cmd run dev -- --host localhost --port 5173 --strictPort
 ```
 
-The frontend is available at `http://localhost:5173`.
+Open http://localhost:5173. Swagger is available at
+http://localhost:3000/api/docs.
 
-`VITE_API_URL` is public frontend configuration. `NODE_ENV`, `PORT`,
-`FRONTEND_ORIGIN`, `MONGODB_URI`, and all `JWT_*` values are backend runtime
-configuration. `MONGODB_URI` and `JWT_SECRET` are private backend configuration
-and must never use the `VITE_` prefix. Real `.env` files must not be committed.
+`VITE_API_URL` is intentionally public browser configuration. `MONGODB_URI`
+and `JWT_SECRET` are private backend values, must never use a `VITE_` prefix,
+and must never be committed. Real `.env` files are ignored.
 
-The project MongoDB service is bound only to `127.0.0.1:27018`. It intentionally
-does not use the already-occupied port 27017.
+## Verification
 
-### Verify Phase 6 locally
+With local MongoDB running:
 
 ```powershell
-docker compose up -d mongodb
 $env:VITE_API_URL='http://localhost:3000'
 npm.cmd run verify
 Remove-Item Env:VITE_API_URL
 ```
 
-The E2E suite defaults to `dice_game_e2e`, generates an ephemeral test JWT
-secret, runs serially, cleans the user collection, and rejects database names
-that do not end in `_test` or `_e2e`.
+The root command runs backend and frontend lint, 95 backend unit tests, 40
+frontend tests, 47 MongoDB E2E tests, and both production builds. CI repeats
+locked installs, dependency audits, verification on Node.js 22, and a separate
+full-history Gitleaks scan with read-only permissions.
 
-CI repeats locked installs, production dependency audits, the root verification
-command, and MongoDB-backed E2E tests on Node.js 22. A separate Gitleaks job
-scans full Git history. The workflow uses read-only permissions and does not
-require custom repository secrets.
+See [docs/final-verification.md](docs/final-verification.md) for the fresh-clone,
+local-browser, GitHub, production, and security evidence.
 
-### Deployment configuration
+## Delivery notes
 
-`render.yaml` defines the planned free Render API and static-site services in
-Frankfurt. The target URLs are:
+- [Known limitations](docs/known-limitations.md)
+- [Interview walkthrough](docs/interview-walkthrough.md)
+- [Testing strategy](docs/testing-strategy.md)
+- [Deployment](docs/deployment.md)
+- [Security policy](docs/security-policy.md)
 
-- `https://dice-game-api-igorm1930.onrender.com`
-- `https://dice-game-web-igorm1930.onrender.com`
-
-These services are live. Provider changes still require separate approval.
-`MONGODB_URI` and `JWT_SECRET` must be entered directly as Render secrets, and
-Atlas must allow only Render's current Frankfurt outbound IP ranges. See
-`docs/deployment.md` for the approved sequence and checks.
-
-## Current status
-
-Phases 1 through 14 are merged into `main`. Phase 14 was merged through pull
-request #15 as `1a7407d` and is live on the approved Render API and static
-site. Local, GitHub-hosted, and production verification passed. Phase 15 has
-not started.
+Phases 1 through 14 are merged and deployed. Phase 15 final-delivery artifacts
+are implemented and verified on `phase/15-final-delivery`, awaiting review.

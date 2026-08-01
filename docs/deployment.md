@@ -1,4 +1,4 @@
-# Initial Deployment
+# Production Deployment
 
 ## Current state
 
@@ -13,7 +13,14 @@ logs were verified. No production demonstration user or game was created.
 Earlier Atlas storage, reload persistence, and real idle cold-start checks
 remain documented from Phase 7.
 
-## Planned topology
+Phase 15 repeated these checks read-only on 2026-08-01. Health, liveness,
+readiness, Swagger, OpenAPI, and the hosted frontend returned HTTP 200. The
+allowed frontend origin received its exact CORS header; an unapproved origin
+received none. Render showed both services live on `1a7407d` while GitHub
+`main` and the latest successful CI were `2ddf8df`. Phase 15 created no
+production data and changed no provider setting.
+
+## Deployed topology
 
 ```text
 Browser

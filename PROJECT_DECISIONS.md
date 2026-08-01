@@ -251,6 +251,21 @@ The acting player will eventually be derived from the authentication token.
   double-six feedback, winner feedback, responsive layout, visible focus, and
   reduced-motion behavior.
 
+### Phase 15 final-delivery decisions
+
+- Keep the phase documentation-and-evidence only; do not change dependencies,
+  application source, configuration, schemas, authentication, or game rules.
+- Verify from a fresh clone before relying on the existing working tree.
+- Use only an isolated local database and temporary non-sensitive users for
+  browser evidence.
+- Keep production verification read-only and create no production account or
+  game.
+- Capture exactly three reviewed PNGs: desktop setup, desktop game in progress,
+  and 390px mobile winner.
+- Document observed limits honestly rather than expanding the assignment.
+- Treat final-delivery artifacts as awaiting review until separately approved
+  for commit and push.
+
 ### Phase 8 authentication compatibility
 
 - New users are created only through `POST /api/auth/register` with a password.
@@ -663,6 +678,27 @@ Delivery:
 - Fresh-clone verification.
 - Complete README and architecture explanation.
 
+### Phase 15 — Verify and package final delivery
+
+Goal: provide reproducible final evidence without changing application
+behavior.
+
+Actions:
+
+- Verify a locked fresh clone.
+- Repeat local startup, full tests, lint, builds, audits, and secret scans.
+- Repeat the complete local browser flow at desktop, tablet, and mobile widths.
+- Verify GitHub, CI, deployed endpoints, CORS, Swagger/OpenAPI, and provider
+  service state read-only.
+- Add final screenshots, limitations, verification evidence, and interview
+  walkthrough documentation.
+
+Suggested commit:
+
+```text
+docs: complete final delivery package
+```
+
 ## 8. Claude Code working rules
 
 For each phase, Claude Code should:
@@ -729,29 +765,29 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ### Progress checklist
 
-- [ ] 1. Repository prepared
-- [ ] 2. Backend and frontend created
-- [ ] 3. Health API connection working
-- [ ] 4. Initial connection tests passing
-- [ ] 5. MongoDB connected
-- [ ] 6. MongoDB tests passing
-- [ ] 7. Persistent user flow working
-- [ ] 8. User-flow tests passing
-- [ ] 9. Test infrastructure strengthened
-- [ ] 10. CI pipeline green
-- [ ] 11. Basic application deployed
-- [ ] 12. Authentication complete
-- [ ] 13. Two-session simulation complete
-- [ ] 14. Game engine complete and tested
-- [ ] 15. Authenticated game API working
-- [ ] 16. Playable React game working
-- [ ] 17. Game state persisted in MongoDB
-- [ ] 18. Application hardened
-- [ ] 19. UI polished
-- [ ] 20. Final delivery verified
+- [x] 1. Repository prepared
+- [x] 2. Backend and frontend created
+- [x] 3. Health API connection working
+- [x] 4. Initial connection tests passing
+- [x] 5. MongoDB connected
+- [x] 6. MongoDB tests passing
+- [x] 7. Persistent user flow working
+- [x] 8. User-flow tests passing
+- [x] 9. Test infrastructure strengthened
+- [x] 10. CI pipeline green
+- [x] 11. Basic application deployed
+- [x] 12. Authentication complete
+- [x] 13. Two-session simulation complete
+- [x] 14. Game engine complete and tested
+- [x] 15. Authenticated game API working
+- [x] 16. Playable React game working
+- [x] 17. Game state persisted in MongoDB
+- [x] 18. Application hardened
+- [x] 19. UI polished
+- [x] 20. Final delivery verified
 
 ## 11. Current next action
 
-Phases 1 through 14 are merged into `main`. Phase 14 was merged through pull
-request #15 as `1a7407d`, passed post-merge CI, and is deployed on the approved
-Render services. Do not begin Phase 15 without explicit approval.
+Phases 1 through 14 are merged and deployed. Phase 15 is implemented and
+verified on `phase/15-final-delivery` from `main` commit `2ddf8df`. Wait for
+review; do not commit, push, merge, or deploy without explicit approval.

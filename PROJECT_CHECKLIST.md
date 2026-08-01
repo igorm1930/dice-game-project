@@ -331,15 +331,28 @@ Verification summary:
 
 ## Phase 15 — Final delivery
 
-- [ ] Run complete test suite
-- [ ] Run complete build
-- [ ] Run lint
-- [ ] Verify fresh clone
-- [ ] Verify local startup instructions
-- [ ] Verify production deployment
-- [ ] Verify GitHub repository
-- [ ] Verify no secrets are committed
-- [ ] Add screenshots
-- [ ] Complete README
-- [ ] Document known limitations
-- [ ] Prepare interview walkthrough
+Status: Implemented and verified on `phase/15-final-delivery`; awaiting review,
+commit, and push.
+
+Verification summary:
+
+- A fresh clone passed locked installs, lint, 95 backend unit tests, 47 backend
+  E2E tests, 40 frontend tests, and both builds.
+- Three dependency audits and full-history/focused Gitleaks scans passed.
+- Local browser verification passed authenticated play, winner/lifetime-win
+  feedback, keyboard controls, and desktop, 768px, and 390px layouts.
+- GitHub, CI, production endpoints, CORS, Swagger/OpenAPI, and both Render
+  service states were verified read-only.
+
+- [x] Run complete test suite
+- [x] Run complete build
+- [x] Run lint
+- [x] Verify fresh clone
+- [x] Verify local startup instructions
+- [x] Verify production deployment
+- [x] Verify GitHub repository
+- [x] Verify no secrets are committed
+- [x] Add screenshots
+- [x] Complete README
+- [x] Document known limitations
+- [x] Prepare interview walkthrough

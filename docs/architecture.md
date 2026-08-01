@@ -2,9 +2,9 @@
 
 ## Status
 
-Phase 13 is merged into `main` as `93e188b`. Phase 14 hardening and polish are
-implemented on `phase/14-hardening-and-polish`. The deployed application
-remains on the previous version pending separate approval.
+Phases 1 through 14 are merged. The API and web services are live on Phase 14
+merge commit `1a7407d`, and `main` is `2ddf8df` after the deployment record.
+Phase 15 adds final delivery evidence without changing this architecture.
 
 ## Current implemented architecture
 
@@ -13,7 +13,7 @@ dice-game-project/
 |-- api/          NestJS API plus framework-independent game domain
 |-- web/          React two-seat authentication and playable game interface
 |-- .github/      Read-only CI verification and secret scanning
-|-- render.yaml   Planned Render API and static-site services
+|-- render.yaml   Deployed Render API and static-site services
 `-- compose.yaml  Local MongoDB development service
 ```
 
@@ -216,7 +216,7 @@ credentials are not persisted, actions use full commit SHAs, and no custom
 repository secrets are required. The one Gitleaks ignore entry is scoped to the
 exact fingerprint of a verified public NestJS starter badge false positive.
 
-### Configured deployment path
+### Deployed production path
 
 ```text
 Render static site (Frankfurt)
@@ -232,12 +232,15 @@ automatic deployment, uses `/api/health` as the API health check, and keeps
 interfaces but
 production CORS accepts only the configured HTTPS frontend origin.
 
-Atlas is planned with a database-scoped application user and only Render's
-current Frankfurt outbound IP ranges. No wildcard network rule, paid fallback,
-or preview environment is approved. This topology is configuration only until
-the external resources and production flow are separately verified.
+Atlas uses a database-scoped application user and only Render's current
+Frankfurt outbound IP ranges. No wildcard network rule, paid fallback, or
+preview environment is approved. Both Render services report Phase 14 commit
+`1a7407d` live; production health, CORS, Swagger/OpenAPI, and frontend
+connectivity have been verified.
 
-## Future sections
+## Delivery evidence
 
-Phase 15 will document final deployment, fresh-clone verification, screenshots,
-known limitations, and the interview walkthrough.
+The final fresh-clone, local-browser, GitHub, production, and security evidence
+is recorded in `docs/final-verification.md`. Deliberate tradeoffs are listed in
+`docs/known-limitations.md`, and the interview narrative is in
+`docs/interview-walkthrough.md`.
