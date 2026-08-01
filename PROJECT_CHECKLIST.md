@@ -305,8 +305,8 @@ Verification summary:
 
 ## Phase 14 — Hardening and polish
 
-Status: Completed, locally verified, and developer-reviewed on
-`phase/14-hardening-and-polish`.
+Status: Completed, verified, reviewed, merged through pull request #15 as
+`1a7407d`, and deployed on Render.
 
 Verification summary:
 

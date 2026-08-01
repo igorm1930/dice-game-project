@@ -54,6 +54,22 @@ The full testing strategy will grow incrementally.
 - Temporary processes and logs were removed, and the isolated manual database
   was dropped and confirmed absent.
 
+### Production verification
+
+- Pull request #15 passed Verify and Secret scan before merge.
+- Post-merge `main` CI passed Verify and Secret scan.
+- Render reported the API and static site live on merge commit `1a7407d`.
+- Production liveness and readiness returned HTTP 200.
+- Swagger UI and OpenAPI JSON exposed the Phase 14 contracts.
+- The deployed frontend connected successfully and its assets contained
+  conflict recovery, lifetime wins, `If-Match`, reduced-motion, and winner
+  feedback.
+- Exact-origin CORS remained allowed and an unapproved origin received no
+  permission.
+- Provider logs showed successful startup, health traffic, no application
+  error, and no sensitive value.
+- Production verification created no user or game data.
+
 ## Phase 13 verification
 
 ### MongoDB game persistence

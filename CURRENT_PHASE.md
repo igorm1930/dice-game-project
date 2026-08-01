@@ -6,9 +6,9 @@ Phase 14 - Hardening and polish
 
 ## Status
 
-Phases 1 through 13 are merged into `main`. Phase 14 is implemented, locally
-verified, and developer-reviewed on `phase/14-hardening-and-polish`. It has
-not been deployed or merged.
+Phases 1 through 14 are merged into `main`. Phase 14 was merged through pull
+request #15 as `1a7407d` and is deployed on the approved Render services. It
+is locally and production verified. Phase 15 has not started.
 
 ## Implemented scope
 
@@ -79,9 +79,27 @@ not been deployed or merged.
 - Request logs omit bodies, headers, query strings, tokens, user IDs, and game
   IDs.
 
+## Production verification
+
+- Pull request #15 passed Verify and Secret scan before merge.
+- The post-merge `main` CI passed Verify in 1 minute 12 seconds and Secret
+  scan in 8 seconds.
+- Render reports both the API and static site live on merge commit `1a7407d`.
+- `/api/health/live` and `/api/health/ready` returned HTTP 200.
+- Swagger UI loaded and OpenAPI JSON exposed game versions, `If-Match`, and
+  the new health routes.
+- The hosted frontend connected to the API and its deployed assets contained
+  conflict recovery, lifetime wins, version headers, reduced-motion behavior,
+  and winner feedback.
+- The exact frontend origin received its CORS header; an unapproved origin
+  received none.
+- Provider logs showed successful startup and metadata-only request logs with
+  no error or sensitive value.
+- No production demonstration account or game was created.
+
 ## Out of scope
 
-- Production deployment or provider configuration
+- Further production-provider configuration changes
 - Commit, push, pull request, or merge
 - Fresh-clone and production verification
 - Screenshots and interview walkthrough
@@ -91,4 +109,4 @@ not been deployed or merged.
 
 ## Next action
 
-Wait for explicit approval before deploying, merging, or beginning Phase 15.
+Wait for explicit approval before beginning Phase 15.

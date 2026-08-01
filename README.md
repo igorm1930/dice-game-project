@@ -152,6 +152,7 @@ Atlas must allow only Render's current Frankfurt outbound IP ranges. See
 
 ## Current status
 
-Phases 1 through 13 are merged into `main`. Phase 14 is implemented, locally
-verified, and developer-reviewed on `phase/14-hardening-and-polish`. It has not
-been deployed or merged. Phase 15 has not started.
+Phases 1 through 14 are merged into `main`. Phase 14 was merged through pull
+request #15 as `1a7407d` and is live on the approved Render API and static
+site. Local, GitHub-hosted, and production verification passed. Phase 15 has
+not started.

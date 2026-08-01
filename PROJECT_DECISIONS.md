@@ -752,6 +752,6 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phases 1 through 13 are merged into `main`. Phase 14 is implemented, locally
-verified, and developer-reviewed on `phase/14-hardening-and-polish`. Do not
-deploy, merge, or begin Phase 15 without explicit approval.
+Phases 1 through 14 are merged into `main`. Phase 14 was merged through pull
+request #15 as `1a7407d`, passed post-merge CI, and is deployed on the approved
+Render services. Do not begin Phase 15 without explicit approval.

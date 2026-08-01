@@ -80,9 +80,27 @@ sensitive-pattern check.
   client-side game rule was added.
 - All dependency and secret scans passed.
 
+## Production deployment
+
+- Pull request #15 passed Verify and Secret scan, then merged into `main` as
+  `1a7407d`.
+- Post-merge `main` CI passed Verify in 1 minute 12 seconds and Secret scan in
+  8 seconds.
+- Render reported both `dice-game-api-igorm1930` and
+  `dice-game-web-igorm1930` live on `1a7407d`.
+- Production liveness and readiness returned HTTP 200.
+- Swagger UI and OpenAPI JSON exposed the Phase 14 routes and contracts.
+- The hosted frontend connected successfully, and deployed assets included
+  conflict recovery, lifetime wins, `If-Match`, reduced-motion, and winner
+  feedback.
+- Exact-origin CORS passed; an unapproved origin received no CORS permission.
+- Provider logs showed successful startup and metadata-only requests without
+  errors or sensitive values.
+- No production demonstration data was created.
+
 ## Deferred
 
-- production deployment and provider configuration
+- further production-provider configuration changes
 - commit, push, pull request, and merge
 - fresh-clone verification and production regression
 - screenshots and interview walkthrough
@@ -92,5 +110,5 @@ sensitive-pattern check.
 
 ## Git
 
-Phase 14 is implemented, locally verified, and developer-reviewed. It has not
-been deployed or merged.
+Phase 14 is implemented, locally verified, developer-reviewed, merged through
+pull request #15 as `1a7407d`, and deployed on the approved Render services.
