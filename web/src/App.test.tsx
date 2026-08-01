@@ -92,6 +92,14 @@ const seatBUser: UserResponse = {
   updatedAt: "2026-01-02T00:00:00.000Z",
 };
 
+const replacementSeatAUser: UserResponse = {
+  id: "507f1f77bcf86cd799439013",
+  username: "SeatCharlie",
+  wins: 0,
+  createdAt: "2026-01-03T00:00:00.000Z",
+  updatedAt: "2026-01-03T00:00:00.000Z",
+};
+
 const game: GameResponse = {
   id: "d43acc2f-a715-49a1-bf4f-74b16592e553",
   version: 0,
@@ -229,7 +237,7 @@ describe("App", () => {
     expect(await screen.findByText("Users offline")).toBeInTheDocument();
   });
 
-  it("registers without creating a session and clears the password field", async () => {
+  it("registers without creating a session and clears both credential fields", async () => {
     const actor = userEvent.setup();
     mockRegister.mockResolvedValue(seatAUser);
     render(<App />);
@@ -249,8 +257,31 @@ describe("App", () => {
     expect(
       await seat.findByText(/SeatAlpha was registered/),
     ).toBeInTheDocument();
+    expect(seat.getByLabelText("Username")).toHaveValue("");
     expect(seat.getByLabelText("Password")).toHaveValue("");
     expect(screen.getByRole("radio", { name: /Seat A/ })).toBeDisabled();
+  });
+
+  it("preserves the username but clears the password after failed registration", async () => {
+    const actor = userEvent.setup();
+    mockRegister.mockRejectedValue(
+      new AuthApiError("Username already exists", 409, "USERNAME_TAKEN"),
+    );
+    render(<App />);
+
+    const seat = seatRegion("Seat A");
+    await actor.click(seat.getByRole("button", { name: "Create account" }));
+    await actor.type(seat.getByLabelText("Username"), "SeatAlpha");
+    await actor.type(seat.getByLabelText("Password"), "private password");
+    await actor.click(
+      seat.getAllByRole("button", { name: "Create account" }).at(-1)!,
+    );
+
+    expect(
+      await seat.findByRole("alert"),
+    ).toHaveTextContent("Username already exists");
+    expect(seat.getByLabelText("Username")).toHaveValue("SeatAlpha");
+    expect(seat.getByLabelText("Password")).toHaveValue("");
   });
 
   it("keeps two sessions independent and selects the exact acting-seat token", async () => {
@@ -327,6 +358,154 @@ describe("App", () => {
       seatRegion("Seat B").getByText(/authenticated as/),
     ).toHaveTextContent("SeatBravo");
     expect(screen.getByRole("radio", { name: /Seat B/ })).toBeChecked();
+  });
+
+  it("clears an incompatible game when a different user replaces a seat", async () => {
+    const actor = userEvent.setup();
+    const replacementGame: GameResponse = {
+      ...game,
+      id: "eb849c2f-a715-49a1-bf4f-74b16592e554",
+      players: [
+        { id: seatBUser.id, globalScore: 0 },
+        { id: replacementSeatAUser.id, globalScore: 0 },
+      ],
+      activePlayerId: seatBUser.id,
+    };
+    mockLogin
+      .mockResolvedValueOnce({
+        accessToken: "token-a",
+        tokenType: "Bearer",
+        expiresIn: 1800,
+      })
+      .mockResolvedValueOnce({
+        accessToken: "token-b",
+        tokenType: "Bearer",
+        expiresIn: 1800,
+      })
+      .mockResolvedValueOnce({
+        accessToken: "token-c",
+        tokenType: "Bearer",
+        expiresIn: 1800,
+      });
+    mockGetCurrentUser
+      .mockResolvedValueOnce(seatAUser)
+      .mockResolvedValueOnce(seatBUser)
+      .mockResolvedValueOnce(replacementSeatAUser);
+    mockCreateGame
+      .mockResolvedValueOnce(game)
+      .mockResolvedValueOnce(replacementGame);
+    mockGetGame.mockResolvedValue({
+      ...game,
+      allowedActions: ["restart"],
+    });
+    render(<App />);
+
+    await signIn(actor, "Seat A", "SeatAlpha");
+    await signIn(actor, "Seat B", "SeatBravo");
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    expect(
+      screen.getByRole("heading", { name: "Game in progress" }),
+    ).toBeInTheDocument();
+
+    await actor.click(
+      seatRegion("Seat A").getByRole("button", { name: "Log out Seat A" }),
+    );
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledWith("token-b", game.id);
+    });
+
+    const seatA = seatRegion("Seat A");
+    await actor.clear(seatA.getByLabelText("Username"));
+    await actor.type(seatA.getByLabelText("Username"), "SeatCharlie");
+    await actor.type(seatA.getByLabelText("Password"), "private password");
+    await actor.click(
+      seatA.getByRole("button", { name: "Sign in to Seat A" }),
+    );
+
+    expect(
+      await seatA.findByText(/authenticated as/),
+    ).toHaveTextContent("SeatCharlie");
+    expect(
+      screen.getByRole("heading", { name: "Start a new game" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Game in progress" }))
+      .not.toBeInTheDocument();
+    expect(
+      screen.getByRole("alert"),
+    ).toHaveTextContent("The signed-in players changed. Start a new game.");
+
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    expect(mockCreateGame).toHaveBeenLastCalledWith("token-b", {
+      opponentId: replacementSeatAUser.id,
+      winningScore: 100,
+    });
+    expect(
+      screen.getByRole("heading", { name: "Game in progress" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("article", { name: "Player 2: SeatCharlie" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("article", { name: "Player 1: SeatAlpha" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("preserves the current game when the same participant signs in again", async () => {
+    const actor = userEvent.setup();
+    mockLogin
+      .mockResolvedValueOnce({
+        accessToken: "token-a",
+        tokenType: "Bearer",
+        expiresIn: 1800,
+      })
+      .mockResolvedValueOnce({
+        accessToken: "token-b",
+        tokenType: "Bearer",
+        expiresIn: 1800,
+      })
+      .mockResolvedValueOnce({
+        accessToken: "token-a-new",
+        tokenType: "Bearer",
+        expiresIn: 1800,
+      });
+    mockGetCurrentUser
+      .mockResolvedValueOnce(seatAUser)
+      .mockResolvedValueOnce(seatBUser)
+      .mockResolvedValueOnce(seatAUser);
+    mockCreateGame.mockResolvedValue(game);
+    mockGetGame.mockResolvedValue({
+      ...game,
+      allowedActions: ["restart"],
+    });
+    render(<App />);
+
+    await signIn(actor, "Seat A", "SeatAlpha");
+    await signIn(actor, "Seat B", "SeatBravo");
+    await actor.click(screen.getByRole("button", { name: "Start game" }));
+    await actor.click(
+      seatRegion("Seat A").getByRole("button", { name: "Log out Seat A" }),
+    );
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledWith("token-b", game.id);
+    });
+
+    const seatA = seatRegion("Seat A");
+    await actor.clear(seatA.getByLabelText("Username"));
+    await actor.type(seatA.getByLabelText("Username"), "SeatAlpha");
+    await actor.type(seatA.getByLabelText("Password"), "private password");
+    await actor.click(
+      seatA.getByRole("button", { name: "Sign in to Seat A" }),
+    );
+
+    expect(
+      await seatA.findByText(/authenticated as/),
+    ).toHaveTextContent("SeatAlpha");
+    expect(
+      screen.getByRole("heading", { name: "Game in progress" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("article", { name: "Player 1: SeatAlpha" }),
+    ).toBeInTheDocument();
   });
 
   it("never writes authenticated sessions to browser storage", async () => {

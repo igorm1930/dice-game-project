@@ -2,9 +2,29 @@
 
 ## Status
 
-Phase 1 through Phase 18 checks have been run locally. Phase 18 is awaiting
-review and is not committed or deployed. Phase 17 was merged through pull
-request #19 as `f86e3f3`; both Render services remain live on that commit.
+Phase 1 through Phase 19 checks have been run locally. Phase 19 is reviewed and
+approved for branch publication but is not merged or deployed. Phase 18 was
+merged through pull request #21 as `e4992a9`.
+
+## Phase 19 authentication-session consistency verification
+
+- The focused App suite passed 28 tests. New regressions verify successful
+  registration clears both fields, failed registration preserves only the
+  username, an unrelated replacement account clears the displayed game, and
+  the same participant can sign in again without losing it.
+- Complete root verification passed 109 backend unit tests, 51 MongoDB E2E
+  tests, 57 frontend tests, lint, and both production builds.
+- Backend production, backend complete, and frontend dependency audits each
+  reported zero vulnerabilities.
+- Docker Compose configuration passed. Gitleaks 8.30.1 found no leaks across
+  all 42 commits or the focused modified source and documentation paths.
+- A real browser registered Alpha and Bravo, confirmed both successful forms
+  cleared, confirmed duplicate Alpha retained its username but cleared its
+  password, and started their game. After Alpha logged out, Charlie registered
+  and signed in; the old game disappeared with the approved notice. A new game
+  contained Bravo and Charlie and did not contain Alpha.
+- No backend, API contract, database, dependency, environment, or game-rule
+  source changed.
 
 ## Phase 18 BUST cooldown verification
 

@@ -10,7 +10,7 @@ interface AuthSeatProps {
   busy: boolean
   error: string | null
   notice: string | null
-  onRegister: (credentials: AuthCredentials) => Promise<void>
+  onRegister: (credentials: AuthCredentials) => Promise<boolean>
   onLogin: (credentials: AuthCredentials) => Promise<void>
   onLogout: () => void
 }
@@ -38,7 +38,11 @@ export function AuthSeat({
       const credentials = { username, password }
 
       if (mode === 'register') {
-        await onRegister(credentials)
+        const registered = await onRegister(credentials)
+
+        if (registered) {
+          setUsername('')
+        }
       } else {
         await onLogin(credentials)
       }

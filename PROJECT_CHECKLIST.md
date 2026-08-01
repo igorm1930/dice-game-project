@@ -401,9 +401,8 @@ deployed on both Render services.
 
 ## Phase 18 - BUST feedback cooldown
 
-Status: Implemented and locally verified on
-`phase/18-bust-feedback-cooldown`; awaiting review. Not committed, pushed,
-merged, or deployed.
+Status: Completed, reviewed, merged through pull request #21 as `e4992a9`, and
+deployed on both Render services.
 
 - [x] Trigger feedback only from backend semantic BUST responses
 - [x] Switch immediately to the backend-selected active seat
@@ -417,5 +416,26 @@ merged, or deployed.
 - [x] Run lint, both builds, dependency audits, Compose validation, and Gitleaks
 - [x] Verify a real two-user BUST flow at desktop, tablet, and mobile widths
 - [ ] Complete a live OS-level reduced-motion preference check
-- [ ] Review and approve the uncommitted diff
-- [ ] Commit, push, merge, and deploy
+- [x] Review and approve the implementation
+- [x] Commit, push, merge, and deploy
+
+## Phase 19 - Authentication form and game-session consistency
+
+Status: Implemented, locally verified, and reviewed on
+`phase/19-auth-session-consistency`; approved for commit and push. Not merged
+or deployed.
+
+- [x] Clear username and password after successful registration
+- [x] Preserve username and clear password after failed registration
+- [x] Clear a displayed game when a replacement user is not a participant
+- [x] Show a clear prompt to start a new game
+- [x] Preserve a displayed game when the same participant signs in again
+- [x] Prevent stale player names from being reused for a new game
+- [x] Keep authoritative game participation and rules in the backend
+- [x] Run focused frontend regression tests
+- [x] Run complete root verification, lint, and both builds
+- [x] Run dependency audits and real-browser verification
+- [x] Validate Docker Compose and run full-history/focused Gitleaks scans
+- [x] Review and approve the implementation
+- [x] Commit and push the phase branch
+- [ ] Merge and deploy

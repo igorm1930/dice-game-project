@@ -2,11 +2,10 @@
 
 ## Status
 
-Phases 1 through 17 are merged and deployed. Phase 18 is implemented and
-locally verified on `phase/18-bust-feedback-cooldown`, awaiting review, and
-is not committed or deployed. Phase 17 commit `0fe346a` was merged through
-pull request #19 as `f86e3f3`; both Render services remain live on that merge
-commit.
+Phases 1 through 18 are merged. Phase 18 was merged through pull request #21 as
+`e4992a9`. Phase 19 is implemented and locally verified on
+`phase/19-auth-session-consistency`, reviewed, and approved for branch
+publication. It is not merged or deployed.
 
 ## Current implemented architecture
 
@@ -81,7 +80,9 @@ users because MongoDB owns the data.
    requests; it sends no trusted actor identifier.
 7. A 401 removes only the rejected seat, logout removes only its selected
    session, and page refresh clears both sessions.
-8. React renders usernames as text, so stored values are escaped.
+8. Successful registration clears both form fields. Failed registration keeps
+   the username available for correction but always clears the password.
+9. React renders usernames as text, so stored values are escaped.
 
 ### Frontend game path
 
@@ -103,6 +104,12 @@ and Restart send empty action bodies plus the latest version through
 `If-Match`. `GameBoard` displays player scores, lifetime wins, round score,
 dice, turn, semantic Bust feedback, winner, and action availability without
 reproducing game rules or interpreting dice combinations.
+
+When a seat authenticates as a different user, React keeps the displayed game
+only if the backend-returned game already lists that user as a participant. An
+unrelated replacement clears only the in-memory game reference and cached
+display names, then requires a new backend-created game. React never substitutes
+the replacement username into the old game or changes authoritative players.
 
 After a successful action response reports `lastEvent: "BUST"`, React keys a
 presentation-only cooldown by the authoritative game ID and version. It

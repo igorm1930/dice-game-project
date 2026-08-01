@@ -210,3 +210,14 @@ Do not skip phases without documenting the reason.
 - Deduplicate event handling by game ID and version and clean up timers
 - Verify normal Roll, Hold, Restart, repeated refetch, and same-game recovery
 - Verify desktop, tablet, mobile, reduced-motion, security, and full regression
+
+## Phase 19 - Authentication form and game-session consistency
+
+- Clear the username only after successful registration
+- Clear the password after every registration attempt
+- Detect when a newly authenticated seat is incompatible with the displayed
+  game
+- Remove only the stale local game reference and require a new game
+- Preserve the current game when the same participant signs in again
+- Keep game participants, state, and rules backend-owned
+- Add focused regression coverage and real-browser verification

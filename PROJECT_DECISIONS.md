@@ -815,15 +815,16 @@ This is the fixed high-level order for the project. We should not skip forward u
 
 ## 11. Current next action
 
-Phases 1 through 17 are completed, merged, and deployed. Phase 17 commit
-`0fe346a` was merged through pull request #19 as `f86e3f3`; pull-request and
-post-merge CI passed, and both Render services are live on that merge commit.
+Phases 1 through 18 are completed and merged. Phase 18 was merged through pull
+request #21 as `e4992a9`.
 
-Phase 17 corrects win idempotency for restarted games. Every winning Hold now
-stores a private win-event UUID, so retries remain safe while a later win after
-Restart increments the persisted lifetime total. Legacy won records retain an
-explicit game-ID compatibility fallback. React refreshes and displays the
-backend-returned totals but never calculates or increments wins.
+Phase 19 establishes two frontend consistency invariants. Registration clears
+the username only after success and clears the password after every attempt.
+Also, a newly authenticated user may continue displaying a game only when the
+backend response already identifies that user as a participant. Otherwise,
+React discards only its stale local game reference and requires a new game; it
+must never relabel the old game or mutate backend participants.
 
-No Phase 18 scope is approved. Keep `main` clean and wait for an explicitly
-proposed maintenance task or new phase.
+Phase 19 is implemented, locally verified, and reviewed on
+`phase/19-auth-session-consistency`. The branch is approved for publication
+but is not merged or deployed.
